@@ -40,5 +40,4 @@ If you're running MINIGAMES.SK, feel free to create a issue to get your server d
 - Create a documentation
 - Add a tutorial on how to create new minigames
 - Add  multible languages to the project
-- Add new addons which improve the game
 - Publish MINIGAMES.SK to https://forums.skunity.com and maintain/update it for future versions of minecraft

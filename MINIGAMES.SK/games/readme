@@ -1,0 +1,17 @@
+
+
+Each game should contain all scripts that it needs within a folder that is named exactly like the game.
+Do not put other folders into this games folder.
+
+The core script will initialize your game by enabling a init.sk file in your game folder.
+Example: MINIGAMES.SK/games/mygame/init.sk
+
+The init.sk file should contain a initialization process which starts your game, and all events that can
+trigger something in your game. Be sure to leave the init.sk file as small as possible and use functions
+to make init.sk loading fast. It will be disabled once the game ends to ensure as few as possible triggers
+being available.
+
+Adding any events outside of your init.sk file can cause lags and interrupt other games.
+
+Make sure that all while loops and other processes are stopped as fast as possible once the game changes
+or the game status is set to "".

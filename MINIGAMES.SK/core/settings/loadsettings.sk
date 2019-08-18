@@ -1,0 +1,11 @@
+
+
+on load:
+  mgSetSetting("defaultlobbygame","Lobby")
+
+function mgGetSetting(settingname:text) :: object:
+  return metadata value "MG.SK|setting|%{_settingname}%" of getDummy()
+  
+  
+function mgSetSetting(settingname:text,settingvalue:object):
+  set metadata value "MG.SK|setting|%{_settingname}%" of getDummy() to {_settingvalue}

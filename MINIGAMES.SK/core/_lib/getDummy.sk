@@ -1,0 +1,16 @@
+#
+# ==============
+# getDummy.sk
+# ==============
+# getDummy.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - getDummy
+# > Actions:
+# > Returns a block as a dummy for metadata storage.
+function getDummy() :: block:
+  if {dummyblock} is not a block:
+    add all worlds to {_worlds::*}
+    set {dummyblock} to block at location at 0.0, 0.0, 0.0 in {_worlds::1}
+  return {dummyblock}

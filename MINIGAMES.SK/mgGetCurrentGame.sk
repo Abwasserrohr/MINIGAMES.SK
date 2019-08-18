@@ -1,0 +1,16 @@
+#
+# ==============
+# mgGetCurrentGame.sk
+# ==============
+# mgGetCurrentGame.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgGetCurrentGame
+# > Returns the current game name.
+function mgGetCurrentGame() :: text:
+  set {_game} to metadata value "MG.SK|CurrentGameName" of getDummy()
+  if {_game} is not set:
+    return ""
+  else:
+    return {_game}

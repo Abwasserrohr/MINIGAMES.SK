@@ -1,0 +1,14 @@
+#
+# ==============
+# mgSetCurrentGameStatus.sk
+# ==============
+# mgSetCurrentGameStatus.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgSetCurrentGameStatus
+# > Sets the current game status.
+# > Parameters:
+# > <text>game status
+function mgSetCurrentGameStatus(status:text):
+  set metadata value "MG.SK|CurrentGameStatus" of getDummy() to {_status}

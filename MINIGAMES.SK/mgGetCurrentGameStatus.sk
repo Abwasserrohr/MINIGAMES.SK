@@ -1,0 +1,12 @@
+#
+# ==============
+# mgGetCurrentGameStatus.sk
+# ==============
+# mgGetCurrentGameStatus.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgGetCurrentGameStatus
+# > Returns the current game status.
+function mgGetCurrentGameStatus() :: text:
+  return metadata value "MG.SK|CurrentGameStatus" of getDummy()

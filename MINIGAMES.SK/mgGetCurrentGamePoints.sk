@@ -1,0 +1,16 @@
+#
+# ==============
+# mgGetCurrentGamePoints.sk
+# ==============
+# mgGetCurrentGamePoints.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgGetCurrentGamePoints
+# > Returns the current game points of the player and points name.
+# > Parameters:
+# > <text>game name
+# > <player>player of which the points are wanted to be known
+# > <text>name of wanted points
+function mgGetCurrentGamePoints(game:text,player:player,pointsname:text) :: number:
+  return metadata value "MG.SK|points|%{_player}%|%{_game}%|%{_pointsname}%" of getDummy()

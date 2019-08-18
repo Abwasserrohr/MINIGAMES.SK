@@ -20,12 +20,12 @@ function mgSetCurrentGamePoints(game:text,player:player,pointsname:text,points:n
   set {_pointslist} to metadata value "MG.SK|points|pointslist" of getDummy()
 
   if {_holders} is not set:
-    set {_holders} to new HashMap()
+    set {_holders} to HashMap()
   if {_holders}.get("%{_player}%") is not set:
     {_holders}.put("%{_player}%",true)
 
   if {_pointslist} is not set:
-    set {_pointslist} to new HashMap()
+    set {_pointslist} to HashMap()
   if {_pointslist}.get("%{_pointsname}%") is not set:
     {_pointslist}.put("%{_pointsname}%",true)
 

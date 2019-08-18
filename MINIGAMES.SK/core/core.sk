@@ -1,7 +1,6 @@
 
 import:
   java.util.HashMap
-  java.util.HashMap
 
 
 function mgGetCurrentGame() :: text:
@@ -30,10 +29,23 @@ function mgGetCurrentGamePoints(game:text,player:player,pointsname:text) :: numb
 
 
 #
-# > Returns a points list which contains all currently online players.
+# > Returns a points list which contains all points of the game and pointsname.
 function mgGetCurrentGamePointsList(game:text,pointsname:text) :: object:
-  set {_holders::*} to ...metadata value "MG.SK|points|holderlist" of getDummy()
-  
+  set {_holders} to metadata value "MG.SK|points|holderlist" of getDummy()
+  set {_points} to new HashMap()
+  loop ...{_holders}.keySet():
+    set {_value} to metadata value "MG.SK|points|%loop-value%|%{_game}%|%{_pointsname}%" of getDummy()
+    if {_value} is set:
+      {_points}.put("%loop-value%",{_value})
+  return {_points}
+ 
+command /test:
+  trigger:
+    set {_points} to mgGetCurrentGameMoney("testgame",player,"testpoints")
+    mgSetCurrentGameMoney("testgame",player,"testpoints",{_points} + 1)
+    set {_list} to mgGetCurrentGameMoneyList("testgame","testpoints")
+    broadcast "%{_list}%"
+    
 #
 # > The points set here will be used to determine the best player.
 function mgSetCurrentGamePoints(game:text,player:player,pointsname:text,points:number):
@@ -59,18 +71,28 @@ function mgSetCurrentGamePoints(game:text,player:player,pointsname:text,points:n
 
 function mgGetCurrentGameMoney(game:text,player:player,currencyname:text,persistent:boolean=false) :: number:
   if {_persistent} is false:
-    return metadata value "MG.SK|money|%{_player}%|%{_game}%|%{_currencyname}%" of getDummy()
+    set {_value} to metadata value "MG.SK|money|%{_player}%|%{_game}%|%{_currencyname}%" of getDummy()
+    if {_value} is not set:
+      set {_value} to 0
+    return {_value}
 
   
 #
 # > Returns a money list which contains all currently online players.
 function mgGetCurrentGameMoneyList(game:text,currencyname:text,persistent:boolean=false) :: object:
-  set {_holders::*} to ...metadata value "MG.SK|money|holderlist" of getDummy()
+  set {_holders} to metadata value "MG.SK|money|holderlist" of getDummy()
+  set {_money} to new HashMap()
+  loop ...{_holders}.keySet():
+    set {_value} to metadata value "MG.SK|money|%loop-value%|%{_game}%|%{_currencyname}%" of getDummy()
+    if {_value} is set:
+      {_money}.put("%loop-value%",{_value})
+  return {_money}
 
-
-function mgSetCurrentGameMoney(game:text,player:player,currencyname:text,persistent:boolean=false):
+function mgSetCurrentGameMoney(game:text,player:player,currencyname:text,amount:number,persistent:boolean=false):
 
   if {_persistent} is false:
+
+    set metadata value "MG.SK|money|%{_player}%|%{_game}%|%{_currencyname}%" of getDummy() to {_amount}
 
     set {_holders} to metadata value "MG.SK|money|holderlist" of getDummy()
     set {_currencies} to metadata value "MG.SK|money|currencylist" of getDummy()
@@ -121,7 +143,7 @@ function mgClearGameData():
     broadcast "money holder: %loop-value%"
     set {_player} to loop-value
     loop ...{_currencies}.keySet():
-      broadcast "currency: %loop-value%"
+      broadcast "currency: %loop-value-2%"
       set {_currencyname} to loop-value-2
       delete metadata value "MG.SK|money|%{_player}%|%{_game}%|%{_currencyname}%" of getDummy()
 
@@ -129,7 +151,7 @@ function mgClearGameData():
     broadcast "points holder: %loop-value%"
     set {_player} to loop-value
     loop ...{_pointslist}.keySet():
-      broadcast "points: %loop-value%"
+      broadcast "points: %loop-value-2%"
       set {_pointsname} to loop-value-2
       delete metadata value "MG.SK|points|%{_player}%|%{_game}%|%{_pointsname}%" of getDummy()
 
@@ -156,22 +178,241 @@ function mgFinishGame():
   mgStopGame()
 
 function mgPlayerJoin(player:player):
+  message "1" to {_player}
 
 function mgPlayerQuit(player:player):
+  message "1" to {_player}
 
 function mgAddPlayerToplistWin(game:text="global",player:player):
+  message "1" to {_player}
 
-function mgAddPlayerToplistScore(game:text="global",player:player)
+function mgAddPlayerToplistScore(game:text="global",player:player):
+  message "1" to {_player}
 
 function mgRemovePlayerToplistWin(game:text="global",player:player):
+  message "1" to {_player}
 
 function mgRemovePlayerToplistScore(game:text="global",player:player):
+  message "1" to {_player}
 
-function mgGetPlayerToplistWin(game:text="global",player:player):
+function mgGetPlayerWin(game:text="global",player:player):
+  message "1" to {_player}
 
-function mgGetPlayerToplistScore(game:text="global",player:player):
+function mgGetPlayerScore(game:text="global",player:player):
+  message "1" to {_player}
 
 function mgGetToplistByWin(game:text="global",limit:number=10):
+  message "1" to {_player}
 
 function mgGetToplistByScore(game:text="global",limit:number=10):
+  message "1" to {_player}
+
+
+import:
+  java.util.HashMap
+
+
+function mgGetCurrentGame() :: text:
+  set {_game} to metadata value "MG.SK|CurrentGameName" of getDummy()
+  if {_game} is not set:
+    return ""
+  else:
+    return {_game}
+
+
+function mgSetCurrentGame(game:text):
+  set metadata value "MG.SK|CurrentGameName" of getDummy() to {_game}
+
+
+function mgGetCurrentGameStatus() :: text:
+  return metadata value "MG.SK|CurrentGameStatus" of getDummy()
+
+
+function mgSetCurrentGameStatus(status:text):
+  set metadata value "MG.SK|CurrentGameStatus" of getDummy() to {_status}
+
+
+
+function mgGetCurrentGamePoints(game:text,player:player,pointsname:text) :: number:
+  return metadata value "MG.SK|points|%{_player}%|%{_game}%|%{_pointsname}%" of getDummy()
+
+
+#
+# > Returns a points list which contains all points of the game and pointsname.
+function mgGetCurrentGamePointsList(game:text,pointsname:text) :: object:
+  set {_holders} to metadata value "MG.SK|points|holderlist" of getDummy()
+  set {_points} to new HashMap()
+  loop ...{_holders}.keySet():
+    set {_value} to metadata value "MG.SK|points|%loop-value%|%{_game}%|%{_pointsname}%" of getDummy()
+    if {_value} is set:
+      {_points}.put("%loop-value%",{_value})
+  return {_points}
+ 
+command /test:
+  trigger:
+    set {_points} to mgGetCurrentGameMoney("testgame",player,"testpoints")
+    mgSetCurrentGameMoney("testgame",player,"testpoints",{_points} + 1)
+    set {_list} to mgGetCurrentGameMoneyList("testgame","testpoints")
+    broadcast "%{_list}%"
+    
+#
+# > The points set here will be used to determine the best player.
+function mgSetCurrentGamePoints(game:text,player:player,pointsname:text,points:number):
+
+  set metadata value "MG.SK|points|%{_player}%|%{_game}%|%{_pointsname}%" of getDummy() to {_points}
+
+  set {_holders} to metadata value "MG.SK|points|holderlist" of getDummy()
+  set {_pointslist} to metadata value "MG.SK|points|pointslist" of getDummy()
+
+  if {_holders} is not set:
+    set {_holders} to new HashMap()
+  if {_holders}.get("%{_player}%") is not set:
+    {_holders}.put("%{_player}%",true)
+
+  if {_pointslist} is not set:
+    set {_pointslist} to new HashMap()
+  if {_pointslist}.get("%{_pointsname}%") is not set:
+    {_pointslist}.put("%{_pointsname}%",true)
+
+  set metadata value "MG.SK|points|pointslist" of getDummy() to {_pointslist}
+  set metadata value "MG.SK|points|holderlist" of getDummy() to {_holders}
+  
+
+function mgGetCurrentGameMoney(game:text,player:player,currencyname:text,persistent:boolean=false) :: number:
+  if {_persistent} is false:
+    set {_value} to metadata value "MG.SK|money|%{_player}%|%{_game}%|%{_currencyname}%" of getDummy()
+    if {_value} is not set:
+      set {_value} to 0
+    return {_value}
+
+  
+#
+# > Returns a money list which contains all currently online players.
+function mgGetCurrentGameMoneyList(game:text,currencyname:text,persistent:boolean=false) :: object:
+  set {_holders} to metadata value "MG.SK|money|holderlist" of getDummy()
+  set {_money} to new HashMap()
+  loop ...{_holders}.keySet():
+    set {_value} to metadata value "MG.SK|money|%loop-value%|%{_game}%|%{_currencyname}%" of getDummy()
+    if {_value} is set:
+      {_money}.put("%loop-value%",{_value})
+  return {_money}
+
+function mgSetCurrentGameMoney(game:text,player:player,currencyname:text,amount:number,persistent:boolean=false):
+
+  if {_persistent} is false:
+
+    set metadata value "MG.SK|money|%{_player}%|%{_game}%|%{_currencyname}%" of getDummy() to {_amount}
+
+    set {_holders} to metadata value "MG.SK|money|holderlist" of getDummy()
+    set {_currencies} to metadata value "MG.SK|money|currencylist" of getDummy()
+
+    if {_holders} is not set:
+      set {_holders} to new HashMap()
+    if {_holders}.get("%{_player}%") is not set:
+      {_holders}.put("%{_player}%",true)
+
+    if {_currencies} is not set:
+      set {_currencies} to new HashMap()
+    if {_currencies}.get("%{_currencyname}%") is not set:
+      {_currencies}.put("%{_currencyname}%",true)
+
+    set metadata value "MG.SK|money|holderlist" of getDummy() to {_holders}
+    set metadata value "MG.SK|money|currencylist" of getDummy() to {_currencies}
+
+
+	  
+
+function mgGetCurrentGameTimeout() :: number:
+  return metadata value "MG.SK|CurrentGameTimeout" of getDummy()
+
+
+function mgSetCurrentGameTimeout(timeout:number):
+  set metadata value "MG.SK|CurrentGameTimeout" of getDummy() to {_timeout}
+
+#
+# > Stops any games that are running.
+function mgStopGame():
+  mgSetCurrentGameStatus("stop")
+  mgClearGameData()
+
+  set {_lobbygame} to mgGetSetting("defaultlobbygame")
+  mgStartGame({_lobbygame})
+
+function mgClearGameData():
+
+  set {_game} to mgGetCurrentGame()
+  
+  set {_currencies} to metadata value "MG.SK|money|currencylist" of getDummy()
+  set {_moneyholderlist} to metadata value "MG.SK|money|holderlist" of getDummy()
+
+  set {_pointsholderlist} to metadata value "MG.SK|points|holderlist" of getDummy()
+  set {_pointslist} to metadata value "MG.SK|points|pointslist" of getDummy()
+
+  loop ...{_moneyholderlist}.keySet():
+    broadcast "money holder: %loop-value%"
+    set {_player} to loop-value
+    loop ...{_currencies}.keySet():
+      broadcast "currency: %loop-value-2%"
+      set {_currencyname} to loop-value-2
+      delete metadata value "MG.SK|money|%{_player}%|%{_game}%|%{_currencyname}%" of getDummy()
+
+  loop ...{_pointsholderlist}.keySet():
+    broadcast "points holder: %loop-value%"
+    set {_player} to loop-value
+    loop ...{_pointslist}.keySet():
+      broadcast "points: %loop-value-2%"
+      set {_pointsname} to loop-value-2
+      delete metadata value "MG.SK|points|%{_player}%|%{_game}%|%{_pointsname}%" of getDummy()
+
+  delete metadata value "MG.SK|money|currencylist" of getDummy()
+  delete metadata value "MG.SK|money|holderlist" of getDummy()
+  delete metadata value "MG.SK|points|pointslist" of getDummy()
+  mgSetCurrentGameStatus("")
+
+
+  
+#
+# > Starts the defined game.
+function mgStartGame(game:text):
+  if mgGetCurrentGame() is "":
+    mgSetCurrentGame({_game})
+    mgSetCurrentGameStatus("init")
+    execute console command "/sk enable MINIGAMES.SK/games/%{_game}%/init.sk"
+
+#
+# > Stops the game after it has been finished successfully.
+function mgFinishGame():
+
+  mgSetCurrentGameStatus("finish")
+  mgStopGame()
+
+function mgPlayerJoin(player:player):
+  message "1" to {_player}
+
+function mgPlayerQuit(player:player):
+  message "1" to {_player}
+
+function mgAddPlayerToplistWin(game:text="global",player:player):
+  message "1" to {_player}
+
+function mgAddPlayerToplistScore(game:text="global",player:player):
+  message "1" to {_player}
+
+function mgRemovePlayerToplistWin(game:text="global",player:player):
+  message "1" to {_player}
+
+function mgRemovePlayerToplistScore(game:text="global",player:player):
+  message "1" to {_player}
+
+function mgGetPlayerWin(game:text="global",player:player):
+  message "1" to {_player}
+
+function mgGetPlayerScore(game:text="global",player:player):
+  message "1" to {_player}
+
+function mgGetToplistByWin(game:text="global",limit:number=10):
+  message "1" to {_player}
+
+function mgGetToplistByScore(game:text="global",limit:number=10):
+  message "1" to {_player}
 

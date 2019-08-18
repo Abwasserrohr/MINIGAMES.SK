@@ -8,28 +8,6 @@ command /test:
     mgSetCurrentGameMoney("testgame",player,"testpoints",{_points} + 1)
     set {_list} to mgGetCurrentGameMoneyList("testgame","testpoints")
     broadcast "%{_list}%"
-    
-#
-# > The points set here will be used to determine the best player.
-function mgSetCurrentGamePoints(game:text,player:player,pointsname:text,points:number):
-
-  set metadata value "MG.SK|points|%{_player}%|%{_game}%|%{_pointsname}%" of getDummy() to {_points}
-
-  set {_holders} to metadata value "MG.SK|points|holderlist" of getDummy()
-  set {_pointslist} to metadata value "MG.SK|points|pointslist" of getDummy()
-
-  if {_holders} is not set:
-    set {_holders} to new HashMap()
-  if {_holders}.get("%{_player}%") is not set:
-    {_holders}.put("%{_player}%",true)
-
-  if {_pointslist} is not set:
-    set {_pointslist} to new HashMap()
-  if {_pointslist}.get("%{_pointsname}%") is not set:
-    {_pointslist}.put("%{_pointsname}%",true)
-
-  set metadata value "MG.SK|points|pointslist" of getDummy() to {_pointslist}
-  set metadata value "MG.SK|points|holderlist" of getDummy() to {_holders}
   
 
 function mgGetCurrentGameMoney(game:text,player:player,currencyname:text,persistent:boolean=false) :: number:

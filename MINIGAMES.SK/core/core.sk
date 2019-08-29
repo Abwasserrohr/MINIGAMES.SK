@@ -2,13 +2,6 @@
 import:
   java.util.HashMap
 
-command /test:
-  trigger:
-    set {_points} to mgGetCurrentGameMoney("testgame",player,"testpoints")
-    mgSetCurrentGameMoney("testgame",player,"testpoints",{_points} + 1)
-    set {_list} to mgGetCurrentGameMoneyList("testgame","testpoints")
-    broadcast "%{_list}%"
-  
 
 function mgGetCurrentGameMoney(game:text,player:player,currencyname:text,persistent:boolean=false) :: number:
   if {_persistent} is false:
@@ -17,7 +10,6 @@ function mgGetCurrentGameMoney(game:text,player:player,currencyname:text,persist
       set {_value} to 0
     return {_value}
 
-  
 #
 # > Returns a money list which contains all currently online players.
 function mgGetCurrentGameMoneyList(game:text,currencyname:text,persistent:boolean=false) :: object:
@@ -52,7 +44,11 @@ function mgSetCurrentGameMoney(game:text,player:player,currencyname:text,amount:
     set metadata value "MG.SK|money|currencylist" of getDummy() to {_currencies}
 
 
-	  
+function mgPlayerJoin(player:player):
+  message "1" to {_player}
+
+function mgPlayerQuit(player:player):
+  message "1" to {_player}
 
 function mgGetCurrentGameTimeout() :: number:
   return metadata value "MG.SK|CurrentGameTimeout" of getDummy()
@@ -108,43 +104,42 @@ function mgClearGameData():
 function mgStartGame(game:text):
   if mgGetCurrentGame() is "":
     mgSetCurrentGame({_game})
+    mgCreateGameTables({_game})
     mgSetCurrentGameStatus("init")
     execute console command "/sk enable MINIGAMES.SK/games/%{_game}%/init.sk"
 
 #
 # > Stops the game after it has been finished successfully.
 function mgFinishGame():
-
   mgSetCurrentGameStatus("finish")
   mgStopGame()
 
-function mgPlayerJoin(player:player):
+
+function mgGetPlayerWin(game:text="global",player:offline player) :: number:
+  set {_uuid} to uuid of {_player}
+  set {_currentwins} to getGeneralStorageData("toplist","toplist-win-%{_game}%","%{_uuid}%")
+  if {_currentwins} is not set:
+    set {_currentwins} to 0
+  return {_currentwins}
+
+function mgGetPlayerScore(game:text="global",player:offline player) :: number:
+  set {_uuid} to uuid of {_player}
+  set {_currentscore} to getGeneralStorageData("toplist","toplist-score-%{_game}%","%{_uuid}%")
+  if {_currentscore} is not set:
+    set {_currentscore} to 0
+  return {_currentscore}
+
+function mgGetToplistByWin(game:text="global",limit:number=10) :: object:
+  #
+  # > There is no support for toplist queries using yaml.
+  if getStorageType() is "yaml":
+    return HashMap()
   message "1" to {_player}
 
-function mgPlayerQuit(player:player):
-  message "1" to {_player}
-
-function mgAddPlayerToplistWin(game:text="global",player:player):
-  message "1" to {_player}
-
-function mgAddPlayerToplistScore(game:text="global",player:player):
-  message "1" to {_player}
-
-function mgRemovePlayerToplistWin(game:text="global",player:player):
-  message "1" to {_player}
-
-function mgRemovePlayerToplistScore(game:text="global",player:player):
-  message "1" to {_player}
-
-function mgGetPlayerWin(game:text="global",player:player):
-  message "1" to {_player}
-
-function mgGetPlayerScore(game:text="global",player:player):
-  message "1" to {_player}
-
-function mgGetToplistByWin(game:text="global",limit:number=10):
-  message "1" to {_player}
-
-function mgGetToplistByScore(game:text="global",limit:number=10):
+function mgGetToplistByScore(game:text="global",limit:number=10) :: object:
+  #
+  # > There is no support for toplist queries using yaml.
+  if getStorageType() is "yaml":
+    return HashMap()
   message "1" to {_player}
 

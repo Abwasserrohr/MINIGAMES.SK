@@ -13,10 +13,10 @@ options:
   chatprefix: "&7[&6&lMinigames&7] &8&l>>&7"
   #
   # > Currently supported formats: sqlite (default), mysql.
-  storagetype: "mysql"
+  storagetype: "sqlite"
   #
   # > Enter the mysql url if storage type is set to "mysql".
-  mysqlurl: "mysql://mysql-mariadb14-104.zap-hosting.com:3306/zap104787-10?user=zap104787-10&password=eNuO7aLwtyh1jOF9&useSSL=false"#"mysql://localhost:3306/databasename?user=username&password=passwordhere&useSSL=false"
+  mysqlurl: "mysql://localhost:3306/databasename?user=username&password=passwordhere&useSSL=false"
   
 #
 # > Please do not change these functions, since they are used to share the data between

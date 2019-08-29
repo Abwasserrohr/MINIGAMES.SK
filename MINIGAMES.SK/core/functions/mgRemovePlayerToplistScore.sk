@@ -1,0 +1,19 @@
+#
+# ==============
+# mgRemovePlayerToplistScore.sk
+# ==============
+# mgRemovePlayerToplistScore.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgRemovePlayerToplistScore
+# > Removes a specific amount of score by the player from the toplist.
+# > Parameters:
+# > <text>game name
+# > <offline player>the player who should lose the score
+# > [<number>]the amount of score that should be removed
+function mgRemovePlayerToplistScore(game:text="global",player:offline player,amount:number=1):
+  set {_uuid} to uuid of {_player}
+  addSQLCommandToQuene("INSERT INTO `minigamesSK_toplist_%{_game}%` (`uuid`, `wins`,`score`) VALUES ('%{_uuid}%', '0','%{_amount}%') ON DUPLICATE KEY UPDATE score = score - %{_amount}%")
+  if {_game} is not "global":
+    mgRemovePlayerToplistScore("global",{_player},{_amount})

@@ -1,0 +1,56 @@
+#
+# ==============
+# sql.sk
+# ==============
+# sql.sk is part of the MINIGAMES.SK core functions.
+# ==============
+
+import:
+  org.bukkit.Bukkit
+
+on script load:
+  wait 1 tick
+  if getStorageType() is "sqlite":
+    set {_home} to Bukkit.getServer().getWorldContainer().getCanonicalPath()
+    set {MG_DATABASE} to the database "jdbc:sqlite:%{_home}%/plugins/Skript/storage/minigames.db"
+  if getStorageType() is "mysql":
+    set {MG_DATABASE} to the database getMySQLURL()
+  mgCreateGameTables("global")
+
+command /testsql1:
+  trigger:
+    mgCreateGameTables("t1")
+
+    mgAddPlayerToplistWin("t1",player,500)
+    mgAddPlayerToplistScore("t1",player,500)
+    mgRemovePlayerToplistWin("t1",player,490)
+    mgRemovePlayerToplistScore("t1",player,490)
+
+every 1 tick:
+  set {_taskuuid} to getRandomUUID()
+  set metadata value "DBQueneRunning" of getDummy() to {_taskuuid}
+  loop {MG_DBQuene::*}:
+    if metadata value "DBQueneRunning" of getDummy() is {_taskuuid}:
+      delete {MG_DBQuene::%loop-index%}
+      execute unsafe "%loop-value%" in {MG_DATABASE} and store the result in {MG_DBResponse::%loop-index%::*}
+      removeSQLResponse(loop-index)
+    else:
+      stop
+
+function removeSQLResponse(uuid:text):
+  wait 5 seconds
+  delete {MG_DBResponse::%{_uuid}%::*}
+  delete {MG_DBResponse::%{_uuid}%}
+
+function addSQLCommandToQuene(command:text) :: text:
+  set {_uuid} to getRandomUUID()
+  while {MG_DBQuene::%{_uuid}%} is set:
+    set {_uuid} to getRandomUUID()
+  set {MG_DBQuene::%{_uuid}%} to {_command}
+  return {_uuid}
+
+function mgCreateGameTables(game:text):
+  set {MG::PREPTABLES} to {_game}
+  execute "CREATE TABLE IF NOT EXISTS `minigamesSK_toplist_%unsafe {MG::PREPTABLES}%` (`uuid` varchar(100) UNIQUE,`wins` bigint(20) NOT NULL,`score` bigint(20) NOT NULL)" in {MG_DATABASE}
+
+	

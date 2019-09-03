@@ -8,8 +8,6 @@ on load:
   delete {MG::lobbyanimation::*}
   delete metadata value "MG.SK|Lobby|Votes" of getDummy()
 
-
-
 function mgLobbyTeleportPlayer(player:player):
   teleport {_player} to {@spawnpoint}
 
@@ -55,8 +53,48 @@ function mgLobbyVoteMenu(player:player):
       setguiitem({_player},{_slot},{@gameitem},1,"&r&l%mgGetTranslation(""en"",loop-value,""name"")%","%mgGetTranslation(""en"",loop-value,""desc"")%\nVotes: %{_votes}.get(loop-value)%","mgLobbyVote(""%{_player}%"" parsed as player,""%loop-value%"")")
     add 1 to {_slot}
 
+command /startcountdown:
+  trigger:
+    mgLobbyCountdown()
 
-	
+function mgLobbyCountdown():
+  set {_started} to 6
+  while {_started} is set:
+    set {_votes} to metadata value "MG.SK|Lobby|Votes" of getDummy()
+    loop all players:
+      if {_votes}.get("PLAYER-%loop-player%") is set:
+        set {_pvote} to {_votes}.get("PLAYER-%loop-player%")
+        send action bar "%getChatPrefix()% &fGame starts in &6%{_started}% &8&l|&f Your Vote: &6&l%{_pvote}% &8&l|&f" to loop-player
+      else:
+        send action bar "%getChatPrefix()% &fGame starts in &6%{_started}% &8&l|&f Vote now for a game: &6&l/vote" to loop-player
+
+    wait 1 second
+    remove 1 from {_started}
+    if {_started} is 0:
+      delete {_started}
+  mgLobbySelectGame()
+
+import:
+  java.util.Collections
+  java.util.ArrayList
+  
+function mgLobbySelectGame():
+  set {_votes} to metadata value "MG.SK|Lobby|Votes" of getDummy()
+  set {_maxvotes} to -1
+  delete {_mostvotedgame}
+  loop ...{_votes}.keySet():
+    if loop-value doesn't contain "PLAYER-":
+      {_games}.put(loop-value, {_votes}.get(loop-value))
+      if {_votes}.get(loop-value) > {_maxvotes}:
+        set {_maxvotes} to {_votes}.get(loop-value)
+        set {_mostvotedgame} to loop-value
+  broadcast "%{_mostvotedgame}% will start soon."
+  set {_world} to metadata value "MG.SK|CurrentWorld" of getDummy()
+  mgClearGameData()
+  mgStartGame({_mostvotedgame})
+  wait 10 seconds
+  mgDeleteGameWorld({_world})
+
 function mgLobbyVote(player:player,game:text):
   #
   # > Get the votes HashMap.

@@ -1,0 +1,6 @@
+
+on load:
+  wait 1 tick
+  set {_game} to "Lobby"
+  mgSetTranslation("en",{_game},"name","Lobby")
+  mgSetTranslation("en",{_game},"desc","The Lobby where the games are voted.")

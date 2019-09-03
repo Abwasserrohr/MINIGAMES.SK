@@ -1,0 +1,13 @@
+#
+# ==============
+# mgInitializeMinigameLobby.sk
+# ==============
+# mgInitializeMinigameLobby.sk is part of the MINIGAMES.SK configuration.
+# ==============
+
+on load:
+  mgInitializeMinigameLobby()
+
+function mgInitializeMinigameLobby():
+  if mgGetCurrentGame() is "":
+    mgStartGame(getGameLobby())

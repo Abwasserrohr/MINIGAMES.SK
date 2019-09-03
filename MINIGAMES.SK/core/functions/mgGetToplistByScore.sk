@@ -26,7 +26,7 @@ function mgGetToplistByScore(game:text="global",limit:number=10) :: object:
 # > <HashMap>[uuid,score]
 function mgGetToplistByScoreResponse(uuid:text) :: object:
   if {MG_DBResponse::%{_uuid}%::*} is set:
-    set {_result} to new HashMap()
+    set {_result} to HashMap()
     loop {MG_DBResponse::%{_uuid}%::uuid::*}:
       {_result}.put(loop-value,{MG_DBResponse::%{_uuid}%::score::%loop-index%})
     return {_result}

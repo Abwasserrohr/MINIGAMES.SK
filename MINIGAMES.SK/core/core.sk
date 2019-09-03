@@ -1,7 +1,7 @@
 
 import:
   java.util.HashMap
-
+  
 
 function mgGetCurrentGameMoney(game:text,player:player,currencyname:text,persistent:boolean=false) :: number:
   if {_persistent} is false:
@@ -63,8 +63,7 @@ function mgStopGame():
   mgSetCurrentGameStatus("stop")
   mgClearGameData()
 
-  set {_lobbygame} to mgGetSetting("defaultlobbygame")
-  mgStartGame({_lobbygame})
+  mgStartGame(getGameLobby())
 
 function mgClearGameData():
 
@@ -97,8 +96,6 @@ function mgClearGameData():
   delete metadata value "MG.SK|points|pointslist" of getDummy()
   mgSetCurrentGameStatus("")
 
-
-  
 #
 # > Starts the defined game.
 function mgStartGame(game:text):
@@ -106,6 +103,7 @@ function mgStartGame(game:text):
     mgSetCurrentGame({_game})
     mgCreateGameTables({_game})
     mgSetCurrentGameStatus("init")
+    mgCreateGameWorld({_game},"1")
     execute console command "/sk enable MINIGAMES.SK/games/%{_game}%/init.sk"
 
 #

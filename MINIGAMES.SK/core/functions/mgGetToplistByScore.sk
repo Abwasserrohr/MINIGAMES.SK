@@ -1,0 +1,32 @@
+#
+# ==============
+# mgGetToplistByScore.sk
+# ==============
+# mgGetToplistByScore.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgGetToplistByScore
+# > Loads the toplist from the database into a pending transaction.
+# > Parameters:
+# > <text>game name (or "global" for the global score)
+# > [<number>]size limitation, default = 10
+# > Returns:
+# > <text>transaction uuid get the response
+function mgGetToplistByScore(game:text="global",limit:number=10) :: object:
+  set {_txuuid} to addSQLCommandToQuene("SELECT * FROM `minigamesSK_toplist_global` ORDER BY `score` DESC LIMIT %{_limit}%")
+  return {_txuuid}
+
+#
+# > Function - mgGetToplistByScoreResponse
+# > Returns a HashMap with the toplist ordered by score.
+# > Parameters:
+# > <text>transaction uuid get the response
+# > Returns:
+# > <HashMap>[uuid,score]
+function mgGetToplistByScoreResponse(uuid:text) :: object:
+  if {MG_DBResponse::%{_uuid}%::*} is set:
+    set {_result} to new HashMap()
+    loop {MG_DBResponse::%{_uuid}%::uuid::*}:
+      {_result}.put(loop-value,{MG_DBResponse::%{_uuid}%::score::%loop-index%})
+    return {_result}

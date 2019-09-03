@@ -1,0 +1,33 @@
+#
+# ==============
+# mgGetPlayerScore.sk
+# ==============
+# mgGetPlayerScore.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgGetPlayerScore
+# > Retrieves the amount of score for the player and the game.
+# > Parameters:
+# > <text>game name (or "global" for the global score)
+# > <offline player>the requested player
+# > Returns:
+# > <text>transaction uuid get the response
+function mgGetPlayerScore(game:text="global",player:offline player) :: text:
+  set {_uuid} to uuid of {_player}
+  set {_txuuid} to addSQLCommandToQuene("SELECT `score` FROM `minigamesSK_toplist_%{_game}%` WHERE `uuid`='%{_uuid}%'")
+  return {_txuuid}
+
+#
+# > Function - mgGetPlayerScoreResponse
+# > Returns the amount of score for the player and the game.
+# > Parameters:
+# > <text>transaction uuid
+# > Returns:
+# > <number>score of the player from the requested transaction
+function mgGetPlayerScoreResponse(uuid:text) :: number:
+  if {MG_DBResponse::%{_uuid}%::*} is set:
+    set {_result} to {MG_DBResponse::%{_uuid}%::score::1}
+    if {_result} is not set:
+      set {_result} to 0
+    return {_result}

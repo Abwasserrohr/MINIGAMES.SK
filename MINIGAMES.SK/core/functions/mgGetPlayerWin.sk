@@ -1,0 +1,33 @@
+#
+# ==============
+# mgGetPlayerWin.sk
+# ==============
+# mgGetPlayerWin.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgGetPlayerWin
+# > Retrieves the amount of wins for the player and the game.
+# > Parameters:
+# > <text>game name (or "global" for all wins)
+# > <offline player>the requested player
+# > Returns:
+# > <text>transaction uuid get the response
+function mgGetPlayerWin(game:text="global",player:offline player) :: text:
+  set {_uuid} to uuid of {_player}
+  set {_txuuid} to addSQLCommandToQuene("SELECT `wins` FROM `minigamesSK_toplist_%{_game}%` WHERE `uuid`='%{_uuid}%'")
+  return {_txuuid}
+
+#
+# > Function - mgGetPlayerWinResponse
+# > Returns the amount of wins for the player and the game.
+# > Parameters:
+# > <text>transaction uuid
+# > Returns:
+# > <number>wins of the player from the requested transaction
+function mgGetPlayerWinResponse(uuid:text) :: number:
+  if {MG_DBResponse::%{_uuid}%::*} is set:
+    set {_result} to {MG_DBResponse::%{_uuid}%::wins::1}
+    if {_result} is not set:
+      set {_result} to 0
+    return {_result}

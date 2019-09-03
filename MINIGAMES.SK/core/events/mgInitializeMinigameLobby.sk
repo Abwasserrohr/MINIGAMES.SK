@@ -6,6 +6,7 @@
 # ==============
 
 on load:
+  wait 1 tick
   mgInitializeMinigameLobby()
 
 function mgInitializeMinigameLobby():

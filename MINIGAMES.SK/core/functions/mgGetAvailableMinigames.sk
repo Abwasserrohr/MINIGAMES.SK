@@ -1,0 +1,22 @@
+#
+# ==============
+# mgGetAvailableMinigames.sk
+# ==============
+# mgGetAvailableMinigames.sk is part of the MINIGAMES.SK library.
+# ==============
+
+import:
+  java.io.File
+  org.bukkit.Bukkit
+
+#
+# > Function - mgGetAvailableMinigames
+# > Returns the list of games as strings.
+function mgGetAvailableMinigames() :: objects:
+  set {_home} to Bukkit.getServer().getWorldContainer().getCanonicalFile()
+
+  set {_games} to new File("%{_home}%/plugins/Skript/scripts/MINIGAMES.SK/games")
+  loop ...{_games}.list():
+    if new File("%{_home}%/plugins/Skript/scripts/MINIGAMES.SK/games/%loop-value%").isDirectory() is true:
+      add loop-value to {_games::*}
+  return {_games::*}

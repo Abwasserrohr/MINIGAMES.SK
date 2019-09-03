@@ -1,0 +1,37 @@
+#
+# ==============
+# mgDeleteGameWorld.sk
+# ==============
+# mgDeleteGameWorld.sk is part of the MINIGAMES.SK library.
+# ==============
+
+import:
+  org.apache.commons.io.FileUtils
+  java.io.File
+  org.bukkit.Bukkit
+
+#
+# > Function - mgDeleteGameWorld
+# > Teleports all players out of the world, unloads all chunks, the world and deletes all world files instantly.
+# > Parameters:
+# > <world>the world that should be deleted. Be careful.
+function mgDeleteGameWorld(world:world):
+
+  #
+  # > Teleports all players of this world out of it.
+  teleport all players in {_world} to location(0, 0, 0, mgGetCurrentWorld())
+  
+  #
+  # > Loops through all loaded chunks of the world and unloads them without saving.
+  loop ...{_world}.getLoadedChunks():
+    loop-value.unload(false)
+
+  #
+  # > Unload the world.
+  Bukkit.getServer().unloadWorld({_world}, false)
+  
+  #
+  # > Delete the world.
+  set {_home} to Bukkit.getServer().getWorldContainer().getCanonicalFile()
+  set {_destination} to new File("%{_home}%/%{_world}%/")
+  FileUtils.deleteDirectory({_destination})

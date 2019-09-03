@@ -114,32 +114,3 @@ function mgFinishGame():
   mgSetCurrentGameStatus("finish")
   mgStopGame()
 
-
-function mgGetPlayerWin(game:text="global",player:offline player) :: number:
-  set {_uuid} to uuid of {_player}
-  set {_currentwins} to getGeneralStorageData("toplist","toplist-win-%{_game}%","%{_uuid}%")
-  if {_currentwins} is not set:
-    set {_currentwins} to 0
-  return {_currentwins}
-
-function mgGetPlayerScore(game:text="global",player:offline player) :: number:
-  set {_uuid} to uuid of {_player}
-  set {_currentscore} to getGeneralStorageData("toplist","toplist-score-%{_game}%","%{_uuid}%")
-  if {_currentscore} is not set:
-    set {_currentscore} to 0
-  return {_currentscore}
-
-function mgGetToplistByWin(game:text="global",limit:number=10) :: object:
-  #
-  # > There is no support for toplist queries using yaml.
-  if getStorageType() is "yaml":
-    return HashMap()
-  message "1" to {_player}
-
-function mgGetToplistByScore(game:text="global",limit:number=10) :: object:
-  #
-  # > There is no support for toplist queries using yaml.
-  if getStorageType() is "yaml":
-    return HashMap()
-  message "1" to {_player}
-

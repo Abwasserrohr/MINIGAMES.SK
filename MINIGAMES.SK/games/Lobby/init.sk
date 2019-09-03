@@ -1,1 +1,27 @@
 
+options:
+  spawnpoint: location(-255, 47, -159, mgGetCurrentWorld())
+
+
+function mgLobbyTeleportPlayer(player:player):
+  teleport {_player} to {@spawnpoint}
+
+on load:
+  wait 3 seconds
+  loop all players:
+    mgLobbyTeleportPlayer(loop-player)
+  set {_games::*} to mgGetAvailableMinigames()
+  broadcast "%{_games::*}%"
+
+on join:
+  mgLobbyTeleportPlayer(player)
+
+on death:
+  force victim to respawn
+  
+on respawn:
+  teleport player to {@spawnpoint}
+
+
+  
+  

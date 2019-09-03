@@ -1,6 +1,13 @@
 
 options:
   spawnpoint: location(-255, 47, -159, mgGetCurrentWorld())
+  backgrounditem: gray stained glass pane
+  gameitem: yellow stained glass pane
+
+on load:
+  delete {MG::lobbyanimation::*}
+  delete metadata value "MG.SK|Lobby|Votes" of getDummy()
+
 
 
 function mgLobbyTeleportPlayer(player:player):
@@ -15,13 +22,81 @@ on load:
 
 on join:
   mgLobbyTeleportPlayer(player)
+  message "%getChatPrefix()% Welcome to the Minigames."
+  
 
 on death:
+  wait 1 tick
   force victim to respawn
   
 on respawn:
   teleport player to {@spawnpoint}
 
 
+command /vote:
+  trigger:
+    mgLobbyVoteMenu(player)
   
+function mgLobbyVoteMenu(player:player):
+  opengui({_player},54,"&lVoting")
+  loop 54 times:
+    setguiitem({_player},loop-number - 1,{@backgrounditem},1," ","")
+  set {_games::*} to mgGetAvailableMinigames()
+  set {_slot} to 10
+  loop {_games::*}:
+    set {_votes} to metadata value "MG.SK|Lobby|Votes" of getDummy()
+    if {_votes} is not set:
+      set {_votes} to HashMap()
+    if {_votes}.get(loop-value) is not set:
+      {_votes}.put(loop-value, 0)
+    if {_votes}.get("PLAYER-%{_player}%") is loop-value:
+      setguiitem({_player},{_slot},glowing {@gameitem},1,"&r&l%mgGetTranslation(""en"",loop-value,""name"")%","%mgGetTranslation(""en"",loop-value,""desc"")%\nVotes: %{_votes}.get(loop-value)%")
+    else:
+      setguiitem({_player},{_slot},{@gameitem},1,"&r&l%mgGetTranslation(""en"",loop-value,""name"")%","%mgGetTranslation(""en"",loop-value,""desc"")%\nVotes: %{_votes}.get(loop-value)%","mgLobbyVote(""%{_player}%"" parsed as player,""%loop-value%"")")
+    add 1 to {_slot}
+
+
+	
+function mgLobbyVote(player:player,game:text):
+  #
+  # > Get the votes HashMap.
+  set {_votes} to metadata value "MG.SK|Lobby|Votes" of getDummy()
+  
+  #
+  # > If the votes HashMap doesn't exist, create a new one.
+  if {_votes} is not set:
+    set {_votes} to HashMap()
+
+  #
+  # > If the player voted already, remove the vote from the previous vote.
+  if {_votes}.get("PLAYER-%{_player}%") is set:
+    set {_votedgame} to {_votes}.get("PLAYER-%{_player}%")
+    {_votes}.remove("PLAYER-%{_player}%")
+    set {_votevaluesOLD} to {_votes}.get({_votedgame})
+    {_votes}.replace({_votedgame},{_votevaluesOLD}-1)
+	
+  #
+  # > If the voted game already has more votes, increase the amount by one.
+  set {_votevaluesNEW} to {_votes}.get({_game})
+  if {_votevaluesNEW} is set:
+    {_votes}.replace({_game},{_votevaluesNEW}+1)
+
+  #
+  # > If no vote has been done for this game, set the votes to 1.
+  else:
+    {_votes}.put({_game},1)
+
+  #
+  # > Set the game for which the player voted to reset the vote if the
+  # > player changes his mind.
+  {_votes}.put("PLAYER-%{_player}%",{_game})
+
+  #
+  # > Set the votes HashMap back to the metadata.
+  set metadata value "MG.SK|Lobby|Votes" of getDummy() to {_votes}
+  
+  #
+  # > Reopen the vote menu for the player.
+  mgLobbyVoteMenu({_player})
+
   

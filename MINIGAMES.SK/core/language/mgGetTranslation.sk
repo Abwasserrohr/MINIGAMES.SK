@@ -1,0 +1,12 @@
+#
+# ==============
+# mgGetTranslation.sk
+# ==============
+# mgGetTranslation.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgGetTranslation
+# > Returns the translation for the language, game and key.
+function mgGetTranslation(lang:text,game:text,key:text) :: text:
+  return {MG::LANG::%{_game}%::%{_key}%::%{_lang}%}

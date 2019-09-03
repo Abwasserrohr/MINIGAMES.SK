@@ -17,6 +17,9 @@ options:
   #
   # > Enter the mysql url if storage type is set to "mysql".
   mysqlurl: "mysql://localhost:3306/databasename?user=username&password=passwordhere&useSSL=false"
+  #
+  # > The lobby game that should be used to start the game and be used for the lobby and game selection.
+  gamelobby: "Lobby"
   
 #
 # > Please do not change these functions, since they are used to share the data between
@@ -42,3 +45,10 @@ function getMySQLURL() :: text:
 # > Returns the chat prefix.
 function getChatPrefix() :: text:
   return {@chatprefix}
+
+#
+# > Function - getGameLobby
+# > Actions:
+# > Returns the game lobby that should be used.
+function getGameLobby() :: text:
+  return {@gamelobby}

@@ -24,7 +24,7 @@ If you're running MINIGAMES.SK, feel free to create a issue to get your server d
 - Add Core functionality 
 - Add voting system
 - Automatic loading of used and unloading of unused minigame skripts
-- Add statistics system (mysql & yaml storage)
+- Add statistics system (mysql & sqlite storage)
 - Add a API which can be used by minigames:
 - - timer
 - - game status

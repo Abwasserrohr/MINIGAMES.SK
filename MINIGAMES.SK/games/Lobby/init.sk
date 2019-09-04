@@ -86,6 +86,8 @@ function mgLobbyCountdown():
 
 every 1 second:
   set {_votes} to metadata value "MG.SK|Lobby|Votes" of getDummy()
+  feed all players
+  heal all players
   if {_votes} is not set:
     loop all players:
       send action bar "%getChatPrefix()% &fCountdown starts after the first vote &8&l|&f Vote now for a game: &6&l/vote" to loop-player

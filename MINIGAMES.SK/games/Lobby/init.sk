@@ -59,7 +59,8 @@ command /startcountdown:
     mgLobbyCountdown()
 
 function mgLobbyCountdown():
-  set {_started} to 5
+  set {_started} to 60
+  mgDisplayBossbarCountdown({_started},"Lobby","bossbar_countdown")
   while {_started} is set:
     set {_votes} to metadata value "MG.SK|Lobby|Votes" of getDummy()
     loop all players:
@@ -118,12 +119,6 @@ function mgLobbySelectGame():
   #
   # > Start the most voted game.
   mgStartGame({_mostvotedgame})
-  #
-  # > Wait 10 seconds before deleting the old game world.
-  wait 10 seconds
-  #
-  # > Delete the old game world of the lobby.
-  mgDeleteGameWorld({_world})
 
 function mgLobbyVote(player:player,game:text):
   #

@@ -1,7 +1,9 @@
-
-
-
-
+#
+# ==============
+# scoreboard.sk
+# ==============
+# scoreboard.sk is part of the MINIGAMES.SK library.
+# ==============
 
 import:
   org.bukkit.Bukkit
@@ -16,10 +18,8 @@ function createNewScoreboard(text:text,display:text,rendertype:text="INTEGER") :
   {_object}.setDisplaySlot(DisplaySlot.valueOf({_display}))
   {_object}.setDisplayName("%{_text}%")
   {_object}.setRenderType(RenderType.valueOf({_rendertype}))
-  {_object}.getScore("Hallo").setScore(2)
-  {_object}.getScore("Welt").setScore(1)
-  broadcast "%{_object}.getRenderType()%"
   return {_scoreboard}
+  
 
 function setScoreboardScore(scoreboard:object,name:object,value:int):
   set {_object::*} to ...{_scoreboard}.getObjectives()
@@ -38,14 +38,44 @@ function setScoreboardName(scoreboard:object,name:text):
   set {_object} to {_object::1}
   {_object}.setDisplayName("%{_name}%")
 
+#WIP
+# > Starts a while loop that displays a detailed information view
+# > on the sidebar of the client. Stops once player is offline.
+function mgStartSidebarProcess(player:player):
+  set {_scoreboard} to createNewScoreboard(" ","SIDEBAR")
+  while {_player} is online:
+    if mgGetCurrentGame() is not {_game}:
+      set {_sidebarspacer} to "&7&m--------------------"
+      set {_game} to mgGetCurrentGame()
+      set {_animated::*} to mgCreateAnimatedTextList("MINIGAMES >> %{_game}%","&6&l&n","&e&l","fillshine")
+      setScoreboardScore({_scoreboard},"%{_sidebarspacer}%&1",90)
+      setScoreboardScore({_scoreboard},"Hello",3)
+      setScoreboardScore({_scoreboard},"World",2)
+
+      setScoreboardScore({_scoreboard},"%{_sidebarspacer}%&2",1)
+
+    loop {_animated::*}:
+      wait 5 ticks
+      setScoreboardName({_scoreboard},"%loop-value%")
+      {_player}.setScoreboard({_scoreboard})
+  delete {_scoreboard}
 
 command /testscores:
-  trigger:	
-    set {_scoreboard} to createNewScoreboard("&8===== &6&LMINIGAMES &8=====","SIDEBAR")
-    #set {_scoreboard} to createNewScoreboard("&8===== &6&LMINIGAMES &8=====","BELOW_NAME")
+  trigger:
+    mgStartSidebarProcess(player)
+    stop
+    set {_animated::*} to mgCreateAnimatedTextList("MINIGAMES >> Lobby","&6&l&n","&e&l","fillshine")
+    set {_scoreboard} to createNewScoreboard("%{_animated::1}%","SIDEBAR")
+    loop 15 times:
+      loop {_animated::*}:
+        wait 1 tick
+        setScoreboardName({_scoreboard},"%loop-value-2%")
+        loop all players:
+          loop-player.setScoreboard({_scoreboard})
+    wait 1 second
     loop 50 times:
       wait 1 tick
-      setScoreboardName({_scoreboard},"%loop-number%")
+      #setScoreboardName({_scoreboard},"text")
       loop all players:
         loop-player.setScoreboard({_scoreboard})
     setScoreboardScore({_scoreboard},"test1123",1)

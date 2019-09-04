@@ -9,7 +9,7 @@ on load:
 
 function mgLobbyTeleportPlayer(player:player):
   teleport {_player} to {@spawnpoint}
-  if {_player}'s gamemode is not survival
+  if {_player}'s gamemode is not survival:
     set {_player}'s gamemode to survival
 
 on load:

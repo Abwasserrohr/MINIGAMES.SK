@@ -1,0 +1,62 @@
+
+
+
+
+
+import:
+  org.bukkit.Bukkit
+  org.bukkit.scoreboard.DisplaySlot
+  org.bukkit.scoreboard.RenderType
+
+function createNewScoreboard(text:text,display:text,rendertype:text="INTEGER") :: object:
+  set {_scoreboardmanager} to Bukkit.getScoreboardManager()
+  set {_scoreboard} to {_scoreboardmanager}.getNewScoreboard()
+              
+  set {_object} to {_scoreboard}.registerNewObjective("dummy", "scoreboard","dummy")
+  {_object}.setDisplaySlot(DisplaySlot.valueOf({_display}))
+  {_object}.setDisplayName("%{_text}%")
+  {_object}.setRenderType(RenderType.valueOf({_rendertype}))
+  {_object}.getScore("Hallo").setScore(2)
+  {_object}.getScore("Welt").setScore(1)
+  broadcast "%{_object}.getRenderType()%"
+  return {_scoreboard}
+
+function setScoreboardScore(scoreboard:object,name:object,value:int):
+  set {_object::*} to ...{_scoreboard}.getObjectives()
+  set {_object} to {_object::1}
+  {_object}.getScore({_name}).setScore({_value})
+
+function removeScoreboardScore(scoreboard:object,name:object):
+  {_scoreboard}.resetScores({_name})
+
+
+function wipeScoreboardSlot(scoreboard:object,player:player,display:text):
+  {_scoreboard}.clearSlot(DisplaySlot.valueOf({_display}))
+
+function setScoreboardName(scoreboard:object,name:text):
+  set {_object::*} to ...{_scoreboard}.getObjectives()
+  set {_object} to {_object::1}
+  {_object}.setDisplayName("%{_name}%")
+
+
+command /testscores:
+  trigger:	
+    set {_scoreboard} to createNewScoreboard("&8===== &6&LMINIGAMES &8=====","SIDEBAR")
+    #set {_scoreboard} to createNewScoreboard("&8===== &6&LMINIGAMES &8=====","BELOW_NAME")
+    loop 50 times:
+      wait 1 tick
+      setScoreboardName({_scoreboard},"%loop-number%")
+      loop all players:
+        loop-player.setScoreboard({_scoreboard})
+    setScoreboardScore({_scoreboard},"test1123",1)
+    setScoreboardScore({_scoreboard},"test1123",1)
+    loop all players:
+      loop-player.setScoreboard({_scoreboard})
+    wait 1 second
+    removeScoreboardScore({_scoreboard},"test1123")
+    loop all players:
+      loop-player.setScoreboard({_scoreboard})
+
+    wait 1 second
+    loop all players:
+      wipeScoreboardSlot({_scoreboard},loop-player,"SIDEBAR")

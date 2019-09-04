@@ -88,11 +88,31 @@ function mgLobbySelectGame():
       if {_votes}.get(loop-value) > {_maxvotes}:
         set {_maxvotes} to {_votes}.get(loop-value)
         set {_mostvotedgame} to loop-value
-  broadcast "%{_mostvotedgame}% will start soon."
+  broadcast "%getChatPrefix()% %{_mostvotedgame}% will start soon."
   set {_world} to metadata value "MG.SK|CurrentWorld" of getDummy()
+  #
+  # > Disable the Lobby, since the voting is over and the game is set.
+  execute console command "/sk disable MINIGAMES.SK/games/Lobby/init.sk"
+  #
+  # > Wait 2 second before continuing.
+  wait 2 second
+  #
+  # > Delete the votes.
+  delete metadata value "MG.SK|Lobby|Votes" of getDummy()
+  #
+  # > Clear out any data from this Lobby.
   mgClearGameData()
+  #
+  # > Set the current game to a empty string to allow the game to start.
+  mgSetCurrentGame("")
+  #
+  # > Start the most voted game.
   mgStartGame({_mostvotedgame})
+  #
+  # > Wait 10 seconds before deleting the old game world.
   wait 10 seconds
+  #
+  # > Delete the old game world of the lobby.
   mgDeleteGameWorld({_world})
 
 function mgLobbyVote(player:player,game:text):
@@ -136,5 +156,3 @@ function mgLobbyVote(player:player,game:text):
   #
   # > Reopen the vote menu for the player.
   mgLobbyVoteMenu({_player})
-
-  

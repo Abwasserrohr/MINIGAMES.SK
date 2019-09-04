@@ -21,9 +21,9 @@ If you're running MINIGAMES.SK, feel free to create a issue to get your server d
   - [Discord](https://discord.gg/FRuK5BC)
 
 ### Roadmap
-- Add Core functionality 
-- Add voting system
-- Automatic loading of used and unloading of unused minigame skripts
+- ~~Add Core functionality~~
+- ~~Add voting system~~
+- ~~Automatic loading of used and unloading of unused minigame skripts~~
 - Add statistics system (mysql & sqlite storage)
 - Add a API which can be used by minigames:
 - - timer

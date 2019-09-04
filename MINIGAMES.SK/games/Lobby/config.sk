@@ -1,6 +1,13 @@
+#
+# ==============
+# config.sk
+# ==============
+# config.sk is part of the MINIGAMES.SK library.
+# ==============
 
 on load:
   wait 1 tick
   set {_game} to "Lobby"
   mgSetTranslation("en",{_game},"name","Lobby")
   mgSetTranslation("en",{_game},"desc","The Lobby where the games are voted.")
+  mgSetTranslation("en",{_game},"bossbar_countdown","&f&lVote for a game &6/vote")

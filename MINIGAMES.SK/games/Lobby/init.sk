@@ -88,6 +88,8 @@ function mgLobbySelectGame():
       if {_votes}.get(loop-value) > {_maxvotes}:
         set {_maxvotes} to {_votes}.get(loop-value)
         set {_mostvotedgame} to loop-value
+  if {_mostvotedgame} is not set:
+    set {_mostvotedgame} to "Lobby"
   broadcast "%getChatPrefix()% %{_mostvotedgame}% will start soon."
   set {_world} to metadata value "MG.SK|CurrentWorld" of getDummy()
   #
@@ -156,3 +158,5 @@ function mgLobbyVote(player:player,game:text):
   #
   # > Reopen the vote menu for the player.
   mgLobbyVoteMenu({_player})
+
+  

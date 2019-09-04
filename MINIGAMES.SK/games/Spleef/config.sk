@@ -1,7 +1,13 @@
-
+#
+# ==============
+# config.sk
+# ==============
+# config.sk is part of the MINIGAMES.SK library.
+# ==============
 
 on load:
   wait 1 tick
   set {_game} to "Spleef"
   mgSetTranslation("en",{_game},"name","Spleef")
   mgSetTranslation("en",{_game},"desc","Remove the floor and keep on top as the last player.")
+  mgSetTranslation("en",{_game},"bossbar_countdown","Prepare yourself...")

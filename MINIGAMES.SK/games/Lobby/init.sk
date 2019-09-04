@@ -5,11 +5,12 @@ options:
   gameitem: yellow stained glass pane
 
 on load:
-  delete {MG::lobbyanimation::*}
   delete metadata value "MG.SK|Lobby|Votes" of getDummy()
 
 function mgLobbyTeleportPlayer(player:player):
   teleport {_player} to {@spawnpoint}
+  if {_player}'s gamemode is not survival
+    set {_player}'s gamemode to survival
 
 on load:
   wait 3 seconds
@@ -58,7 +59,7 @@ command /startcountdown:
     mgLobbyCountdown()
 
 function mgLobbyCountdown():
-  set {_started} to 6
+  set {_started} to 5
   while {_started} is set:
     set {_votes} to metadata value "MG.SK|Lobby|Votes" of getDummy()
     loop all players:
@@ -74,6 +75,13 @@ function mgLobbyCountdown():
       delete {_started}
   mgLobbySelectGame()
 
+every 1 second:
+  set {_votes} to metadata value "MG.SK|Lobby|Votes" of getDummy()
+  if {_votes} is not set:
+    loop all players:
+      send action bar "%getChatPrefix()% &fCountdown starts after the first vote &8&l|&f Vote now for a game: &6&l/vote" to loop-player
+
+  
 import:
   java.util.Collections
   java.util.ArrayList
@@ -126,6 +134,7 @@ function mgLobbyVote(player:player,game:text):
   # > If the votes HashMap doesn't exist, create a new one.
   if {_votes} is not set:
     set {_votes} to HashMap()
+    mgLobbyCountdown()
 
   #
   # > If the player voted already, remove the vote from the previous vote.

@@ -1,5 +1,5 @@
 # MINIGAMES.SK
-A minigames library for servers using skript with high customizability and an easy API to add new minigames on your own.
+A minigames library for servers using [Skript](https://github.com/SkriptLang/Skript) with high customizability and an easy API to add new minigames on your own.
 	
 
 ### Dependencies

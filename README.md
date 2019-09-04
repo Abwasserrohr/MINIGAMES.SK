@@ -3,7 +3,7 @@ A minigames library for servers using skript with high customizability and an ea
 	
 
 ### Dependencies
-- [Spigot](https://hub.spigotmc.org/stash/projects/SPIGOT) Minecraft Java version 1.13.2
+- [Spigot](https://hub.spigotmc.org/stash/projects/SPIGOT) Minecraft Java version 1.14.4
 - [Skript](https://github.com/SkriptLang/Skript)
 - [skript-mirror](https://github.com/btk5h/skript-mirror)
 - [skript-db](https://github.com/btk5h/skript-db)

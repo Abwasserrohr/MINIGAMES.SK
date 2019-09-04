@@ -11,8 +11,8 @@ A minigames library for servers using skript with high customizability and an ea
 
 
 ### Why MINIGAMES.SK
-MINIGAMES.SK has a unique vote & play system which allows even small servers to offer minigames, since it only needs one server on which all minigames of this library can be voted before the game and then also be played. Thanks to a changeable minimum amount of players for specific minigames, only fitting minigames for the amount of players are selected to be voted on.
-MINIGAMES.SK aims to give a great experience for players and servers and their server operators with a player base of 1 (singleplayer mode) to 60 players per game. Skript is [well documented](http://skriptlang.github.io/Skript/), free and accessible to everyone who can read and write.
+MINIGAMES.SK has a unique vote & play system which allows even small servers to offer minigames, since it only needs one server on which all minigames are being voted and played. Thanks to a changeable minimum amount of players for specific minigames, only fitting minigames for the amount of players are available.
+MINIGAMES.SK aims to give a great experience for players and server operators from just one player to up to 60 players. Skript is [well documented](http://skriptlang.github.io/Skript/), free and accessible to everyone who can read and write.
 
 ### Demo servers
 If you're running MINIGAMES.SK, feel free to create a issue to get your server displayed here.

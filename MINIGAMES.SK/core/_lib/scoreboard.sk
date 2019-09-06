@@ -60,6 +60,202 @@ function mgStartSidebarProcess(player:player):
       {_player}.setScoreboard({_scoreboard})
   delete {_scoreboard}
 
+function mgSetGlobalSidebarSlotContent(slotnumber:number,translationgame:text,translationkey:text,placeholders:object):
+  set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy()
+  if {_sidebar} is not set:
+    set {_sidebar} to HashMap()
+  if {_sidebar}.get("%{_slotnumber}%") is set:
+    {_sidebar}.remove("%{_slotnumber}%")
+  set {_slot} to HashMap()
+  {_slot}.put("game",{_translationgame})
+  {_slot}.put("key",{_translationkey})
+  {_slot}.put("placeholders",{_placeholders})
+  {_sidebar}.put("%{_slotnumber}%",{_slot})
+  set metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy() to {_sidebar}
+  
+function mgSetPersonalSidebarSlotContent(slotnumber:number,player:player,translationgame:text,translationkey:text,placeholders:object):
+  set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
+  if {_sidebar} is not set:
+    set {_sidebar} to HashMap()
+  if {_sidebar}.get("%{_player}%-%{_slotnumber}%") is set:
+    {_sidebar}.remove("%{_player}%-%{_slotnumber}%")
+  set {_slot} to HashMap()
+  {_slot}.put("game",{_translationgame})
+  {_slot}.put("key",{_translationkey})
+  {_slot}.put("placeholders",{_placeholders})
+  {_sidebar}.put("%{_player}%-%{_slotnumber}%",{_slot})
+  set metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy() to {_sidebar}
+  
+
+function mgRemoveGlobalSidebarContent(slot:number):
+  set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy()
+  if {_sidebar} is set:
+    {_sidebar}.remove("%{_slotnumber}%")
+    set metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy() to {_sidebar}
+
+function mgRemovePersonalSidebarContent(slot:number,player:player):
+  set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
+  if {_sidebar} is set:
+    {_sidebar}.remove("%{_player}%-%{_slotnumber}%")
+    set metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy() to {_sidebar}
+
+function mgWipeGlobalSidebarContent():
+  delete metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy()
+
+function mgWipePersonalSidebarContent(player:player):
+  if {_player} is set:
+    set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
+    loop ...{_sidebar}.keySet():
+      if loop-value contains "%player%-":
+        {_sidebar}.remove(loop-value)
+    set metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy() to {_sidebar}
+  else:
+    delete metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
+
+command /testscores:
+  trigger:
+    mgStartSidebarProcess(player)
+    stop
+    set {_animated::*} to mgCreateAnimatedTextList("MINIGAMES >> Lobby","&6&l&n","&e&l","fillshine")
+    set {_scoreboard} to createNewScoreboard("%{_animated::1}%","SIDEBAR")
+    loop 15 times:
+      loop {_animated::*}:
+        wait 1 tick
+        setScoreboardName({_scoreboard},"%loop-value-2%")
+        loop all players:
+          loop-player.setScoreboard({_scoreboard})
+    wait 1 second
+    loop 50 times:
+      wait 1 tick
+      #setScoreboardName({_scoreboard},"text")
+      loop all players:
+        loop-player.setScoreboard({_scoreboard})
+    setScoreboardScore({_scoreboard},"test1123",1)
+    setScoreboardScore({_scoreboard},"test1123",1)
+    loop all players:
+      loop-player.setScoreboard({_scoreboard})
+    wait 1 second
+    removeScoreboardScore({_scoreboard},"test1123")
+    loop all players:
+      loop-player.setScoreboard({_scoreboard})
+
+    wait 1 second
+    loop all players:
+      wipeScoreboardSlot({_scoreboard},loop-player,"SIDEBAR")
+#
+# ==============
+# scoreboard.sk
+# ==============
+# scoreboard.sk is part of the MINIGAMES.SK library.
+# ==============
+
+import:
+  org.bukkit.Bukkit
+  org.bukkit.scoreboard.DisplaySlot
+  org.bukkit.scoreboard.RenderType
+
+function createNewScoreboard(text:text,display:text,rendertype:text="INTEGER") :: object:
+  set {_scoreboardmanager} to Bukkit.getScoreboardManager()
+  set {_scoreboard} to {_scoreboardmanager}.getNewScoreboard()
+              
+  set {_object} to {_scoreboard}.registerNewObjective("dummy", "scoreboard","dummy")
+  {_object}.setDisplaySlot(DisplaySlot.valueOf({_display}))
+  {_object}.setDisplayName("%{_text}%")
+  {_object}.setRenderType(RenderType.valueOf({_rendertype}))
+  return {_scoreboard}
+  
+
+function setScoreboardScore(scoreboard:object,name:object,value:int):
+  set {_object::*} to ...{_scoreboard}.getObjectives()
+  set {_object} to {_object::1}
+  {_object}.getScore({_name}).setScore({_value})
+
+function removeScoreboardScore(scoreboard:object,name:object):
+  {_scoreboard}.resetScores({_name})
+
+
+function wipeScoreboardSlot(scoreboard:object,player:player,display:text):
+  {_scoreboard}.clearSlot(DisplaySlot.valueOf({_display}))
+
+function setScoreboardName(scoreboard:object,name:text):
+  set {_object::*} to ...{_scoreboard}.getObjectives()
+  set {_object} to {_object::1}
+  {_object}.setDisplayName("%{_name}%")
+
+#WIP
+# > Starts a while loop that displays a detailed information view
+# > on the sidebar of the client. Stops once player is offline.
+function mgStartSidebarProcess(player:player):
+  set {_scoreboard} to createNewScoreboard(" ","SIDEBAR")
+  while {_player} is online:
+    if mgGetCurrentGame() is not {_game}:
+      set {_sidebarspacer} to "&7&m--------------------"
+      set {_game} to mgGetCurrentGame()
+      set {_animated::*} to mgCreateAnimatedTextList("MINIGAMES >> %{_game}%","&6&l&n","&e&l","fillshine")
+      setScoreboardScore({_scoreboard},"%{_sidebarspacer}%&1",90)
+      setScoreboardScore({_scoreboard},"Hello",3)
+      setScoreboardScore({_scoreboard},"World",2)
+
+      setScoreboardScore({_scoreboard},"%{_sidebarspacer}%&2",1)
+
+    loop {_animated::*}:
+      wait 5 ticks
+      setScoreboardName({_scoreboard},"%loop-value%")
+      {_player}.setScoreboard({_scoreboard})
+  delete {_scoreboard}
+
+function mgSetGlobalSidebarSlotContent(slotnumber:number,translationgame:text,translationkey:text,placeholders:object):
+  set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy()
+  if {_sidebar} is not set:
+    set {_sidebar} to HashMap()
+  if {_sidebar}.get("%{_slotnumber}%") is set:
+    {_sidebar}.remove("%{_slotnumber}%")
+  set {_slot} to HashMap()
+  {_slot}.put("game",{_translationgame})
+  {_slot}.put("key",{_translationkey})
+  {_slot}.put("placeholders",{_placeholders})
+  {_sidebar}.put("%{_slotnumber}%",{_slot})
+  set metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy() to {_sidebar}
+  
+function mgSetPersonalSidebarSlotContent(slotnumber:number,player:player,translationgame:text,translationkey:text,placeholders:object):
+  set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
+  if {_sidebar} is not set:
+    set {_sidebar} to HashMap()
+  if {_sidebar}.get("%{_player}%-%{_slotnumber}%") is set:
+    {_sidebar}.remove("%{_player}%-%{_slotnumber}%")
+  set {_slot} to HashMap()
+  {_slot}.put("game",{_translationgame})
+  {_slot}.put("key",{_translationkey})
+  {_slot}.put("placeholders",{_placeholders})
+  {_sidebar}.put("%{_player}%-%{_slotnumber}%",{_slot})
+  set metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy() to {_sidebar}
+  
+
+function mgRemoveGlobalSidebarContent(slot:number):
+  set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy()
+  if {_sidebar} is set:
+    {_sidebar}.remove("%{_slotnumber}%")
+    set metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy() to {_sidebar}
+
+function mgRemovePersonalSidebarContent(slot:number,player:player):
+  set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
+  if {_sidebar} is set:
+    {_sidebar}.remove("%{_player}%-%{_slotnumber}%")
+    set metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy() to {_sidebar}
+
+function mgWipeGlobalSidebarContent():
+  delete metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy()
+
+function mgWipePersonalSidebarContent(player:player):
+  if {_player} is set:
+    set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
+    loop ...{_sidebar}.keySet():
+      if loop-value contains "%player%-":
+        {_sidebar}.remove(loop-value)
+    set metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy() to {_sidebar}
+  else:
+    delete metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
+
 command /testscores:
   trigger:
     mgStartSidebarProcess(player)

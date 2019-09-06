@@ -1,0 +1,18 @@
+#
+# ==============
+# mgRemovePersonalSidebarContent.sk
+# ==============
+# mgRemovePersonalSidebarContent.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgRemovePersonalSidebarContent
+# > Removes a specific slot out of the personal sidebar of a player.
+# > Parameters:
+# > <number>slot number
+# > <player>player
+function mgRemovePersonalSidebarContent(slot:number,player:player):
+  set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
+  if {_sidebar} is set:
+    {_sidebar}.remove("%{_player}%-%{_slotnumber}%")
+    set metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy() to {_sidebar}

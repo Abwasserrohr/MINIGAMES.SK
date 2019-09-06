@@ -1,0 +1,21 @@
+#
+# ==============
+# mgWipePersonalSidebarContent.sk
+# ==============
+# mgWipePersonalSidebarContent.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgWipePersonalSidebarContent
+# > Wipes the entire personal sidebar content for either one specific player or for all players.
+# > Parameters:
+# > [<player>]the player who should have wiped their personal sidebar, leave it empty for all players
+function mgWipePersonalSidebarContent(player:player):
+  if {_player} is set:
+    set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
+    loop ...{_sidebar}.keySet():
+      if loop-value contains "%{_player}%-":
+        {_sidebar}.remove(loop-value)
+    set metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy() to {_sidebar}
+  else:
+    delete metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()

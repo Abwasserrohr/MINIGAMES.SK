@@ -1,0 +1,31 @@
+#
+# ==============
+# mgStartSidebarProcess.sk
+# ==============
+# mgStartSidebarProcess.sk is part of the MINIGAMES.SK library.
+# ==============
+
+# > WIP
+# > Function - mgStartSidebarProcess
+# > Starts a while loop that displays a detailed information view
+# > on the sidebar of the client. Stops once player is offline.
+# > Parameters:
+# > <player>the player who should see the sidebar until disconnect
+function mgStartSidebarProcess(player:player):
+  set {_scoreboard} to createNewScoreboard(" ","SIDEBAR")
+  while {_player} is online:
+    if mgGetCurrentGame() is not {_game}:
+      set {_sidebarspacer} to "&7&m--------------------"
+      set {_game} to mgGetCurrentGame()
+      set {_animated::*} to mgCreateAnimatedTextList("MINIGAMES >> %{_game}%","&6&l&n","&e&l","fillshine")
+      setScoreboardScore({_scoreboard},"%{_sidebarspacer}%&1",90)
+      setScoreboardScore({_scoreboard},"Hello",3)
+      setScoreboardScore({_scoreboard},"World",2)
+
+      setScoreboardScore({_scoreboard},"%{_sidebarspacer}%&2",1)
+
+    loop {_animated::*}:
+      wait 5 ticks
+      setScoreboardName({_scoreboard},"%loop-value%")
+      {_player}.setScoreboard({_scoreboard})
+  delete {_scoreboard}

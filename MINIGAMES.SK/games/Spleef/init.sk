@@ -16,6 +16,7 @@ function mgSpleefHandler(task:text):
   if {_task} is "start":
     delete {spleef::round}
     mgSetTemporaryGameData("status","loading")
+
     delete {spleef::playerstatus::*}
     set {MG::playersingame} to number of all players
     mgSpleefStartNewRound("spleefcmd")
@@ -25,8 +26,6 @@ function mgSpleefHandler(task:text):
     delete {spleef::playerstatus::*}
     delete {MG::playersingame}
     mgFinishGame()
-
-
       
 function mgSpleefStartNewRound(t: text):
   set {_tplayers} to 0
@@ -36,6 +35,10 @@ function mgSpleefStartNewRound(t: text):
     set {MG::playersingame} to number of all players
     mgSetTemporaryGameData("status","preparing")
     add 1 to {spleef::round}
+    loop all players:
+      mgSetCurrentGamePoints("Spleef",loop-player,"points",0)
+    mgSetSidebarToplist("Spleef","points",5,1)
+
 
     if {spleef::round} is bigger than 9:
       mgSpleefHandler("stop")
@@ -128,7 +131,7 @@ function mgSpleefStartNewRound(t: text):
     
 
       
-function mgSpleefChecckSpleefRoundEnd():
+function mgSpleefCheckSpleefRoundEnd():
   if {spleef::status} is "ingame":
     if {MG::playersingame} is smaller than 2:
       loop all players:
@@ -145,7 +148,7 @@ on quit:
   if {spleef::playerstatus::%uuid of player%} is set:
     remove 1 from {MG::playersingame}
     delete {spleef::playerstatus::%uuid of player%}
-    mgSpleefChecckSpleefRoundEnd()
+    mgSpleefCheckSpleefRoundEnd()
 
 on damage:
   if victim is a player:
@@ -158,13 +161,15 @@ on damage:
       execute console command "/clear %victim%"
       execute console command "/effect %victim% minecraft:resistance 3 5 true"
       remove 1 from {MG::playersingame}
-      add 1 to {MG::SCORE::%victim%}
+	  mgAddCurrentGamePoints("Spleef",victim,"points",1)
       teleport victim to {MG::respawnloc}
       loop all players:
         if loop-player's gamemode is survival:
-          add 2 to {MG::SCORE::%loop-player%}
+	      mgAddCurrentGamePoints("Spleef",loop-player,"points",2)
           add 1 to {_players}
-      mgSpleefChecckSpleefRoundEnd()
+      mgSetSidebarToplist("Spleef","points",5,1)
+
+      mgSpleefCheckSpleefRoundEnd()
     else:
       teleport victim to {MG::respawnloc}
 on death:
@@ -176,9 +181,10 @@ on death:
       execute console command "/clear %victim%"
       execute console command "/effect %victim% minecraft:resistance 3 5 true"
       remove 1 from {MG::playersingame}
-      add 1 to {MG::SCORE::%victim%}
+	  mgAddCurrentGamePoints("Spleef",victim,"points",1)
+      mgSetSidebarToplist("Spleef","points",5,1)
       teleport victim to {MG::respawnloc}
-      mgSpleefChecckSpleefRoundEnd()
+      mgSpleefCheckSpleefRoundEnd()
       
 on break:
   if mgGetTemporaryGameData("status") is not "ingame":

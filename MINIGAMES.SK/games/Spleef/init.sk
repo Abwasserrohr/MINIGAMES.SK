@@ -47,7 +47,6 @@ function mgSpleefStartNewRound(t: text):
 
     #
     # > Create a fitting arena. Base size 40x40 + 2x2 per player
-    set {spleef::scorebonus} to 0
     set {_mapsize} to 10 + number of all players
     set {_mainarena} to ""
     set {_mainarena} to location at 5000.5, 50, 5000.5 in mgGetCurrentWorld()
@@ -126,7 +125,7 @@ function mgSpleefStartNewRound(t: text):
       wait 1 second
 
   else:
-    broadcast "%getChatPrefix()%Not enough players."
+    broadcast "%getChatPrefix()% Not enough players."
     mgSpleefHandler("stop")
     
 
@@ -137,7 +136,8 @@ function mgSpleefCheckSpleefRoundEnd():
       loop all players:
         set loop-player's health to 40
         if loop-player's gamemode is survival:
-          broadcast "%getChatPrefix()%%loop-player% has won this round."
+          mgAddPlayerToplistWin("Spleef",loop-player,1)
+          broadcast "%getChatPrefix()% %loop-player% has won this round."
           mgSetTemporaryGameData("status","preparing")
       mgSpleefStartNewRound("checkspleefroundend")
 
@@ -162,10 +162,12 @@ on damage:
       execute console command "/effect %victim% minecraft:resistance 3 5 true"
       remove 1 from {MG::playersingame}
       mgAddCurrentGamePoints("Spleef",victim,"points",1)
+      mgAddPlayerToplistScore("Spleef",victim,1)
       teleport victim to {MG::respawnloc}
       loop all players:
         if loop-player's gamemode is survival:
           mgAddCurrentGamePoints("Spleef",loop-player,"points",2)
+          mgAddPlayerToplistScore("Spleef",loop-player,2)
           add 1 to {_players}
       mgSetSidebarToplist("Spleef","points",5,1)
 
@@ -182,6 +184,7 @@ on death:
       execute console command "/effect %victim% minecraft:resistance 3 5 true"
       remove 1 from {MG::playersingame}
       mgAddCurrentGamePoints("Spleef",victim,"points",1)
+      mgAddPlayerToplistScore("Spleef",victim,1)
       mgSetSidebarToplist("Spleef","points",5,1)
       teleport victim to {MG::respawnloc}
       mgSpleefCheckSpleefRoundEnd()

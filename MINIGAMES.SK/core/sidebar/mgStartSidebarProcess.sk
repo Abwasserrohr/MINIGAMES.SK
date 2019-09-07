@@ -5,7 +5,7 @@
 # mgStartSidebarProcess.sk is part of the MINIGAMES.SK library.
 # ==============
 
-# > WIP
+#
 # > Function - mgStartSidebarProcess
 # > Starts a while loop that displays a detailed information view
 # > on the sidebar of the client. Stops once player is offline.
@@ -32,6 +32,7 @@ function mgStartSidebarProcess(player:player):
 
       #
       # > Add the global content of the sidebar to the players sidebar with player specific translation.
+      delete {_sidebar}
       set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy()
       if {_sidebar} is set:
         loop ...{_sidebar}.keySet():
@@ -41,6 +42,7 @@ function mgStartSidebarProcess(player:player):
           setScoreboardScore({_scoreboard},{_translation},{_id})
       #
       # > Add the personal content of the sidebar to the players sidebar with player specific translation.
+      delete {_sidebar}
       set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
       if {_sidebar} is set:
         loop ...{_sidebar}.keySet():

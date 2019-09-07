@@ -15,7 +15,9 @@ function mgGetCurrentGamePointsList(game:text,pointsname:text) :: object:
   set {_holders} to metadata value "MG.SK|points|holderlist" of getDummy()
   set {_points} to HashMap()
   loop ...{_holders}.keySet():
-    set {_value} to metadata value "MG.SK|points|%loop-value%|%{_game}%|%{_pointsname}%" of getDummy()
+    set {_value} to metadata value "MG.SK|points|%loop-value%|%{_game}%" of getDummy()
     if {_value} is set:
-      {_points}.put("%loop-value%",{_value})
+      loop ...{_value}.keySet():
+        if loop-value-2 is {_pointsname}:
+          {_points}.put("%loop-value-1%",{_value}.get(loop-value-2))
   return {_points}

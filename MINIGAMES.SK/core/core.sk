@@ -79,6 +79,7 @@ function mgStopGame():
 function mgClearGameData():
 
   set {_game} to mgGetCurrentGame()
+  set {_world} to metadata value "MG.SK|CurrentWorld" of getDummy()
 
   execute console command "/sk disable MINIGAMES.SK/games/%{_game}%/init.sk"
 
@@ -89,27 +90,28 @@ function mgClearGameData():
   set {_pointslist} to metadata value "MG.SK|points|pointslist" of getDummy()
 
   loop ...{_moneyholderlist}.keySet():
-    broadcast "money holder: %loop-value%"
     set {_player} to loop-value
-    loop ...{_currencies}.keySet():
-      broadcast "currency: %loop-value-2%"
-      set {_currencyname} to loop-value-2
-      delete metadata value "MG.SK|money|%{_player}%|%{_game}%|%{_currencyname}%" of getDummy()
+    delete metadata value "MG.SK|money|%{_player}%|%{_game}%" of getDummy()
 
   loop ...{_pointsholderlist}.keySet():
-    broadcast "points holder: %loop-value%"
     set {_player} to loop-value
-    loop ...{_pointslist}.keySet():
-      broadcast "points: %loop-value-2%"
-      set {_pointsname} to loop-value-2
-      delete metadata value "MG.SK|points|%{_player}%|%{_game}%|%{_pointsname}%" of getDummy()
+    delete metadata value "MG.SK|points|%{_player}%|%{_game}%" of getDummy()
 
   delete metadata value "MG.SK|money|currencylist" of getDummy()
   delete metadata value "MG.SK|money|holderlist" of getDummy()
+  delete metadata value "MG.SK|points|holderlist" of getDummy()
   delete metadata value "MG.SK|points|pointslist" of getDummy()
   delete metadata value "MG.SK|TemporaryGameData" of getDummy()
   mgSetCurrentGameStatus("")
   mgSetCurrentGame("")
+  mgWipePersonalSidebarContent(null)
+  mgWipeGlobalSidebarContent()
+  #
+  # > Wait 10 seconds before deleting the old game world.
+  wait 10 seconds
+  #
+  # > Delete the old game world of the lobby.
+  mgDeleteGameWorld({_world})
 
 #
 # > Starts the defined game.

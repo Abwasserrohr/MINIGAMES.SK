@@ -11,3 +11,4 @@ on load:
   mgSetTranslation("en",{_game},"name","Spleef")
   mgSetTranslation("en",{_game},"desc","Remove the floor and keep on top as the last player.")
   mgSetTranslation("en",{_game},"bossbar_countdown","Prepare yourself...")
+  mgSetTranslation("en",{_game},"toplist_scoreboard","&7&l<place> | &f<player> &7&l>> &e&l<points>")

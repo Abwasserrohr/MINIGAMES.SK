@@ -9,11 +9,17 @@
 # > Function - mgSetGlobalSidebarSlotContent
 # > Sets sidebar content to the global sidebar. Uses internal translations and placeholders.
 # > Parameters:
-# > <number>slot
+# > <number>slot(1-13 are available)
 # > <text>the game of which the translation is needed
 # > <text>the key of the translation
 # > <HashMap>placeholders which are replaced within the translation HashMap<translationkey,replacement>
 function mgSetGlobalSidebarSlotContent(slotnumber:number,translationgame:text,translationkey:text,placeholders:object):
+  if {_slotnumber} < 1:
+    stop
+  if {_slotnumber} > 13:
+    stop
+  set {_slotnumber} to {_slotnumber}+37
+
   set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy()
   if {_sidebar} is not set:
     set {_sidebar} to HashMap()

@@ -14,7 +14,13 @@
 # > <text>name of wanted points
 function mgSetCurrentGamePoints(game:text,player:player,pointsname:text,points:number):
 
-  set metadata value "MG.SK|points|%{_player}%|%{_game}%|%{_pointsname}%" of getDummy() to {_points}
+  set {_pointslist} to metadata value "MG.SK|points|%{_player}%|%{_game}%" of getDummy()
+  if {_pointslist} is not set:
+    set {_pointslist} to HashMap()
+  if {_pointslist}.get({_pointsname}) is set:
+    {_pointslist}.remove({_pointsname})
+  {_pointslist}.put({_pointsname},{_points})
+  set metadata value "MG.SK|points|%{_player}%|%{_game}%" of getDummy() to {_pointslist}
 
   set {_holders} to metadata value "MG.SK|points|holderlist" of getDummy()
   set {_pointslist} to metadata value "MG.SK|points|pointslist" of getDummy()

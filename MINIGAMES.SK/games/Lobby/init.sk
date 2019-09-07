@@ -11,6 +11,7 @@ options:
   spawnpoint: location(-253.5, 47, -157.5, mgGetCurrentWorld())
   backgrounditem: gray stained glass pane
   gameitem: yellow stained glass pane
+  game: Lobby
 
 on load:
   delete metadata value "MG.SK|Lobby|Votes" of getDummy()
@@ -35,10 +36,13 @@ on join:
 on death:
   wait 1 tick
   force victim to respawn
-  
+
+on damage:
+  cancel event
+  teleport victim to {@spawnpoint}
+
 on respawn:
   teleport player to {@spawnpoint}
-
 
 command /vote:
   trigger:
@@ -57,14 +61,10 @@ function mgLobbyVoteMenu(player:player):
     if {_votes}.get(loop-value) is not set:
       {_votes}.put(loop-value, 0)
     if {_votes}.get("PLAYER-%{_player}%") is loop-value:
-      setguiitem({_player},{_slot},glowing {@gameitem},1,"&r&l%mgGetTranslation(""en"",loop-value,""name"")%","%mgGetTranslation(""en"",loop-value,""desc"")%\nVotes: %{_votes}.get(loop-value)%")
+      setguiitem({_player},{_slot},glowing {@gameitem},1,"&r&l%mgGetTranslation(""en"",loop-value,""name"",null)%","%mgGetTranslation(""en"",loop-value,""desc"",null)%\nVotes: %{_votes}.get(loop-value)%")
     else:
-      setguiitem({_player},{_slot},{@gameitem},1,"&r&l%mgGetTranslation(""en"",loop-value,""name"")%","%mgGetTranslation(""en"",loop-value,""desc"")%\nVotes: %{_votes}.get(loop-value)%","mgLobbyVote(""%{_player}%"" parsed as player,""%loop-value%"")")
+      setguiitem({_player},{_slot},{@gameitem},1,"&r&l%mgGetTranslation(""en"",loop-value,""name"",null)%","%mgGetTranslation(""en"",loop-value,""desc"",null)%\nVotes: %{_votes}.get(loop-value)%","mgLobbyVote(""%{_player}%"" parsed as player,""%loop-value%"")")
     add 1 to {_slot}
-
-command /startcountdown:
-  trigger:
-    mgLobbyCountdown()
 
 function mgLobbyCountdown():
   set {_started} to 60

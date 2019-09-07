@@ -8,6 +8,9 @@
 on load:
   wait 1 tick
   set {_game} to "Lobby"
+  
   mgSetTranslation("en",{_game},"name","Lobby")
   mgSetTranslation("en",{_game},"desc","The Lobby where the games are voted.")
-  mgSetTranslation("en",{_game},"bossbar_countdown","&f&lVote for a game &6/vote")
+  mgSetTranslation("en",{_game},"bossbar_countdown","&f&lGame starts soon... &6&l/vote")
+  mgSetTranslation("en",{_game},"vote_scoreboard","&f&lGame voting: &6&l/vote")
+  mgSetTranslation("en",{_game},"votecountdown_scoreboard","&f&lGame starts in &e&l<seconds>")

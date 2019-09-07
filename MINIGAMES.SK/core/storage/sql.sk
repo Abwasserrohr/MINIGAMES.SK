@@ -8,6 +8,9 @@
 import:
   org.bukkit.Bukkit
 
+#
+# > Event - on initial load of Skript
+# > Initializes a database which is used to write persistent money & statistics.
 on script load:
   wait 1 tick
   if getStorageType() is "sqlite":
@@ -17,31 +20,33 @@ on script load:
     set {MG_DATABASE} to the database getMySQLURL()
   mgCreateGameTables("global")
 
-command /testsql1:
-  trigger:
-    mgCreateGameTables("t1")
-
-    mgAddPlayerToplistWin("t1",player,500)
-    mgAddPlayerToplistScore("t1",player,500)
-    mgRemovePlayerToplistWin("t1",player,490)
-    mgRemovePlayerToplistScore("t1",player,490)
-
+#
+# > Event - Periodical
+# > If there is any data to be written to or from the database,
+# > this event will handle one command per tick.
 every 1 tick:
   set {_taskuuid} to getRandomUUID()
-  set metadata value "DBQueneRunning" of getDummy() to {_taskuuid}
   loop {MG_DBQuene::*}:
-    if metadata value "DBQueneRunning" of getDummy() is {_taskuuid}:
-      delete {MG_DBQuene::%loop-index%}
-      execute unsafe "%loop-value%" in {MG_DATABASE} and store the result in {MG_DBResponse::%loop-index%::*}
-      removeSQLResponse(loop-index)
-    else:
-      stop
+    delete {MG_DBQuene::%loop-index%}
+    execute unsafe "%loop-value%" in {MG_DATABASE} and store the result in {MG_DBResponse::%loop-index%::*}
+    removeSQLResponse(loop-index)
+    stop
 
+#
+# > Function - removeSQLResponse
+# > Removes the SQL response to the give uuid.
+# > Parameters:
+# > <text>uuid of the SQL response
 function removeSQLResponse(uuid:text):
   wait 5 seconds
   delete {MG_DBResponse::%{_uuid}%::*}
   delete {MG_DBResponse::%{_uuid}%}
 
+#
+# > Function - addSQLCommandToQuene:
+# > Adds a SQL command to the quene, returns a uuid which is used to get the response.
+# > Parameters:
+# > <text>SQL command
 function addSQLCommandToQuene(command:text) :: text:
   set {_uuid} to getRandomUUID()
   while {MG_DBQuene::%{_uuid}%} is set:
@@ -49,8 +54,12 @@ function addSQLCommandToQuene(command:text) :: text:
   set {MG_DBQuene::%{_uuid}%} to {_command}
   return {_uuid}
 
+#
+# > Function - mgCreateGameTables
+# > Prepares the files for the game that are needed for statistics.
+# > Parameters:
+# > <text>game name
 function mgCreateGameTables(game:text):
   set {MG::PREPTABLES} to {_game}
   execute "CREATE TABLE IF NOT EXISTS `minigamesSK_toplist_%unsafe {MG::PREPTABLES}%` (`uuid` varchar(100) UNIQUE,`wins` bigint(20) NOT NULL,`score` bigint(20) NOT NULL)" in {MG_DATABASE}
-
-	
+  execute "CREATE TABLE IF NOT EXISTS `minigamesSK_currency_%unsafe {MG::PREPTABLES}%` (`uuid_currency` varchar(100) UNIQUE,`amount` bigint(20) NOT NULL)" in {MG_DATABASE}

@@ -20,6 +20,9 @@ every 1 second:
     else:
       mgStartSidebarProcess(loop-player)
 
+on load:
+  set metadata value "MG.SK|SIDEBARRUNID" of getDummy() to getRandomUUID()
+
 #
 # > Function - mgStartSidebarProcess
 # > Starts a while loop that displays a detailed information view
@@ -27,24 +30,44 @@ every 1 second:
 # > Parameters:
 # > <player>the player who should see the sidebar until disconnect
 function mgStartSidebarProcess(player:player):
+  set {_processuuid} to metadata value "MG.SK|SIDEBARRUNID" of getDummy()
   while {_player} is online:
     set {_lang} to getClientLanguage({_player})
+    if metadata value "MG.SK|SIDEBARRUNID" of getDummy() is not {_processuuid}:
+      stop
     if mgGetCurrentGame() is not {_game}:
-      set {_sidebarspacer} to "&7&m--------------------"
+      set {_sidebarspacer} to "&7&m                                 "
+      set {_scoreboard} to createNewScoreboard(" ","SIDEBAR")
       set {_game} to mgGetCurrentGame()
       set {_gametranslation} to mgGetTranslation({_lang},{_game},"name",null)
       set {_animated::*} to mgCreateAnimatedTextList("MINIGAMES >> %{_gametranslation}%","&6&l&n","&e&l","fillshine")
 
     loop {_animated::*}:
+
+      set {_unusedslots::50} to true
+      set {_unusedslots::49} to true 
+      set {_unusedslots::48} to true 
+      set {_unusedslots::47} to true 
+      set {_unusedslots::46} to true 
+      set {_unusedslots::45} to true 
+      set {_unusedslots::44} to true 
+      set {_unusedslots::43} to true 
+      set {_unusedslots::42} to true 
+      set {_unusedslots::41} to true 
+      set {_unusedslots::40} to true 
+      set {_unusedslots::39} to true 
+      set {_unusedslots::38} to true 
+      set {_unusedslots::37} to true 
+	  
       set metadata value "MG.SK|LASTSIDEBARUPDATE|%{_player}%" of getDummy() to now
-      wait 5 ticks
+      wait 1 ticks
       #
       # > Create a new scoreboard for each animation cycle to garuantee 
       # > to not show any outdated information. Could also wipe the
       # > scoreboard, needs to be checked what is faster.
-      set {_scoreboard} to createNewScoreboard(" ","SIDEBAR")
-      setScoreboardScore({_scoreboard},"%{_sidebarspacer}%&1",90)
-      setScoreboardScore({_scoreboard},"%{_sidebarspacer}%&2",1)
+      setScoreboardTeam({_scoreboard},"%{_sidebarspacer}%",90)
+      setScoreboardTeam({_scoreboard},"%{_sidebarspacer}%",1)
+      #setScoreboardTeam({_scoreboard},"%getRandomUUID()%",2)
 
       #
       # > Add the global content of the sidebar to the players sidebar with player specific translation.
@@ -55,7 +78,11 @@ function mgStartSidebarProcess(player:player):
           set {_translation} to {_sidebar}.get(loop-value-2)
           set {_translation} to mgGetTranslation({_lang},{_translation}.get("game"),{_translation}.get("key"),{_translation}.get("placeholders"))
           set {_id} to "%loop-value-2%" parsed as number
-          setScoreboardScore({_scoreboard},{_translation},{_id})
+          delete {_unusedslots::%{_id}%}
+          #setScoreboardScore({_scoreboard},{_translation},{_id})
+          setScoreboardTeam({_scoreboard},{_translation},{_id})
+      else:
+        delete {_game}
       #
       # > Add the personal content of the sidebar to the players sidebar with player specific translation.
       delete {_sidebar}
@@ -68,12 +95,19 @@ function mgStartSidebarProcess(player:player):
             set {_id} to loop-value-2
             replace all "%{_player}%-" with "" in {_id}
             set {_id} to {_id} parsed as number
-            setScoreboardScore({_scoreboard},{_translation},{_id})
+            delete {_unusedslots::%{_id}%}
+            #setScoreboardScore({_scoreboard},{_translation},{_id})
+            setScoreboardTeam({_scoreboard},{_translation},{_id})
       #
       # > If the sidebar isn't set, wipe the scoreboard on the next cycle.
       else:
         delete {_game}
       setScoreboardName({_scoreboard},"%loop-value%")
+
+      loop {_unusedslots::*}:
+        set {_unused} to loop-index-2 parsed as int
+        removeScoreboardTeam({_scoreboard},{_unused})
+	  
       {_player}.setScoreboard({_scoreboard})
   delete {_scoreboard}
   delete metadata value "MG.SK|LASTSIDEBARUPDATE|%{_player}%" of getDummy()

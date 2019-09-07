@@ -1,21 +1,37 @@
+#
+# ==============
+# mgSetSidebarToplist.sk
+# ==============
+# mgSetSidebarToplist.sk is part of the MINIGAMES.SK library.
+# ==============
 
-
-command /testtoplist:
-  trigger:
-    mgSetCurrentGamePoints("Spleef",player,"points",5)
-    mgSetSidebarToplist("Spleef","points",5,1)
-
-# WIP
+#
+# > Function - mgSetSidebarToplist
 # > Creates a updated sidebar toplist, needs the toplist_scoreboard translation key
 # > set for the given game. <place> <player> and <points> are placeholders that are
 # > replaced within the translation to allow your game a customized toplist look.
+# > Parameters:
+# > <text>game name
+# > <text>points name
+# > <number>size limit
+# > <number>start slot number
 function mgSetSidebarToplist(game:text,pointsname:text,limit:number,startslot:number):
+  #
+  # > Get the HashMap with all points.
   set {_points} to mgGetCurrentGamePointsList({_game},{_pointsname})
 
+  #
+  # > Only continue, if the points HashMap exists.
+  if {_points} is not set:
+    stop
+
+  #
+  # > Create a Skript list out of the HashMap.
   loop ...{_points}.keySet():
     set {_pointsholder::%loop-value%} to {_points}.get(loop-value)
-  broadcast "%{_pointsholder::*}%"
 
+  #
+  # > Sort the pointsholder out that have the most points.
   loop {_pointsholder::*}:
     add 1 to {_size}
     if {_l2h::%loop-value%} is not set:
@@ -36,7 +52,7 @@ function mgSetSidebarToplist(game:text,pointsname:text,limit:number,startslot:nu
     if {_topnumber} is between 0 and {_limit}:
       set {_placeholders} to HashMap()
       {_placeholders}.put("<place>","%{_topnumber}%")
-      {_placeholders}.put("<player>","%loop-value%")
+      {_placeholders}.put("<player>","%loop-value parsed as offline player%")
       {_placeholders}.put("<points>","%{_pointsholder::%loop-value%}%")
       mgSetGlobalSidebarSlotContent({_startslot},{_game},"toplist_scoreboard",{_placeholders})
       add 1 to {_startslot}

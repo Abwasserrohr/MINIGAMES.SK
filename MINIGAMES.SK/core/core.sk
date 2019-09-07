@@ -5,10 +5,12 @@ import:
 
 function mgGetCurrentGameMoney(game:text,player:player,currencyname:text,persistent:boolean=false) :: number:
   if {_persistent} is false:
-    set {_value} to metadata value "MG.SK|money|%{_player}%|%{_game}%|%{_currencyname}%" of getDummy()
-    if {_value} is not set:
-      set {_value} to 0
-    return {_value}
+    set {_money} to metadata value "MG.SK|money|%{_player}%|%{_game}%" of getDummy()
+    if {_money} is set:
+      if {_money}.get({_currencyname}) is set:
+        return {_money}.get({_currencyname})
+      else:
+        return 0
 
 #
 # > Returns a money list which contains all currently online players.
@@ -16,17 +18,26 @@ function mgGetCurrentGameMoneyList(game:text,currencyname:text,persistent:boolea
   set {_holders} to metadata value "MG.SK|money|holderlist" of getDummy()
   set {_money} to new HashMap()
   loop ...{_holders}.keySet():
-    set {_value} to metadata value "MG.SK|money|%loop-value%|%{_game}%|%{_currencyname}%" of getDummy()
+    set {_value} to metadata value "MG.SK|money|%loop-value%|%{_game}%" of getDummy()
     if {_value} is set:
-      {_money}.put("%loop-value%",{_value})
+      loop ...{_value}.keySet():
+        if loop-value-2 is {_currencyname}:
+          {_money}.put("%loop-value-1%",{_value}.get(loop-value-2))
   return {_money}
 
 function mgSetCurrentGameMoney(game:text,player:player,currencyname:text,amount:number,persistent:boolean=false):
 
   if {_persistent} is false:
 
-    set metadata value "MG.SK|money|%{_player}%|%{_game}%|%{_currencyname}%" of getDummy() to {_amount}
+    set {_moneylist} to metadata value "MG.SK|money|%{_player}%|%{_game}%" of getDummy()
+    if {_moneylist} is not set:
+      set {_moneylist} to HashMap()
+    if {_moneylist}.get({_currencyname}) is set:
+      {_moneylist}.remove({_currencyname})
+    {_moneylist}.put({_currencyname},{_amount})
+    set metadata value "MG.SK|money|%{_player}%|%{_game}%" of getDummy() to {_moneylist}
 
+	
     set {_holders} to metadata value "MG.SK|money|holderlist" of getDummy()
     set {_currencies} to metadata value "MG.SK|money|currencylist" of getDummy()
 

@@ -14,18 +14,35 @@
 function mgStartSidebarProcess(player:player):
   set {_scoreboard} to createNewScoreboard(" ","SIDEBAR")
   while {_player} is online:
+    set {_lang} to getClientLanguage({_player})
     if mgGetCurrentGame() is not {_game}:
+	
       set {_sidebarspacer} to "&7&m--------------------"
       set {_game} to mgGetCurrentGame()
-      set {_animated::*} to mgCreateAnimatedTextList("MINIGAMES >> %{_game}%","&6&l&n","&e&l","fillshine")
+
+      set {_gametranslation} to mgGetTranslation({_lang},{_game},"name",null)
+      set {_animated::*} to mgCreateAnimatedTextList("MINIGAMES >> %{_gametranslation}%","&6&l&n","&e&l","fillshine")
       setScoreboardScore({_scoreboard},"%{_sidebarspacer}%&1",90)
       setScoreboardScore({_scoreboard},"Hello",3)
       setScoreboardScore({_scoreboard},"World",2)
 
       setScoreboardScore({_scoreboard},"%{_sidebarspacer}%&2",1)
-
+	  
     loop {_animated::*}:
       wait 5 ticks
+      #
+      # > Add the global content of the sidebar to the players sidebar with player specific translation.
+      set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy()
+      if {_sidebar} is set:
+        loop ...{_sidebar}.keySet():
+          set {_translation} to {_sidebar}.get(loop-value-2)
+          set {_translation} to mgGetTranslation({_lang},{_translation}.get("game"),{_translation}.get("key"),{_translation}.get("placeholders"))
+          set {_id} to "%loop-value-2%" parsed as number
+          setScoreboardScore({_scoreboard},{_translation},{_id})
+      #
+      # > If the sidebar isn't set, wipe the scoreboard on the next cycle.
+      else:
+        delete {_game}
       setScoreboardName({_scoreboard},"%loop-value%")
       {_player}.setScoreboard({_scoreboard})
   delete {_scoreboard}

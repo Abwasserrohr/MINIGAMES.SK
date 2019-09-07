@@ -40,7 +40,8 @@ on death:
 
 on damage:
   cancel event
-  teleport victim to {@spawnpoint}
+  if "%damage cause%" is "void":
+    teleport victim to {@spawnpoint}
 
 on respawn:
   teleport player to {@spawnpoint}

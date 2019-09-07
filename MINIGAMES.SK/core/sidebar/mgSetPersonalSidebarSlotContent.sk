@@ -9,12 +9,17 @@
 # > Function - mgSetPersonalSidebarSlotContent
 # > Sets a personal sidebar slot for a specific player. Uses interal translations and placeholders.
 # > Parameters:
-# > <number>slot
+# > <number>slot(1-13 are available)
 # > <player>the player who should see this sidebar content
 # > <text>the game of which the translation is needed
 # > <text>the key of the translation
 # > <HashMap>placeholders which are replaced within the translation HashMap<translationkey,replacement>
 function mgSetPersonalSidebarSlotContent(slotnumber:number,player:player,translationgame:text,translationkey:text,placeholders:object):
+  if {_slotnumber} < 1:
+    stop
+  if {_slotnumber} > 13:
+    stop
+  set {_slotnumber} to {_slotnumber}+37
   set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
   if {_sidebar} is not set:
     set {_sidebar} to HashMap()

@@ -27,6 +27,7 @@ on load:
     mgLobbyTeleportPlayer(loop-player)
   set {_games::*} to mgGetAvailableMinigames()
   broadcast "%{_games::*}%"
+  mgSetGlobalSidebarSlotContent(13,"Lobby","vote_scoreboard",null)
 
 on join:
   mgLobbyTeleportPlayer(player)
@@ -68,9 +69,14 @@ function mgLobbyVoteMenu(player:player):
 
 function mgLobbyCountdown():
   set {_started} to 60
-  mgDisplayBossbarCountdown({_started},"Lobby","bossbar_countdown")
+  mgDisplayBossbarCountdown({_started},"Lobby","bossbar_countdown",null)
+
   while {_started} is set:
     set {_votes} to metadata value "MG.SK|Lobby|Votes" of getDummy()
+    set {_placeholder} to HashMap()
+    {_placeholder}.put("<seconds>","%{_started}%")
+    mgSetGlobalSidebarSlotContent(12,"Lobby","votecountdown_scoreboard",{_placeholder})
+
     loop all players:
       if {_votes}.get("PLAYER-%loop-player%") is set:
         set {_pvote} to {_votes}.get("PLAYER-%loop-player%")

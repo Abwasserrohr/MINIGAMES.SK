@@ -15,7 +15,7 @@ function mgRemoveGlobalSidebarContent(slot:number):
     stop
   if {_slotnumber} > 13:
     stop
-  set {_slotnumber} to {_slotnumber}+37
+  set {_slotnumber} to 51 - {_slotnumber}
   set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy()
   if {_sidebar} is set:
     {_sidebar}.remove("%{_slotnumber}%")

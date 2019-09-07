@@ -10,61 +10,61 @@ import:
   org.bukkit.scoreboard.DisplaySlot
   org.bukkit.scoreboard.RenderType
 
-function createNewScoreboard(text:text,display:text,rendertype:text="INTEGER") :: object:
+#
+# > Function - createNewScoreboard
+# > Creates a new scoreboard that can be used for display on the user client.
+# > Parameters:
+# > <text>the display name of the scoreboard
+# > <text>the display slot, can be: SIDEBAR, BELOW_NAME, PLAYER_LIST
+# > [<text>]the render type, can be: INTEGER, HEARTS
+function createNewScoreboard(displayname:text,display:text,rendertype:text="INTEGER") :: object:
   set {_scoreboardmanager} to Bukkit.getScoreboardManager()
   set {_scoreboard} to {_scoreboardmanager}.getNewScoreboard()
-              
   set {_object} to {_scoreboard}.registerNewObjective("dummy", "scoreboard","dummy")
   {_object}.setDisplaySlot(DisplaySlot.valueOf({_display}))
-  {_object}.setDisplayName("%{_text}%")
+  {_object}.setDisplayName("%{_displayname}%")
   {_object}.setRenderType(RenderType.valueOf({_rendertype}))
   return {_scoreboard}
-  
 
+#
+# > Function - setScoreboardScore
+# > Sets a score into the scoreboard.
+# > Parameters:
+# > <scoreboard>the scoreboard which should get the score
+# > <text or player>the name of the score or the player who should hold the score
+# > <integer>the score integer.
 function setScoreboardScore(scoreboard:object,name:object,value:int):
   set {_object::*} to ...{_scoreboard}.getObjectives()
   set {_object} to {_object::1}
   {_object}.getScore({_name}).setScore({_value})
 
+#
+# > Function - removeScoreboardScore
+# > Removes a score from the scoreboard.
+# > Parameters:
+# > <scoreboard>the scoreboard which should get a score removed
+# > <text or player>the name of the score or the player which should get removed
 function removeScoreboardScore(scoreboard:object,name:object):
   {_scoreboard}.resetScores({_name})
 
-
-function wipeScoreboardSlot(scoreboard:object,player:player,display:text):
+#
+# > Function - wipeScoreboardSlot
+# > Wipes a scoreboard display slot of a scoreboard.
+# > Parameters:
+# > <scoreboard>the scoreboard which should have the display slot cleared
+# > <text>the name of the display slot, can be: SIDEBAR, BELOW_NAME, PLAYER_LIST
+function wipeScoreboardSlot(scoreboard:object,display:text):
   {_scoreboard}.clearSlot(DisplaySlot.valueOf({_display}))
 
+#
+# > Function - setScoreboardName
+# > Sets the name of the scoreboard to a custom name.
+# > You need to resend the entire scoreboard to change
+# > the scoreboard name.
+# > Parameters:
+# > <scoreboard>the scoreboard which should have a changed name
+# > <text>the new display name of the scoreboard
 function setScoreboardName(scoreboard:object,name:text):
   set {_object::*} to ...{_scoreboard}.getObjectives()
   set {_object} to {_object::1}
   {_object}.setDisplayName("%{_name}%")
-
-command /testscores:
-  trigger:
-    mgStartSidebarProcess(player)
-    stop
-    set {_animated::*} to mgCreateAnimatedTextList("MINIGAMES >> Lobby","&6&l&n","&e&l","fillshine")
-    set {_scoreboard} to createNewScoreboard("%{_animated::1}%","SIDEBAR")
-    loop 15 times:
-      loop {_animated::*}:
-        wait 1 tick
-        setScoreboardName({_scoreboard},"%loop-value-2%")
-        loop all players:
-          loop-player.setScoreboard({_scoreboard})
-    wait 1 second
-    loop 50 times:
-      wait 1 tick
-      #setScoreboardName({_scoreboard},"text")
-      loop all players:
-        loop-player.setScoreboard({_scoreboard})
-    setScoreboardScore({_scoreboard},"test1123",1)
-    setScoreboardScore({_scoreboard},"test1123",1)
-    loop all players:
-      loop-player.setScoreboard({_scoreboard})
-    wait 1 second
-    removeScoreboardScore({_scoreboard},"test1123")
-    loop all players:
-      loop-player.setScoreboard({_scoreboard})
-
-    wait 1 second
-    loop all players:
-      wipeScoreboardSlot({_scoreboard},loop-player,"SIDEBAR")

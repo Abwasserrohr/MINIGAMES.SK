@@ -38,6 +38,43 @@ function setScoreboardScore(scoreboard:object,name:object,value:int):
   set {_object} to {_object::1}
   {_object}.getScore({_name}).setScore({_value})
 
+function setScoreboardTeam(scoreboard:object,name:text,value:int):
+  set {_score} to {_value}
+  set {_value} to "%{_value}%"
+  set {_value::*} to {_value} split at ""
+
+  set {_object::*} to ...{_scoreboard}.getObjectives()
+  set {_object} to {_object::1}
+  set {_value} to ""
+  loop {_value::*}:
+    if loop-value is not "":
+      set {_value} to coloured "%{_value}%&%loop-value%"
+
+  #broadcast "%{_scoreboard}.getEntryTeam({_value})%"
+  if {_scoreboard}.getEntryTeam({_value}) is set:
+    {_scoreboard}.getEntryTeam({_value}).setPrefix("%{_name}%")
+  else:
+    set {_team} to {_scoreboard}.registerNewTeam({_value})
+    {_team}.addEntry("%{_value}%")
+    {_team}.setPrefix("%{_name}%")
+    {_object}.getScore("%{_value}%").setScore({_score})
+
+function removeScoreboardTeam(scoreboard:object,value:int):
+  set {_object::*} to ...{_scoreboard}.getObjectives()
+  set {_object} to {_object::1}
+  set {_value} to "%{_value}%"
+  set {_value::*} to {_value} split at ""
+  set {_value} to ""
+
+  loop {_value::*}:
+    if loop-value is not "":
+      set {_value} to coloured "%{_value}%&%loop-value%"
+
+  if {_scoreboard}.getEntryTeam({_value}) is set:
+    {_scoreboard}.getEntryTeam({_value}).unregister()
+	
+	
+  
 #
 # > Function - removeScoreboardScore
 # > Removes a score from the scoreboard.

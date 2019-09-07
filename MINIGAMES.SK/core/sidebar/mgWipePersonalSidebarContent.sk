@@ -9,9 +9,9 @@
 # > Function - mgWipePersonalSidebarContent
 # > Wipes the entire personal sidebar content for either one specific player or for all players.
 # > Parameters:
-# > [<player>]the player who should have wiped their personal sidebar, leave it empty for all players
+# > <player>the player who should have wiped their personal sidebar, null to wipe all players.
 function mgWipePersonalSidebarContent(player:player):
-  if {_player} is set:
+  if {_player} is not null:
     set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
     loop ...{_sidebar}.keySet():
       if loop-value contains "%{_player}%-":

@@ -6,6 +6,21 @@
 # ==============
 
 #
+# > Periodical Event
+# > Runs every second to check for the running scoreboard sidebar.
+# > If a sidebar update hasn't been created or updated in the last 5
+# > seconds, the sidebar process will be restarted for the player.
+every 1 second:
+  loop all players:
+    delete {_sidebarupdate}
+    set {_sidebarupdate} to metadata value "MG.SK|LASTSIDEBARUPDATE|%loop-player%" of getDummy()
+    if {_sidebarupdate} is set:
+      if difference between {_sidebarupdate} and now is more than 5 seconds:
+        mgStartSidebarProcess(loop-player)
+    else:
+      mgStartSidebarProcess(loop-player)
+
+#
 # > Function - mgStartSidebarProcess
 # > Starts a while loop that displays a detailed information view
 # > on the sidebar of the client. Stops once player is offline.
@@ -21,6 +36,7 @@ function mgStartSidebarProcess(player:player):
       set {_animated::*} to mgCreateAnimatedTextList("MINIGAMES >> %{_gametranslation}%","&6&l&n","&e&l","fillshine")
 
     loop {_animated::*}:
+      set metadata value "MG.SK|LASTSIDEBARUPDATE|%{_player}%" of getDummy() to now
       wait 5 ticks
       #
       # > Create a new scoreboard for each animation cycle to garuantee 
@@ -60,3 +76,4 @@ function mgStartSidebarProcess(player:player):
       setScoreboardName({_scoreboard},"%loop-value%")
       {_player}.setScoreboard({_scoreboard})
   delete {_scoreboard}
+  delete metadata value "MG.SK|LASTSIDEBARUPDATE|%{_player}%" of getDummy()

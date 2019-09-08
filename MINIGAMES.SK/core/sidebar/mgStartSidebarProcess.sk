@@ -36,7 +36,7 @@ function mgStartSidebarProcess(player:player):
     if metadata value "MG.SK|SIDEBARRUNID" of getDummy() is not {_processuuid}:
       stop
     if mgGetCurrentGame() is not {_game}:
-      set {_sidebarspacer} to "&7&m                                 "
+      set {_sidebarspacer} to "&7&m                                  "
       set {_scoreboard} to createNewScoreboard(" ","SIDEBAR")
       set {_game} to mgGetCurrentGame()
       set {_gametranslation} to mgGetTranslation({_lang},{_game},"name",null)

@@ -39,6 +39,8 @@ function mgSpleefStartNewRound():
   if {_tplayers} is bigger than 1:
 
     mgSetTemporaryGameData("playersingame",number of all players)
+    loop all players:
+      mgSetTemporaryGameData("playerstatus|%loop-player%",true)
     mgSetTemporaryGameData("status","preparing")
 
     set {_round} to mgGetTemporaryGameData("round")

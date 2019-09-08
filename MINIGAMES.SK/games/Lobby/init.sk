@@ -19,7 +19,6 @@ on load:
   loop all players:
     mgLobbyTeleportPlayer(loop-player)
   set {_games::*} to mgGetAvailableMinigames()
-  broadcast "%{_games::*}%"
   mgSetGlobalSidebarSlotContent(13,"Lobby","vote_scoreboard",null)
 
 on join:

@@ -10,136 +10,10 @@
 on load:  
   wait 1 tick
   mgSpleefHandler("start")
-  
 
-function mgSpleefHandler(task:text):
-  if {_task} is "start":
-    delete {spleef::round}
-    mgSetTemporaryGameData("status","loading")
-
-    loop all players:
-      mgSetCurrentGamePoints("Spleef",loop-player,"points",0)
-    mgSetSidebarToplist("Spleef","points",5,1)
-
-    delete {spleef::playerstatus::*}
-    set {MG::playersingame} to number of all players
-    mgSpleefStartNewRound("spleefcmd")
-  if {_task} is "stop":
-    delete {spleef::status}
-    delete {spleef::round}
-    delete {spleef::playerstatus::*}
-    delete {MG::playersingame}
-    mgFinishGame()
-      
-function mgSpleefStartNewRound(t: text):
-  set {_tplayers} to 0
-  set {_tplayers} to number of all players
-  if {_tplayers} is bigger than 1:
-
-    set {MG::playersingame} to number of all players
-    mgSetTemporaryGameData("status","preparing")
-    add 1 to {spleef::round}
-
-    if {spleef::round} is bigger than 9:
-      mgSpleefHandler("stop")
-      stop
-    broadcast "%getChatPrefix()% Round %{spleef::round}%"
-
-    #
-    # > Create a fitting arena. Base size 40x40 + 2x2 per player
-    set {_mapsize} to 10 + number of all players
-    set {_mainarena} to ""
-    set {_mainarena} to location at 5000.5, 50, 5000.5 in mgGetCurrentWorld()
-    set {MG::respawnloc} to location at 5000.5, 53, 5000.5 in mgGetCurrentWorld()
-    loop all blocks in radius 76 around {_mainarena}:
-      if y-coordinate of loop-block is 50.5:
-        set loop-block to air
-
-    #
-    # > Select a random integer for different blocks.
-    set {_rng} to random integer between 0 and 7
-
-    #
-    # > Set a block depending on the random integer.
-    if {_rng} is 0 OR 6 OR 7:
-      set {spleef::blocktype} to grass block
-      set {spleef::toolcmd} to "minecraft:diamond_shovel{HideFlags:63,Enchantments:[{id:""minecraft:efficiency"",lvl:5s}]} 1"
-    if {_rng} is 1:
-      set {spleef::blocktype} to packed ice block
-      set {spleef::toolcmd} to "minecraft:diamond_pickaxe{HideFlags:63,Enchantments:[{id:""minecraft:efficiency"",lvl:500s}]} 1"
-    if {_rng} is 2:
-      set {spleef::blocktype} to any leaves
-      set {spleef::toolcmd} to "minecraft:shears"
-    if {_rng} is 3:
-      set {spleef::blocktype} to soul sand
-      set {spleef::toolcmd} to "minecraft:diamond_shovel{HideFlags:63,Enchantments:[{id:""minecraft:efficiency"",lvl:5s}]} 1"
-    if {_rng} is 4:
-      set {spleef::blocktype} to blue concrete
-      set {spleef::toolcmd} to "minecraft:diamond_pickaxe{HideFlags:63,Enchantments:[{id:""minecraft:efficiency"",lvl:500s}]} 1"
-    if {_rng} is 5:
-      set {spleef::blocktype} to any glazed terracotta
-      set {spleef::toolcmd} to "minecraft:diamond_pickaxe{HideFlags:63,Enchantments:[{id:""minecraft:efficiency"",lvl:500s}]} 1"
-    if {spleef::blocktype} is not set:
-      set {spleef::blocktype} to dirt
-
-    loop all blocks in radius {_mapsize} around {_mainarena}:
-      if y-coordinate of loop-block is 50.5:
-        set loop-block to {spleef::blocktype}
-    
-    #
-    # > Wait for 10 seconds
-    mgDisplayBossbarCountdown(10,"Spleef","bossbar_countdown",null)
-    
-    loop all players:
-      execute console command "/effect %loop-player% minecraft:haste 160 2 true"
-      set the loop-player's food level to 10
-      execute console command "/effect %loop-player% minecraft:resistance 3 12 true"
-      execute console command "/gamemode survival %loop-player%"
-      set loop-player's gamemode to survival
-      teleport loop-player to {MG::respawnloc}
-    execute console command "/effect @a minecraft:invisibility 1"
-    wait 5 seconds
-    execute console command "/playsound minecraft:block.note.bell master @a 0 0 0 500 0.5"
-    loop all players:
-      execute console command "/clear %loop-player%"
-      execute console command "/give %loop-player% %{spleef::toolcmd}%"
-
-    #
-    # > Give the items to the players.
-    wait 4 seconds
-    set {spleef::status} to "ingame"
-    mgSetTemporaryGameData("status","ingame")
-    set {_rending} to 180
-    while mgGetTemporaryGameData("status") is "ingame":
-      add 1 to {_roundtime}
-      remove 1 from {_rending}
-      send action bar "%{_rending}%" to all players
-      loop all players:
-        if gamemode of loop-player is survival:
-          if 48 is bigger than y-coordinate of loop-player:
-            damage loop-player by 5 hearts
-      if {_roundtime} is bigger than 179:
-        execute console command "/showscoreboard top5"
-        mgSetTemporaryGameData("status","exitround")
-        mgSpleefStartNewRound("while")
-      wait 1 second
-
-  else:
-    broadcast "%getChatPrefix()% Not enough players."
-    mgSpleefHandler("stop")
-    
-
-      
-function mgSpleefCheckSpleefRoundEnd():
-  if {spleef::status} is "ingame":
-    if {MG::playersingame} is smaller than 2:
-      loop all players:
-        set loop-player's health to 40
-        if loop-player's gamemode is survival:
-          mgAddPlayerToplistWin("Spleef",loop-player,1)
-          broadcast "%getChatPrefix()% %loop-player% has won this round."
-          mgSetTemporaryGameData("status","preparing")
-      mgSpleefStartNewRound("checkspleefroundend")
+every 1 second:
+  feed all players
+  heal all players
 
 on place:
   cancel event
@@ -150,6 +24,12 @@ on quit:
     delete {spleef::playerstatus::%uuid of player%}
     mgSpleefCheckSpleefRoundEnd()
 
+on join:
+  clear inventory of player
+  set gamemode of player to spectator
+  set {_loc} to mgGetTemporaryGameData("respawnloc")
+  teleport player to {_loc}
+
 on damage:
   if victim is a player:
     cancel event
@@ -158,12 +38,13 @@ on damage:
       stop
     if mgGetTemporaryGameData("status") is "ingame":
       execute console command "/gamemode spectator %victim%"
-      execute console command "/clear %victim%"
+      clear inventory of victim
       execute console command "/effect %victim% minecraft:resistance 3 5 true"
       remove 1 from {MG::playersingame}
       mgAddCurrentGamePoints("Spleef",victim,"points",1)
       mgAddPlayerToplistScore("Spleef",victim,1)
-      teleport victim to {MG::respawnloc}
+      set {_loc} to mgGetTemporaryGameData("respawnloc")
+      teleport victim to {_loc}
       loop all players:
         if loop-player's gamemode is survival:
           mgAddCurrentGamePoints("Spleef",loop-player,"points",2)
@@ -173,20 +54,23 @@ on damage:
 
       mgSpleefCheckSpleefRoundEnd()
     else:
-      teleport victim to {MG::respawnloc}
+      set {_loc} to mgGetTemporaryGameData("respawnloc")
+      teleport victim to {_loc}
+
 on death:
   if victim is a player:
     if mgGetTemporaryGameData("status") is "ingame":
       wait 1 tick
       force victim to respawn
       execute console command "/gamemode spectator %victim%"
-      execute console command "/clear %victim%"
+      clear inventory of victim
       execute console command "/effect %victim% minecraft:resistance 3 5 true"
       remove 1 from {MG::playersingame}
       mgAddCurrentGamePoints("Spleef",victim,"points",1)
       mgAddPlayerToplistScore("Spleef",victim,1)
       mgSetSidebarToplist("Spleef","points",5,1)
-      teleport victim to {MG::respawnloc}
+      set {_loc} to mgGetTemporaryGameData("respawnloc")
+      teleport victim to {_loc}
       mgSpleefCheckSpleefRoundEnd()
 
 on break:

@@ -7,7 +7,11 @@
 # > GAME: Spleef
 # ==============
 
-
+#
+# > Function - mgSpleefHandler
+# > Starts or stops the game depending on the parameter.
+# > Parameters:
+# > <text>task, either "start" or "stop"
 function mgSpleefHandler(task:text):
   if {_task} is "start":
     mgSetTemporaryGameData("round",0)
@@ -18,11 +22,18 @@ function mgSpleefHandler(task:text):
     mgSetSidebarToplist("Spleef","points",5,1)
 
     mgSetTemporaryGameData("playersingame",number of all players)
-    mgSpleefStartNewRound("spleefcmd")
+    mgSpleefStartNewRound()
+
+  #
+  # > If the game should be stopped, use the MINIGAMES.SK function to
+  # > clear out any temporary data and unload the game.
   if {_task} is "stop":
     mgFinishGame()
 
-function mgSpleefStartNewRound(t: text):
+#
+# > Function - mgSpleefStartNewRound
+# > Starts a new Spleef round.
+function mgSpleefStartNewRound():
   set {_tplayers} to 0
   set {_tplayers} to number of all players
   if {_tplayers} is bigger than 1:
@@ -128,13 +139,17 @@ function mgSpleefStartNewRound(t: text):
             damage loop-player by 5 hearts
       if {_roundtime} is bigger than 179:
         mgSetTemporaryGameData("status","exitround")
-        mgSpleefStartNewRound("while")
+        mgSpleefStartNewRound()
       wait 1 second
 
   else:
     broadcast "%getChatPrefix()% Not enough players."
     mgSpleefHandler("stop")
 
+#
+# > Function - mgSpleefCheckSpleefRoundEnd
+# > Checks if the spleef round should be stopped.
+# > The Spleef round while loop will be stopped by this.
 function mgSpleefCheckSpleefRoundEnd():
   if mgGetTemporaryGameData("status") is "ingame":
     if mgGetTemporaryGameData("playersingame") is smaller than 2:
@@ -143,4 +158,4 @@ function mgSpleefCheckSpleefRoundEnd():
           mgAddPlayerToplistWin("Spleef",loop-player,1)
           broadcast "%getChatPrefix()% %loop-player% has won this round."
           mgSetTemporaryGameData("status","preparing")
-      mgSpleefStartNewRound("checkspleefroundend")
+      mgSpleefStartNewRound()

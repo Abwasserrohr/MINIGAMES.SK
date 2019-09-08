@@ -49,6 +49,8 @@ on damage:
         if loop-player's gamemode is survival:
           mgAddCurrentGamePoints("Spleef",loop-player,"points",2)
           mgAddPlayerToplistScore("Spleef",loop-player,2)
+          play sound "entity.experience_orb.pickup" with volume 1 with pitch 0.7 at location of loop-player for loop-player
+
           add 1 to {_players}
       mgSetSidebarToplist("Spleef","points",5,1)
 

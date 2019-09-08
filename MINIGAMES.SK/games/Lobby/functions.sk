@@ -30,7 +30,7 @@ function mgLobbyVoteMenu(player:player):
     add 1 to {_slot}
 
 function mgLobbyCountdown():
-  set {_started} to 60
+  set {_started} to 30
   mgDisplayBossbarCountdown({_started},"Lobby","bossbar_countdown",null)
 
   while {_started} is set:

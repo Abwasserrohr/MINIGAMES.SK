@@ -17,13 +17,9 @@ function mgSpleefHandler(task:text):
       mgSetCurrentGamePoints("Spleef",loop-player,"points",0)
     mgSetSidebarToplist("Spleef","points",5,1)
 
-    delete {spleef::playerstatus::*}
-    set {MG::playersingame} to number of all players
+    mgSetTemporaryGameData("playersingame",number of all players)
     mgSpleefStartNewRound("spleefcmd")
   if {_task} is "stop":
-    delete {spleef::status}
-    delete {spleef::playerstatus::*}
-    delete {MG::playersingame}
     mgFinishGame()
 
 function mgSpleefStartNewRound(t: text):
@@ -31,7 +27,7 @@ function mgSpleefStartNewRound(t: text):
   set {_tplayers} to number of all players
   if {_tplayers} is bigger than 1:
 
-    set {MG::playersingame} to number of all players
+    mgSetTemporaryGameData("playersingame",number of all players)
     mgSetTemporaryGameData("status","preparing")
 
     set {_round} to mgGetTemporaryGameData("round")
@@ -140,8 +136,8 @@ function mgSpleefStartNewRound(t: text):
     mgSpleefHandler("stop")
 
 function mgSpleefCheckSpleefRoundEnd():
-  if {spleef::status} is "ingame":
-    if {MG::playersingame} is smaller than 2:
+  if mgGetTemporaryGameData("status") is "ingame":
+    if mgGetTemporaryGameData("playersingame") is smaller than 2:
       loop all players:
         if loop-player's gamemode is survival:
           mgAddPlayerToplistWin("Spleef",loop-player,1)

@@ -36,56 +36,12 @@ on damage:
   if victim is a player:
     cancel event
     if attacker is a player:
-      send "Kein PvP." to attacker
       stop
-    if mgGetTemporaryGameData("status") is "ingame":
-      execute console command "/gamemode spectator %victim%"
-      clear inventory of victim
-      execute console command "/effect %victim% minecraft:resistance 3 5 true"
-
-      set {_playersingame} to mgGetTemporaryGameData("playersingame")
-      remove 1 from {_playersingame}
-      mgSetTemporaryGameData("playersingame",{_playersingame})
-      mgSetTemporaryGameData("playerstatus|%victim%",false)
-
-      mgAddCurrentGamePoints("Spleef",victim,"points",1)
-      mgAddPlayerToplistScore("Spleef",victim,1)
-      set {_loc} to mgGetTemporaryGameData("respawnloc")
-      teleport victim to {_loc}
-      loop all players:
-        if loop-player's gamemode is survival:
-          mgAddCurrentGamePoints("Spleef",loop-player,"points",2)
-          mgAddPlayerToplistScore("Spleef",loop-player,2)
-          play sound "entity.experience_orb.pickup" with volume 1 with pitch 0.7 at location of loop-player for loop-player
-
-          add 1 to {_players}
-      mgSetSidebarToplist("Spleef","points",5,1)
-
-      mgSpleefCheckSpleefRoundEnd()
-    else:
-      set {_loc} to mgGetTemporaryGameData("respawnloc")
-      teleport victim to {_loc}
+    mgSpleefHandleGameDeath(victim)
 
 on death:
   if victim is a player:
-    if mgGetTemporaryGameData("status") is "ingame":
-      wait 1 tick
-      force victim to respawn
-      execute console command "/gamemode spectator %victim%"
-      clear inventory of victim
-      execute console command "/effect %victim% minecraft:resistance 3 5 true"
-	  
-      set {_playersingame} to mgGetTemporaryGameData("playersingame")
-      remove 1 from {_playersingame}
-      mgSetTemporaryGameData("playersingame",{_playersingame})
-      mgSetTemporaryGameData("playerstatus|%victim%",false)
-
-      mgAddCurrentGamePoints("Spleef",victim,"points",1)
-      mgAddPlayerToplistScore("Spleef",victim,1)
-      mgSetSidebarToplist("Spleef","points",5,1)
-      set {_loc} to mgGetTemporaryGameData("respawnloc")
-      teleport victim to {_loc}
-      mgSpleefCheckSpleefRoundEnd()
+    mgSpleefHandleGameDeath(victim)
 
 on break:
   clear drops

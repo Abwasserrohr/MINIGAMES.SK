@@ -42,32 +42,19 @@ function mgStartSidebarProcess(player:player):
       set {_gametranslation} to mgGetTranslation({_lang},{_game},"name",null)
       set {_animated::*} to mgCreateAnimatedTextList("MINIGAMES >> %{_gametranslation}%","&6&l&n","&e&l","fillshine")
 
-    loop {_animated::*}:
-
-      set {_unusedslots::50} to true
-      set {_unusedslots::49} to true 
-      set {_unusedslots::48} to true 
-      set {_unusedslots::47} to true 
-      set {_unusedslots::46} to true 
-      set {_unusedslots::45} to true 
-      set {_unusedslots::44} to true 
-      set {_unusedslots::43} to true 
-      set {_unusedslots::42} to true 
-      set {_unusedslots::41} to true 
-      set {_unusedslots::40} to true 
-      set {_unusedslots::39} to true 
-      set {_unusedslots::38} to true 
-      set {_unusedslots::37} to true 
-	  
-      set metadata value "MG.SK|LASTSIDEBARUPDATE|%{_player}%" of getDummy() to now
-      wait 1 ticks
-      #
-      # > Create a new scoreboard for each animation cycle to garuantee 
-      # > to not show any outdated information. Could also wipe the
-      # > scoreboard, needs to be checked what is faster.
       setScoreboardTeam({_scoreboard},"%{_sidebarspacer}%",90)
       setScoreboardTeam({_scoreboard},"%{_sidebarspacer}%",1)
-      #setScoreboardTeam({_scoreboard},"%getRandomUUID()%",2)
+
+    loop {_animated::*}:
+      #
+      # > Create a unused slots list to remove unused slots from the teams
+      # > that would otherwise be kept within the scoreboard.
+      loop 14 times:
+        set {_number} to loop-number + 36
+        set {_unusedslots::%{_number}%} to true
+
+      set metadata value "MG.SK|LASTSIDEBARUPDATE|%{_player}%" of getDummy() to now
+      wait 1 ticks
 
       #
       # > Add the global content of the sidebar to the players sidebar with player specific translation.
@@ -78,8 +65,9 @@ function mgStartSidebarProcess(player:player):
           set {_translation} to {_sidebar}.get(loop-value-2)
           set {_translation} to mgGetTranslation({_lang},{_translation}.get("game"),{_translation}.get("key"),{_translation}.get("placeholders"))
           set {_id} to "%loop-value-2%" parsed as number
+          #
+          # > Since this slot has been used, remove it from the unused slots list.
           delete {_unusedslots::%{_id}%}
-          #setScoreboardScore({_scoreboard},{_translation},{_id})
           setScoreboardTeam({_scoreboard},{_translation},{_id})
       else:
         delete {_game}
@@ -95,8 +83,9 @@ function mgStartSidebarProcess(player:player):
             set {_id} to loop-value-2
             replace all "%{_player}%-" with "" in {_id}
             set {_id} to {_id} parsed as number
+            #
+            # > Since this slot has been used, remove it from the unused slots list.
             delete {_unusedslots::%{_id}%}
-            #setScoreboardScore({_scoreboard},{_translation},{_id})
             setScoreboardTeam({_scoreboard},{_translation},{_id})
       #
       # > If the sidebar isn't set, wipe the scoreboard on the next cycle.
@@ -104,10 +93,15 @@ function mgStartSidebarProcess(player:player):
         delete {_game}
       setScoreboardName({_scoreboard},"%loop-value%")
 
+      #
+      # > Loop all unused slots that haven't been removed before and
+      # > try to remove them.
       loop {_unusedslots::*}:
         set {_unused} to loop-index-2 parsed as int
         removeScoreboardTeam({_scoreboard},{_unused})
-	  
+
+      #
+      # > Update the scoreboard to the player.
       {_player}.setScoreboard({_scoreboard})
   delete {_scoreboard}
   delete metadata value "MG.SK|LASTSIDEBARUPDATE|%{_player}%" of getDummy()

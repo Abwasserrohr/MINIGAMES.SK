@@ -45,11 +45,11 @@ function mgSpleefStartNewRound(t: text):
     # > Create a fitting arena. Base size 40x40 + 2x2 per player
     set {_mapsize} to 10 + number of all players
     set {_mainarena} to ""
-    set {_mainarena} to location at 5000.5, 50, 5000.5 in mgGetCurrentWorld()
-    mgSetTemporaryGameData("respawnloc",location at 5000.5, 53, 5000.5 in mgGetCurrentWorld())
+    set {_mainarena} to location at 0.5, 1, 0.5 in mgGetCurrentWorld()
+    mgSetTemporaryGameData("respawnloc",location at 0.5, 2, 0.5 in mgGetCurrentWorld())
 
     loop all blocks in radius 76 around {_mainarena}:
-      if y-coordinate of loop-block is 50.5:
+      if y-coordinate of loop-block is 1.5:
         set loop-block to air
 
     #
@@ -80,7 +80,11 @@ function mgSpleefStartNewRound(t: text):
       set {_block} to dirt
 
     loop all blocks in radius {_mapsize} around {_mainarena}:
-      if y-coordinate of loop-block is 50.5:
+      add 1 to {_block}
+      if {_block} > 5:
+        wait 1 tick
+        set {_block} to 0
+      if y-coordinate of loop-block is 1.5:
         set loop-block to {_block}
 
     #
@@ -100,17 +104,18 @@ function mgSpleefStartNewRound(t: text):
     loop all players:
       clear inventory of loop-player
       execute console command "/give %loop-player% %{spleef::toolcmd}%"
-    set {_pitch} to 0.5
-    loop 9 times:
+    set {_pitch} to 1
+    loop 10 times:
       loop all players:
-        play sound "block.note_block.cow_bell" with volume 1 with pitch {_pitch} at location of loop-player for loop-player
+        play sound "block.note_block.pling" with volume 1 with pitch {_pitch} at location of loop-player for loop-player
 
       add 0.01 to {_pitch}	  
       wait 1 second
+    loop all players:
+      play sound "block.note_block.pling" with volume 1 with pitch 2 at location of loop-player for loop-player
 
     #
     # > Give the items to the players.
-    set {spleef::status} to "ingame"
     mgSetTemporaryGameData("status","ingame")
     set {_rending} to 180
     while mgGetTemporaryGameData("status") is "ingame":
@@ -119,7 +124,7 @@ function mgSpleefStartNewRound(t: text):
       send action bar "%{_rending}%" to all players
       loop all players:
         if gamemode of loop-player is survival:
-          if 48 is bigger than y-coordinate of loop-player:
+          if -500 is bigger than y-coordinate of loop-player:
             damage loop-player by 5 hearts
       if {_roundtime} is bigger than 179:
         mgSetTemporaryGameData("status","exitround")

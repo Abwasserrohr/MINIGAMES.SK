@@ -38,11 +38,17 @@ function setScoreboardScore(scoreboard:object,name:object,value:int):
   set {_object} to {_object::1}
   {_object}.getScore({_name}).setScore({_value})
 
+#
+# > Function - setScoreboardTeam
+# > Adds the specified text (name) to the scoreboard slot.
+# > Parameters:
+# > <scoreboard>the scoreboard
+# > <text>the text that should be set to the slot
+# > <int>the slot integer to which the text should be set
 function setScoreboardTeam(scoreboard:object,name:text,value:int):
   set {_score} to {_value}
   set {_value} to "%{_value}%"
   set {_value::*} to {_value} split at ""
-
   set {_object::*} to ...{_scoreboard}.getObjectives()
   set {_object} to {_object::1}
   set {_value} to ""
@@ -50,7 +56,6 @@ function setScoreboardTeam(scoreboard:object,name:text,value:int):
     if loop-value is not "":
       set {_value} to coloured "%{_value}%&%loop-value%"
 
-  #broadcast "%{_scoreboard}.getEntryTeam({_value})%"
   if {_scoreboard}.getEntryTeam({_value}) is set:
     {_scoreboard}.getEntryTeam({_value}).setPrefix("%{_name}%")
   else:
@@ -59,6 +64,12 @@ function setScoreboardTeam(scoreboard:object,name:text,value:int):
     {_team}.setPrefix("%{_name}%")
     {_object}.getScore("%{_value}%").setScore({_score})
 
+#
+# > Function - removeScoreboardTeam
+# > Removes the specified slot out of the scoreboard.
+# > Parameters:
+# > <scoreboard>the scoreboard
+# > <int>the slot that should be removed
 function removeScoreboardTeam(scoreboard:object,value:int):
   set {_object::*} to ...{_scoreboard}.getObjectives()
   set {_object} to {_object::1}
@@ -72,9 +83,7 @@ function removeScoreboardTeam(scoreboard:object,value:int):
 
   if {_scoreboard}.getEntryTeam({_value}) is set:
     {_scoreboard}.getEntryTeam({_value}).unregister()
-	
-	
-  
+
 #
 # > Function - removeScoreboardScore
 # > Removes a score from the scoreboard.

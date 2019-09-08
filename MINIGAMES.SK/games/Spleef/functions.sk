@@ -105,7 +105,6 @@ function mgSpleefStartNewRound():
     # > Create a countdown that lets the players wait for 5 seconds.
     mgDisplayBossbarCountdown(5,"Spleef","bossbar_countdown",null)
 
-	
     apply haste 2 without particles to all players for 160 seconds
     apply resistance 12 without particles to all players for 3 seconds
     apply invisibility 1 without particles to all players for 1 second

@@ -161,3 +161,35 @@ function mgSpleefCheckSpleefRoundEnd():
           broadcast "%getChatPrefix()% %loop-player% has won this round."
           mgSetTemporaryGameData("status","preparing")
       mgSpleefStartNewRound()
+
+#
+# > Function - mgSpleefHandleGameDeath
+# > If a player died in Spleef, do everything needed.
+# > Parameters:
+# > <player>the player who died
+function mgSpleefHandleGameDeath(player:player):
+  set {_loc} to mgGetTemporaryGameData("respawnloc")
+  if mgGetTemporaryGameData("status") is "ingame":
+    set {_player}'s gamemode to spectator
+    clear inventory of {_player}
+    teleport {_player} to {_loc}
+
+    set {_playersingame} to mgGetTemporaryGameData("playersingame")
+    remove 1 from {_playersingame}
+    mgSetTemporaryGameData("playersingame",{_playersingame})
+
+    mgSetTemporaryGameData("playerstatus|%{_player}%",false)
+
+    mgAddCurrentGamePoints("Spleef",{_player},"points",1)
+    mgAddPlayerToplistScore("Spleef",{_player},1)
+
+    loop all players:
+      if loop-player's gamemode is survival:
+        mgAddCurrentGamePoints("Spleef",loop-player,"points",2)
+        mgAddPlayerToplistScore("Spleef",loop-player,2)
+        play sound "entity.experience_orb.pickup" with volume 1 with pitch 0.7 at location of loop-player for loop-player
+    mgSetSidebarToplist("Spleef","points",5,1)
+
+    mgSpleefCheckSpleefRoundEnd()
+  else:
+    teleport {_player} to {_loc}

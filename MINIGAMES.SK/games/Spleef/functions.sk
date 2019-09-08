@@ -53,31 +53,33 @@ function mgSpleefStartNewRound(t: text):
         set loop-block to air
 
     #
-    # > Select a random integer for different blocks.
+    # > Select a random integer for different blocks and tools.
     set {_rng} to random integer between 0 and 7
 
     #
     # > Set a block depending on the random integer.
     if {_rng} is 0 OR 6 OR 7:
       set {_block} to grass block
-      set {spleef::toolcmd} to "minecraft:diamond_shovel{HideFlags:63,Enchantments:[{id:""minecraft:efficiency"",lvl:5s}]} 1"
+      set {_tool} to diamond shovel of efficiency 5
     if {_rng} is 1:
       set {_block} to packed ice block
-      set {spleef::toolcmd} to "minecraft:diamond_pickaxe{HideFlags:63,Enchantments:[{id:""minecraft:efficiency"",lvl:500s}]} 1"
+      set {_tool} to diamond pickaxe of efficiency 500
     if {_rng} is 2:
       set {_block} to any leaves
-      set {spleef::toolcmd} to "minecraft:shears"
+      set {_tool} to shears
     if {_rng} is 3:
       set {_block} to soul sand
-      set {spleef::toolcmd} to "minecraft:diamond_shovel{HideFlags:63,Enchantments:[{id:""minecraft:efficiency"",lvl:5s}]} 1"
+      set {_tool} to diamond shovel of efficiency 5
     if {_rng} is 4:
       set {_block} to blue concrete
-      set {spleef::toolcmd} to "minecraft:diamond_pickaxe{HideFlags:63,Enchantments:[{id:""minecraft:efficiency"",lvl:500s}]} 1"
+      set {_tool} to diamond pickaxe of efficiency 500
     if {_rng} is 5:
       set {_block} to any glazed terracotta
-      set {spleef::toolcmd} to "minecraft:diamond_pickaxe{HideFlags:63,Enchantments:[{id:""minecraft:efficiency"",lvl:500s}]} 1"
+      set {_tool} to diamond pickaxe of efficiency 500
     if {_block} is not set:
       set {_block} to dirt
+      set {_tool} to diamond shovel of efficiency 5
+
 
     loop all blocks in radius {_mapsize} around {_mainarena}:
       add 1 to {_block}
@@ -88,9 +90,9 @@ function mgSpleefStartNewRound(t: text):
         set loop-block to {_block}
 
     #
-    # > Wait for 10 seconds
-    mgDisplayBossbarCountdown(10,"Spleef","bossbar_countdown",null)
-    
+    # > Create a countdown that lets the players wait for 5 seconds.
+    mgDisplayBossbarCountdown(5,"Spleef","bossbar_countdown",null)
+
     loop all players:
       apply haste 2 without particles to loop-player for 160 seconds
       apply resistance 12 without particles to loop-player for 3 seconds
@@ -100,19 +102,18 @@ function mgSpleefStartNewRound(t: text):
       set loop-player's gamemode to survival
       set {_loc} to mgGetTemporaryGameData("respawnloc")
       teleport loop-player to {_loc}
-    execute console command "/playsound minecraft:block.note.bell master @a 0 0 0 500 0.5"
-    loop all players:
-      clear inventory of loop-player
-      execute console command "/give %loop-player% %{spleef::toolcmd}%"
+
+    clear inventory of all players
+    give 1 of {_tool} to all players
     set {_pitch} to 1
-    loop 10 times:
+    loop 5 times:
       loop all players:
-        play sound "block.note_block.pling" with volume 1 with pitch {_pitch} at location of loop-player for loop-player
+        playsound("block.note_block.pling",1,{_pitch},location of loop-player,loop-player)
 
       add 0.01 to {_pitch}	  
       wait 1 second
     loop all players:
-      play sound "block.note_block.pling" with volume 1 with pitch 2 at location of loop-player for loop-player
+      playsound("block.note_block.pling",1,2,location of loop-player,loop-player)
 
     #
     # > Give the items to the players.

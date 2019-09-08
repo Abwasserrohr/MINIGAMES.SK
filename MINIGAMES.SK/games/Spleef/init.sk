@@ -17,11 +17,13 @@ every 1 second:
 
 on place:
   cancel event
-    
+
 on quit:
-  if {spleef::playerstatus::%uuid of player%} is set:
-    remove 1 from {MG::playersingame}
-    delete {spleef::playerstatus::%uuid of player%}
+  if mgGetTemporaryGameData("playerstatus|%player%") is true:
+    set {_playersingame} to mgGetTemporaryGameData("playersingame")
+    remove 1 from {_playersingame}
+    mgSetTemporaryGameData("playersingame",{_playersingame})
+    mgSetTemporaryGameData("playerstatus|%player%",false)
     mgSpleefCheckSpleefRoundEnd()
 
 on join:
@@ -40,7 +42,12 @@ on damage:
       execute console command "/gamemode spectator %victim%"
       clear inventory of victim
       execute console command "/effect %victim% minecraft:resistance 3 5 true"
-      remove 1 from {MG::playersingame}
+
+      set {_playersingame} to mgGetTemporaryGameData("playersingame")
+      remove 1 from {_playersingame}
+      mgSetTemporaryGameData("playersingame",{_playersingame})
+      mgSetTemporaryGameData("playerstatus|%victim%",false)
+
       mgAddCurrentGamePoints("Spleef",victim,"points",1)
       mgAddPlayerToplistScore("Spleef",victim,1)
       set {_loc} to mgGetTemporaryGameData("respawnloc")
@@ -67,7 +74,12 @@ on death:
       execute console command "/gamemode spectator %victim%"
       clear inventory of victim
       execute console command "/effect %victim% minecraft:resistance 3 5 true"
-      remove 1 from {MG::playersingame}
+	  
+      set {_playersingame} to mgGetTemporaryGameData("playersingame")
+      remove 1 from {_playersingame}
+      mgSetTemporaryGameData("playersingame",{_playersingame})
+      mgSetTemporaryGameData("playerstatus|%victim%",false)
+
       mgAddCurrentGamePoints("Spleef",victim,"points",1)
       mgAddPlayerToplistScore("Spleef",victim,1)
       mgSetSidebarToplist("Spleef","points",5,1)

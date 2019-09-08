@@ -137,7 +137,7 @@ function mgSpleefStartNewRound():
       send action bar "%{_rending}%" to all players
       loop all players:
         if gamemode of loop-player is survival:
-          if -500 is bigger than y-coordinate of loop-player:
+          if -1 is bigger than y-coordinate of loop-player:
             damage loop-player by 5 hearts
       if {_roundtime} is bigger than 179:
         mgSetTemporaryGameData("status","exitround")

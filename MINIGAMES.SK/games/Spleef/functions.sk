@@ -10,7 +10,7 @@
 
 function mgSpleefHandler(task:text):
   if {_task} is "start":
-    delete {spleef::round}
+    mgSetTemporaryGameData("round",0)
     mgSetTemporaryGameData("status","loading")
 
     loop all players:
@@ -22,11 +22,10 @@ function mgSpleefHandler(task:text):
     mgSpleefStartNewRound("spleefcmd")
   if {_task} is "stop":
     delete {spleef::status}
-    delete {spleef::round}
     delete {spleef::playerstatus::*}
     delete {MG::playersingame}
     mgFinishGame()
-      
+
 function mgSpleefStartNewRound(t: text):
   set {_tplayers} to 0
   set {_tplayers} to number of all players
@@ -34,12 +33,15 @@ function mgSpleefStartNewRound(t: text):
 
     set {MG::playersingame} to number of all players
     mgSetTemporaryGameData("status","preparing")
-    add 1 to {spleef::round}
 
-    if {spleef::round} is bigger than 5:
+    set {_round} to mgGetTemporaryGameData("round")
+    add 1 to {_round}
+    mgSetTemporaryGameData("round",{_round})
+
+    if {_round} is bigger than 5:
       mgSpleefHandler("stop")
       stop
-    broadcast "%getChatPrefix()% Round %{spleef::round}%/5"
+    broadcast "%getChatPrefix()% Round %{_round}%/5"
 
     #
     # > Create a fitting arena. Base size 40x40 + 2x2 per player
@@ -80,12 +82,13 @@ function mgSpleefStartNewRound(t: text):
       set {_block} to dirt
       set {_tool} to diamond shovel of efficiency 5
 
-
+    #
+	# > Create the spleef floor, make a short 1 tickk break every 10 blocks.
     loop all blocks in radius {_mapsize} around {_mainarena}:
-      add 1 to {_block}
-      if {_block} > 5:
+      add 1 to {_blocknumber}
+      if {_blocknumber} > 10:
         wait 1 tick
-        set {_block} to 0
+        set {_blocknumber} to 0
       if y-coordinate of loop-block is 1.5:
         set loop-block to {_block}
 
@@ -93,19 +96,19 @@ function mgSpleefStartNewRound(t: text):
     # > Create a countdown that lets the players wait for 5 seconds.
     mgDisplayBossbarCountdown(5,"Spleef","bossbar_countdown",null)
 
-    loop all players:
-      apply haste 2 without particles to loop-player for 160 seconds
-      apply resistance 12 without particles to loop-player for 3 seconds
-      apply invisibility 1 without particles to loop-player for 1 second
+	
+    apply haste 2 without particles to all players for 160 seconds
+    apply resistance 12 without particles to all players for 3 seconds
+    apply invisibility 1 without particles to all players for 1 second
+    set gamemode of all players to survival
 
-      set gamemode of loop-player to survival
-      set loop-player's gamemode to survival
-      set {_loc} to mgGetTemporaryGameData("respawnloc")
-      teleport loop-player to {_loc}
+    set {_loc} to mgGetTemporaryGameData("respawnloc")
+    teleport all players to {_loc}
 
     clear inventory of all players
     give 1 of {_tool} to all players
-    set {_pitch} to 1
+
+    set {_pitch} to 0.9
     loop 5 times:
       loop all players:
         playsound("block.note_block.pling",1,{_pitch},location of loop-player,loop-player)
@@ -140,7 +143,6 @@ function mgSpleefCheckSpleefRoundEnd():
   if {spleef::status} is "ingame":
     if {MG::playersingame} is smaller than 2:
       loop all players:
-        set loop-player's health to 40
         if loop-player's gamemode is survival:
           mgAddPlayerToplistWin("Spleef",loop-player,1)
           broadcast "%getChatPrefix()% %loop-player% has won this round."

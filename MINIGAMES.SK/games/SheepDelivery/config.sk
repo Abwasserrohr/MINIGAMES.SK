@@ -20,3 +20,5 @@ on load:
   mgSetTranslation("en",{_game},"delivered","&7&lDelivered:")
   mgSetTranslation("en",{_game},"howtocarry","&7Carry a sheep by rightclick to deliver it to the matching color.")
   mgSetTranslation("en",{_game},"playerhaswon","&7<player> has won this SheepDelivery round.")
+  mgSetTranslation("en",{_game},"carryonlyone","&7You can only carry one sheep.")
+  mgSetTranslation("en",{_game},"cannotsteal","&7You can't steal the sheeps from other players.")

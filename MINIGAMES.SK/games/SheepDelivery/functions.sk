@@ -155,6 +155,6 @@ function carrythesheepactionbarstats():
     else:
       if {_sheeps} is 0:
         set {_howtocarry} to mgGetTranslation({_lang},"SheepDelivery","howtocarry",null)
-        send action bar "%getChatPrefix()% &7&l%{_countdown}% &8&l|%{_howtocarry}%" to loop-player
+        send action bar "%getChatPrefix()% &7&l%{_countdown}% &8&l| %{_howtocarry}%" to loop-player
       else:
         send action bar "%getChatPrefix()% &7&l%{_countdown}% &8&l|&7&l %{_delivered}% %{_sheeps}%" to loop-player

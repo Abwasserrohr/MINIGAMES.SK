@@ -65,8 +65,6 @@ options:
 on toggle sneak:
   set {_passengers} to player.getPassengers()
   if {_passengers}.get(0) is a sheep:
-    set {_uuid} to uuid of player
-    #send action bar "{@prefix}&f Schafe abgegeben: {@counterprefix}%{cobble::%{_uuid}%}% &7&l|&f Nimm dir ein Schaf mit Rechtsklick &7&l|" to player
     player.eject()
     set {_color} to "%{_passengers}.get(0).getColor()%"
     if block below player is white wool:
@@ -95,10 +93,9 @@ on toggle sneak:
         set {_ok} to true
     if {_ok} is true:
       playsound("{@rewardsound}",0.1,0.5,location of player,player)
-      #add 1 to {cobble::%{_uuid}%}
       mgAddCurrentGamePoints("SheepDelivery",player,"Sheeps",1)
+      mgAddPlayerToplistScore("Spleef",player,1)
       mgSetSidebarToplist("SheepDelivery","Sheeps",5,1)
-      #send action bar "{@prefix}&f Schafe abgegeben: {@counterprefix}%{cobble::%{_uuid}%}% &7&l|&f Nimm dir ein Schaf mit Rechtsklick &7&l|" to player
 
 
       set {_loc} to player's location
@@ -108,14 +105,18 @@ on toggle sneak:
 on rightclick on sheep:
   if event-entity is riding a player:
     cancel event
-    message "{@prefix} You can't steal the sheeps from other players." to player
+    set {_lang} to getClientLanguage(player)
+    set {_cannotsteal} to mgGetTranslation({_lang},{_game},"cannotsteal",null)
+    message "%getChatPrefix()% %{_cannotsteal}%" to player
 
   set {_passengers} to player.getPassengers()
   if {_passengers}.size! is 0:
     player.addPassenger(event-entity)
     playsound("{@pickupsound}",2,1,location of player,player)
   else:
-    message "{@prefix} You can only carry one sheep." to player
+    set {_lang} to getClientLanguage(player)
+    set {_carryonlyone} to mgGetTranslation({_lang},{_game},"carryonlyone",null)
+    message "%getChatPrefix()% %{_carryonlyone}%" to player
 
 on damage of a sheep:
   if "%damage cause%" is not "void":

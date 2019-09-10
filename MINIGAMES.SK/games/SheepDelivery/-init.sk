@@ -107,27 +107,19 @@ on toggle sneak:
 
 on rightclick on sheep:
   if event-entity is riding a player:
-    if distance between player's location and {@deliverlocation} is less than {@deliverprotectionradius}:
-      cancel event
-      message "{@prefix} Du kannst keine Schafe so nah an der Abgabestelle klauen." to player
-      stop
-    if event-entity.getVehicle() is a player:
-      message "{@prefix} %player% hat dir dein Schaf geklaut!" to event-entity.getVehicle()
-      play sound "{@stealsound}" with volume 2 at event-entity.getVehicle().getLocation() for event-entity.getVehicle()
+    cancel event
+    message "{@prefix} You can't steal the sheeps from other players." to player
 
   set {_passengers} to player.getPassengers()
   if {_passengers}.size! is 0:
     player.addPassenger(event-entity)
     playsound("{@pickupsound}",2,1,location of player,player)
-
-    set {_uuid} to uuid of player
-    send action bar "{@prefix}&f Schafe abgegeben: {@counterprefix}%{cobble::%{_uuid}%}% &7&l|&f Liefer das Schaf zur Annahmestelle &7&l|&f %carrythesheepsafetext(player)%" to player
   else:
-    message "{@prefix} Du kannst nur ein Schaf tragen." to player
+    message "{@prefix} You can only carry one sheep." to player
 
 on damage of a sheep:
   if "%damage cause%" is not "void":
     cancel event
 
 every 1 second:
-  mgSetSidebarToplist("SheepDelivery","Sheeps",5,1)
+  carrythesheepactionbarstats()

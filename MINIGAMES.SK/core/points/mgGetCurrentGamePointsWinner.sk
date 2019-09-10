@@ -1,0 +1,49 @@
+#
+# ==============
+# mgGetCurrentGamePointsWinner.sk
+# ==============
+# mgGetCurrentGamePointsWinner.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgGetCurrentGamePointsWinner
+# > Returns the current winner depending on the points name.
+# > Parameters:
+# > <text>game name
+# > <text>points name
+function mgGetCurrentGamePointsWinner(game:text,pointsname:text) :: offline player:
+  #
+  # > Get the HashMap with all points.
+  set {_points} to mgGetCurrentGamePointsList({_game},{_pointsname})
+
+  #
+  # > Only continue, if the points HashMap exists.
+  if {_points} is not set:
+    stop
+
+  #
+  # > Create a Skript list out of the HashMap.
+  loop ...{_points}.keySet():
+    set {_pointsholder::%loop-value%} to {_points}.get(loop-value)
+
+  #
+  # > Sort the pointsholder out that have the most points.
+  loop {_pointsholder::*}:
+    add 1 to {_size}
+    if {_l2h::%loop-value%} is not set:
+      set {_l2h::%loop-value%} to loop-index
+    else:
+      set {_i} to 0
+      loop {_size} times:
+        set {_i} to {_i}+1
+        {_l2h::%loop-value-1%.%{_i}%} is not set
+        set {_l2h::%loop-value-1%.%{_i}%} to loop-index
+        stop loop
+  set {_i} to size of {_l2h::*}
+  loop {_l2h::*}:
+    set {_h2l::%{_i}%} to loop-value
+    set {_i} to {_i}-1
+  loop {_h2l::*}:
+    add 1 to {_topnumber}
+    if {_topnumber} is between 0 and {_limit}:
+      return loop-value parsed as offline player

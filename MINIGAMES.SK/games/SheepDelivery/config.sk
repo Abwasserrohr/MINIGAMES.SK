@@ -1,0 +1,14 @@
+#
+# ==============
+# config.sk
+# ==============
+# config.sk is part of the MINIGAMES.SK library.
+# ==============
+
+on load:
+  wait 1 tick
+  set {_game} to "SheepDelivery"
+  mgSetTranslation("en",{_game},"name","SheepDelivery")
+  mgSetTranslation("en",{_game},"desc","Sort the sheeps out and deliver them to the right corner.")
+  mgSetTranslation("en",{_game},"bossbar_countdown","Prepare yourself...")
+  mgSetTranslation("en",{_game},"toplist_scoreboard","&7&l<place> | &f<player> &7&l>> &e&l<points>")

@@ -1,0 +1,150 @@
+#
+# ==============
+# functions.sk
+# ==============
+# functions.sk is part of the MINIGAMES.SK library.
+# ==============
+# > GAME: SheepDelivery
+# ==============
+
+#
+# > Function - mgSpleefHandler
+# > Starts or stops the game depending on the parameter.
+# > Parameters:
+# > <text>task, either "start" or "stop"
+function mgSheepDeliveryHandler(task:text):
+  if {_task} is "start":
+    mgSetTemporaryGameData("round",0)
+    mgSetTemporaryGameData("status","loading")
+
+    loop all players:
+      mgSetCurrentGamePoints("Spleef",loop-player,"points",0)
+    mgSetSidebarToplist("Spleef","points",5,1)
+
+    mgSetTemporaryGameData("playersingame",number of all players)
+    mgSheepDeliveryStartNewRound()
+
+  #
+  # > If the game should be stopped, use the MINIGAMES.SK function to
+  # > clear out any temporary data and unload the game.
+  if {_task} is "stop":
+    mgFinishGame()
+
+#
+# > Function - mgSheepDeliveryStartNewRound
+# > Starts a new Sheep delivery round.
+function mgSheepDeliveryStartNewRound():
+  set {_tplayers} to 0
+  set {_tplayers} to number of all players
+  broadcast "%{_tplayers}%"
+  if {_tplayers} >= 1:
+
+    mgSetTemporaryGameData("playersingame",number of all players)
+    loop all players:
+      mgSetTemporaryGameData("playerstatus|%loop-player%",true)
+    mgSetTemporaryGameData("status","preparing")
+
+    set {_round} to mgGetTemporaryGameData("round")
+    add 1 to {_round}
+    mgSetTemporaryGameData("round",{_round})
+
+    if {_round} is bigger than 1:
+      mgSheepDeliveryHandler("stop")
+      stop
+    broadcast "%getChatPrefix()% Round %{_round}%/5"
+
+    #
+    # > Create a fitting arena. Base size 40x40 + 2x2 per player
+    set {_mapsize} to 10 + number of all players
+    set {_mainarena} to ""
+    set {_mainarena} to location at -253.5, 47, -157 in mgGetCurrentWorld()
+    mgSetTemporaryGameData("respawnloc",location at -253.5, 47, -157 in mgGetCurrentWorld())
+    loop 50 times:
+      set {_rng} to random integer between 1 and 4
+      if {_rng} is 1:
+        spawn a white sheep at {_mainarena}
+      else if {_rng} is 2:
+        spawn a red sheep at {_mainarena}
+      else if {_rng} is 3:
+        spawn a blue sheep at {_mainarena}
+      else if {_rng} is 4:
+        spawn a yellow sheep at {_mainarena}
+      wait 1 tick
+	  
+    #
+    # > Create a countdown that lets the players wait for 5 seconds.
+    mgDisplayBossbarCountdown(5,"SheepDelivery","bossbar_countdown",null)
+
+    apply resistance 12 without particles to all players for 3 seconds
+    apply invisibility 1 without particles to all players for 1 second
+    set gamemode of all players to survival
+
+    set {_loc} to mgGetTemporaryGameData("respawnloc")
+    teleport all players to {_loc}
+
+    clear inventory of all players
+    give 1 of {_tool} to all players
+
+    set {_pitch} to 0.9
+    loop 5 times:
+      loop all players:
+        playsound("block.note_block.pling",1,{_pitch},location of loop-player,loop-player)
+
+      add 0.01 to {_pitch}	  
+      wait 1 second
+    loop all players:
+      playsound("block.note_block.pling",1,2,location of loop-player,loop-player)
+
+    #
+    # > Give the items to the players.
+    mgSetTemporaryGameData("status","ingame")
+    set {_rending} to 180
+    while mgGetTemporaryGameData("status") is "ingame":
+      add 1 to {_roundtime}
+      remove 1 from {_rending}
+      send action bar "%{_rending}%" to all players
+      loop all players:
+        if gamemode of loop-player is survival:
+          if -1 is bigger than y-coordinate of loop-player:
+            damage loop-player by 5 hearts
+      if {_roundtime} is bigger than 179:
+        mgSetTemporaryGameData("status","exitround")
+        mgSheepDeliveryStartNewRound()
+      wait 1 second
+
+  else:
+    broadcast "%getChatPrefix()% Not enough players."
+    mgSheepDeliveryHandler("stop")
+
+#
+# > Function - mgSpleefCheckSpleefRoundEnd
+# > Checks if the spleef round should be stopped.
+# > The Spleef round while loop will be stopped by this.
+function mgSheepDeliveryCheckSpleefRoundEnd():
+  if mgGetTemporaryGameData("status") is "ingame":
+    if mgGetTemporaryGameData("sheepsingame") is 0:
+      mgSheepDeliveryStartNewRound()
+
+options:
+  prefix: &7[&6&lEvent&7]&7
+  deliverlocation: location(14992, 83, -14995, "Spawn" parsed as world)
+  deliverradius: 4
+  deliverprotectionradius: 30
+  rewardsound: entity.experience_orb.pickup
+  pickupsound: entity.sheep.ambient
+  stealsound: entity.arrow.shoot
+  counterprefix: &6&l
+
+
+function carrythesheepactionbarstats():
+  loop all players:
+    set {_uuid} to uuid of loop-player
+    if {cobble::%{_uuid}%} is not set:
+      set {cobble::%{_uuid}%} to 0
+    if loop-player.getPassengers().get(0) is a sheep:
+      send action bar "{@prefix}&f Schafe abgegeben: {@counterprefix}%{cobble::%{_uuid}%}% &7&l|&f Liefer das Schaf zur Annahmestelle &7&l|" to loop-player
+    else:
+      send action bar "{@prefix}&f Schafe abgegeben: {@counterprefix}%{cobble::%{_uuid}%}% &7&l|&f Nimm dir ein Schaf mit Rechtsklick &7&l|" to loop-player
+
+
+

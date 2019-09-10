@@ -127,6 +127,7 @@ function mgSheepDeliveryCheckSpleefRoundEnd():
         set {_winnermessage} to mgGetTranslation({_lang},"SheepDelivery","playerhaswon",{_placewinner})
 
         message "%getChatPrefix()% %{_winner}% %{_winnermessage}%" to loop-player
+      mgAddPlayerToplistWin("SheepDelivery",{_winner},1)
       mgSheepDeliveryStartNewRound()
 
 function carrythesheepactionbarstats():

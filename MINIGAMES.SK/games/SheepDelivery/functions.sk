@@ -8,7 +8,7 @@
 # ==============
 
 #
-# > Function - mgSpleefHandler
+# > Function - mgSheepDeliveryHandler
 # > Starts or stops the game depending on the parameter.
 # > Parameters:
 # > <text>task, either "start" or "stop"
@@ -18,8 +18,9 @@ function mgSheepDeliveryHandler(task:text):
     mgSetTemporaryGameData("status","loading")
 
     loop all players:
-      mgSetCurrentGamePoints("Spleef",loop-player,"points",0)
-    mgSetSidebarToplist("Spleef","points",5,1)
+      mgSetCurrentGamePoints("SheepDelivery",loop-player,"Sheeps",0)
+    mgSetSidebarToplist("SheepDelivery","Sheeps",5,1)
+
 
     mgSetTemporaryGameData("playersingame",number of all players)
     mgSheepDeliveryStartNewRound()
@@ -36,7 +37,6 @@ function mgSheepDeliveryHandler(task:text):
 function mgSheepDeliveryStartNewRound():
   set {_tplayers} to 0
   set {_tplayers} to number of all players
-  broadcast "%{_tplayers}%"
   if {_tplayers} >= 1:
 
     mgSetTemporaryGameData("playersingame",number of all players)
@@ -51,7 +51,6 @@ function mgSheepDeliveryStartNewRound():
     if {_round} is bigger than 1:
       mgSheepDeliveryHandler("stop")
       stop
-    broadcast "%getChatPrefix()% Round %{_round}%/5"
 
     #
     # > Create a fitting arena. Base size 40x40 + 2x2 per player
@@ -102,18 +101,13 @@ function mgSheepDeliveryStartNewRound():
     while mgGetTemporaryGameData("status") is "ingame":
       add 1 to {_roundtime}
       remove 1 from {_rending}
-      send action bar "%{_rending}%" to all players
-      loop all players:
-        if gamemode of loop-player is survival:
-          if -1 is bigger than y-coordinate of loop-player:
-            damage loop-player by 5 hearts
+      mgSetTemporaryGameData("roundendcountdown",{_rending})
       if {_roundtime} is bigger than 179:
         mgSetTemporaryGameData("status","exitround")
         mgSheepDeliveryStartNewRound()
       wait 1 second
 
   else:
-    broadcast "%getChatPrefix()% Not enough players."
     mgSheepDeliveryHandler("stop")
 
 #
@@ -123,28 +117,43 @@ function mgSheepDeliveryStartNewRound():
 function mgSheepDeliveryCheckSpleefRoundEnd():
   if mgGetTemporaryGameData("status") is "ingame":
     if mgGetTemporaryGameData("sheepsingame") is 0:
+      loop all players:
+        set {_lang} to getClientLanguage(loop-player)
+
+        set {_winner} to mgGetCurrentGamePointsWinner("SheepDelivery","Sheeps")
+        set {_placewinner} to HashMap()
+        {_placewinner}.put("<player>",{_winner})
+
+        set {_winnermessage} to mgGetTranslation({_lang},"SheepDelivery","playerhaswon",{_placewinner})
+
+        message "%getChatPrefix()% %{_winner}% %{_winnermessage}%" to loop-player
       mgSheepDeliveryStartNewRound()
 
-options:
-  prefix: &7[&6&lEvent&7]&7
-  deliverlocation: location(14992, 83, -14995, "Spawn" parsed as world)
-  deliverradius: 4
-  deliverprotectionradius: 30
-  rewardsound: entity.experience_orb.pickup
-  pickupsound: entity.sheep.ambient
-  stealsound: entity.arrow.shoot
-  counterprefix: &6&l
-
-
 function carrythesheepactionbarstats():
+  set {_countdown} to mgGetTemporaryGameData("roundendcountdown")
+  if {_countdown} is not set:
+    stop
+  #
+  # > Loop all players to give them the action bar in their language.
   loop all players:
     set {_uuid} to uuid of loop-player
+    set {_lang} to getClientLanguage(loop-player)
+    set {_sheeps} to mgGetCurrentGamePoints("SheepDelivery",loop-player,"Sheeps")
+    set {_delivered} to mgGetTranslation({_lang},"SheepDelivery","delivered",null)
     if {cobble::%{_uuid}%} is not set:
       set {cobble::%{_uuid}%} to 0
     if loop-player.getPassengers().get(0) is a sheep:
-      send action bar "{@prefix}&f Schafe abgegeben: {@counterprefix}%{cobble::%{_uuid}%}% &7&l|&f Liefer das Schaf zur Annahmestelle &7&l|" to loop-player
+      set {_color} to "%loop-player.getPassengers().get(0).getColor()%"
+      set {_color} to mgGetTranslation({_lang},"SheepDelivery","%{_color}%",null)
+      set {_colorplaceholder} to HashMap()
+      {_colorplaceholder}.put("<color>",{_color})
+
+      set {_yoursheepcolor} to mgGetTranslation({_lang},"SheepDelivery","yoursheepcolor",{_colorplaceholder})
+      send action bar "%getChatPrefix()% &7&l%{_countdown}% &8&l| &7&l %{_delivered}% %{_sheeps}% &8&l|&7 %{_yoursheepcolor}%" to loop-player
+
     else:
-      send action bar "{@prefix}&f Schafe abgegeben: {@counterprefix}%{cobble::%{_uuid}%}% &7&l|&f Nimm dir ein Schaf mit Rechtsklick &7&l|" to loop-player
-
-
-
+      if {_sheeps} is 0:
+        set {_howtocarry} to mgGetTranslation({_lang},"SheepDelivery","howtocarry",null)
+        send action bar "%getChatPrefix()% &7&l%{_countdown}% &8&l|%{_howtocarry}%" to loop-player
+      else:
+        send action bar "%getChatPrefix()% &7&l%{_countdown}% &8&l|&7&l %{_delivered}% %{_sheeps}%" to loop-player

@@ -1,17 +1,17 @@
-
 # functions.md
 
 Here, the functions of MINIGAMES.SK core are explained. Use `Strg + F` to search in your browser for what you want.
 
-Index:
+## Index:
 
-* [Points](#Points)
-* [Sidebar](#Sidebar)
-* [World](#World)
-* [Language](#Language)
-* [Database](#Database)
-* [Miscellaneous](#Miscellaneous)
-* [Library](#Library)
+* **[Points](#Points)**
+* **[Sidebar](#Sidebar)**
+* **[World](#World)**
+* **[Language](#Language)**
+* **[Database](#Database)**
+* **[Miscellaneous](#Miscellaneous)**
+* **[Library](#Library)**
+
 
 
 ## Points

@@ -4,7 +4,7 @@ Here, the functions of MINIGAMES.SK core are explained. Use `Strg + F` to search
 
 
 ## Points
-Points are used to determine the points of a player. You are able to create custom points for every game, points are always non-persistent and get deleted once a game ends.
+Points are used to determine the progress of a player. You are able to create custom points for every game, points are always non-persistent and get deleted once a game ends.
 
 #### mgSetCurrentGamePoints(game:text,player:player,pointsname:text,points:number)
 This function allows you to set the points for a specific game and points name of a player to a value. If the points don't exist yet, they will be created automatically by this.
@@ -80,6 +80,51 @@ Teleports all players out, unloads all chunks and deletes the defined world inst
 
 #### mgCreateGameWorld(game:text,source:text)
 Creates a new game world. This function can copy a world from a custom source and copy it to use it for the game.
+
+## Language
+Minigames should support multiple languages to offer each player a good gameplay experience. These functions will help with that.
+
+#### mgSetTranslation(lang:text,game:text,key:text,value:text)
+Sets a translation to a game and a key. You can use placeholders that can be replaced later on.
+
+#### mgGetTranslation(lang:text,game:text,key:text,placeholders:object=null) :: text
+Returns the translation for the givenn language, game and translation key. Also placeholders can be used.
+To use placeholders, a `HashMap(find,replace)` is used. Here is an examle to define a placeholders variable for this function:
+```
+set {_placeholder} to HashMap()
+{_placeholder}.put("<ReplaceMe>","replaced!")
+```
+If you don't want to use placeholders, use `null` to prevent any errors. 
+
+## Library
+MINIGAMES.SK uses some custom made libraries to allow custom features to be used.
+
+#### getClientLanguage(player:player) :: text
+Returns the language code of the client as text.
+
+#### getDummy() :: block
+Returns a block that can be used to store temporary metadata.
+
+#### HashMap() :: HashMap
+Returns a new HashMap, removes the need to load java.util.HashMap in Skript.
+
+#### createBossBar(title:text,barcolor:text="white",barstyle:text="solid") :: Bossbar
+Returns a Bossbar that can be used for display purposes. If you use bossbars in your minigame, make sure to remove them from the view of the player once the game stops.
+Possible bar colors are: "blue","green","pink","purple","red","white","yellow"
+Possible bar styles are: "solid","6","10","12","20"
+
+#### opengui(player:player,size:integer,name:text,invtype:inventory type=chest inventory)
+Opens a GUI menu to the player with the defined size, name and inventory type. This GUI function has an additional function to add items into it.
+Valid inventory types:
+```
+chest inventory, dispenser inventory, dropper inventory, furnace inventory, workbench inventory, crafting table inventory, enchanting table inventory, brewing stand inventory, player inventory, creative inventory, merchant inventory, ender chest inventory, anvil inventory, beacon inventory, hopper inventory, shulker box inventory
+```
+
+
+
+
+
+
 
 
 

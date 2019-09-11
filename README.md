@@ -9,6 +9,7 @@ A minigames library for servers using [Skript](https://github.com/SkriptLang/Skr
 - [skript-db](https://github.com/btk5h/skript-db)
 - [SkQuery](https://www.spigotmc.org/resources/unofficial-skquery-fork-1-6-1-12.36631/)
 
+### [Documentation](https://github.com/Abwasserrohr/MINIGAMES.SK/blob/master/MINIGAMES.SK/docs/index.md)
 
 ### Why MINIGAMES.SK
 MINIGAMES.SK has a unique vote & play system which allows even small servers to offer minigames, since it only needs one server on which all minigames are being voted and played. Thanks to a changeable minimum amount of players for specific minigames, only fitting minigames for the amount of players are available.
@@ -24,19 +25,17 @@ If you're running MINIGAMES.SK, feel free to create a issue to get your server d
 - ~~Add Core functionality~~
 - ~~Add voting system~~
 - ~~Automatic loading of used and unloading of unused minigame skripts~~
-- Add statistics system (mysql & sqlite storage)
-- Add a API which can be used by minigames:
-- - timer
-- - game status
-- - game points
+- ~~Add statistics system (mysql & sqlite storage)~~
+- ~~Add a API which can be used by minigames:~~
+- - ~~game status~~
+- - ~~game points~~
 - - game money
-- - stop game
-- - start game (should only be used by the core)
-- - temporary ingame variable function using metadata
-- - game finish function which can halt any minigame + can be used by the minigames
+- - ~~stop game~~
+- - ~~start game (should only be used by the core)~~
+- - ~~temporary ingame variable function using metadata~~
+- - ~~game finish function which can halt any minigame + can be used by the minigames~~
 - - player stats
-- - toplists per game & global
-- Add custom function execution on the end in the configuration to allow customized things to happen per game & global.
+- - ~~toplists per game & global~~
 - Add more minigames
 - Create a documentation
 - Add a tutorial on how to create new minigames

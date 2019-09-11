@@ -7,6 +7,6 @@
 
 #
 # > Function - mgGetCurrentGame
-# > Returns the current game name.
+# > Sets the current game name.
 function mgSetCurrentGame(game:text):
   set metadata value "MG.SK|CurrentGameName" of getDummy() to {_game}

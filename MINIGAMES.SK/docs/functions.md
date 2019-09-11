@@ -24,3 +24,22 @@ Returns the number of points the player has for this game and points name.
 #### mgAddCurrentGamePoints(game:text,player:player,pointsname:text,points:number)
 Adds the given amount of points to the game and points name for the player. If the points don't exist yet, this function will also create them automatically.
 
+
+
+
+
+
+## World
+Each minigame gets it's own world that gets deleted after a game ends. This is very efficient, as it doesn't require a separate process to restore.
+
+#### mgGetCurrentWorld() :: world
+Returns the current minigame world that is being used for the game.
+
+#### mgDeleteGameWorld(world:world)
+Teleports all players out, unloads all chunks and deletes the defined world instantly.
+
+#### mgCreateGameWorld(game:text,source:text)
+Creates a new game world. This function can copy a world from a custom source and copy it to use it for the game.
+
+
+

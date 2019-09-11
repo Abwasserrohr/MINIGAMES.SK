@@ -102,35 +102,40 @@ function mgSheepDeliveryStartNewRound():
       add 1 to {_roundtime}
       remove 1 from {_rending}
       mgSetTemporaryGameData("roundendcountdown",{_rending})
-      if {_roundtime} is bigger than 179:
-        mgSetTemporaryGameData("status","exitround")
-        mgSheepDeliveryStartNewRound()
+      mgSheepDeliveryCheckRoundEnd()
       wait 1 second
 
   else:
     mgSheepDeliveryHandler("stop")
 
 #
-# > Function - mgSpleefCheckSpleefRoundEnd
-# > Checks if the spleef round should be stopped.
-# > The Spleef round while loop will be stopped by this.
-function mgSheepDeliveryCheckSpleefRoundEnd():
+# > Function - mgSheepDeliveryCheckRoundEnd
+# > Checks if the sheep delivery round should be stopped.
+function mgSheepDeliveryCheckRoundEnd():
   if mgGetTemporaryGameData("status") is "ingame":
-    if mgGetTemporaryGameData("sheepsingame") is 0:
+    set {_countdown} to mgGetTemporaryGameData("roundendcountdown")
+    set {_sheepsingame} to mgGetTemporaryGameData("sheepsingame")
+    if {_sheepsingame} is 0:
+      set {_end} to true
+    if {_countdown} is 0:
+      set {_end} to true
+    if {_end} is true:
       loop all players:
+        loop-player.eject()
         set {_lang} to getClientLanguage(loop-player)
 
         set {_winner} to mgGetCurrentGamePointsWinner("SheepDelivery","Sheeps")
         set {_placewinner} to HashMap()
-        {_placewinner}.put("<player>",{_winner})
+        {_placewinner}.put("<player>","%{_winner}%")
 
         set {_winnermessage} to mgGetTranslation({_lang},"SheepDelivery","playerhaswon",{_placewinner})
 
         message "%getChatPrefix()% %{_winner}% %{_winnermessage}%" to loop-player
       mgAddPlayerToplistWin("SheepDelivery",{_winner},1)
+      mgSetTemporaryGameData("status","exitround")
       mgSheepDeliveryStartNewRound()
 
-function carrythesheepactionbarstats():
+function mgSheepDeliveryActionbarStats():
   set {_countdown} to mgGetTemporaryGameData("roundendcountdown")
   if {_countdown} is not set:
     stop
@@ -141,8 +146,6 @@ function carrythesheepactionbarstats():
     set {_lang} to getClientLanguage(loop-player)
     set {_sheeps} to mgGetCurrentGamePoints("SheepDelivery",loop-player,"Sheeps")
     set {_delivered} to mgGetTranslation({_lang},"SheepDelivery","delivered",null)
-    if {cobble::%{_uuid}%} is not set:
-      set {cobble::%{_uuid}%} to 0
     if loop-player.getPassengers().get(0) is a sheep:
       set {_color} to "%loop-player.getPassengers().get(0).getColor()%"
       set {_color} to mgGetTranslation({_lang},"SheepDelivery","%{_color}%",null)
@@ -158,3 +161,59 @@ function carrythesheepactionbarstats():
         send action bar "%getChatPrefix()% &7&l%{_countdown}% &8&l| %{_howtocarry}%" to loop-player
       else:
         send action bar "%getChatPrefix()% &7&l%{_countdown}% &8&l|&7&l %{_delivered}% %{_sheeps}%" to loop-player
+
+function mgSheepDeliveryCheckDelivery():
+  loop all players:
+    delete {_wool}
+    delete {_passengers}
+    set {_passengers} to loop-player.getPassengers()
+    if {_passengers}.size! is not 0:
+      if {_passengers}.get(0) is a sheep:
+        if block below loop-player is wool:
+          set {_wool} to true
+        else if block 2 below loop-player is wool:
+          set {_wool} to true
+    if {_wool} is true:
+      delete {_ok}
+      set {_color} to "%{_passengers}.get(0).getColor()%"
+      if block below loop-player is white wool:
+        if {_color} is "WHITE":
+          set {_ok} to true
+      if block 2 below loop-player is white wool:
+        if {_color} is "WHITE":
+          set {_ok} to true
+      if block below loop-player is red wool:
+        if {_color} is "RED":
+          set {_ok} to true
+      if block 2 below loop-player is red wool:
+        if {_color} is "RED":
+          set {_ok} to true
+      if block below loop-player is yellow wool:
+        if {_color} is "YELLOW":
+          set {_ok} to true
+      if block 2 below loop-player is yellow wool:
+        if {_color} is "YELLOW":
+          set {_ok} to true
+      if block below loop-player is blue wool:
+        if {_color} is "BLUE":
+          set {_ok} to true
+      if block 2 below loop-player is blue wool:
+        if {_color} is "BLUE":
+          set {_ok} to true
+      if {_ok} is true:
+        set {_sheep} to {_passengers}.get(0)
+
+        set {_player} to loop-player
+        {_player}.eject()
+        set {_rewardsound} to mgGetTranslation("config","SheepDelivery","rewardsound",null)
+        playsound({_rewardsound},0.1,0.5,location of {_player},{_player})
+        mgAddCurrentGamePoints("SheepDelivery",{_player},"Sheeps",1)
+        mgAddPlayerToplistScore("SheepDelivery",{_player},1)
+        mgSetSidebarToplist("SheepDelivery","Sheeps",5,1)
+
+        set {_loc} to {_player}'s location
+        remove 10 from y-coord of {_loc}
+        teleport {_sheep} to {_loc}
+        wait 5 ticks
+        remove 500 from y-coord of {_loc}
+        teleport {_sheep} to {_loc}

@@ -192,7 +192,24 @@ Currently available effects: "shine", "fill", "fillshine"
 Persistent data is stored in the database. These functions use the database to retrieve the data.
 Since the database has to be called first, it takes some ticks until the data is available. To make the process easier, functions have been added to manage this.
 
+##### `mgAddPlayerToplistWin(game:text="global",player:offline player,amount:number=1)`
 
+##### `mgRemovePlayerToplistWin(game:text="global",player:offline player,amount:number=1)`
+
+
+##### `mgAddPlayerToplistScore(game:text="global",player:offline player,amount:number=1)`
+
+
+##### `mgRemovePlayerToplistScore(game:text="global",player:offline player,amount:number=1)`
+
+##### `mgGetToplistByWin(game:text="global",limit:number=10)`
+
+
+##### `mgGetToplistByScore(game:text="global",limit:number=10)`
+
+##### `mgGetPlayerWin(game:text="global",player:offline player)`
+
+##### `mgGetPlayerScore(game:text="global",player:offline player)`
 
 
 ## Library

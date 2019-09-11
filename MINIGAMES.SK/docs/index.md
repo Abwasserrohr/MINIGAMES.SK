@@ -7,4 +7,4 @@ Do not use this script on an server that stores worlds or data that is valuable 
 
 * **[Setup](setup.md)**
 * **[Functions](functions.md)**
-* **[How to create your own minigame](how_to_create_your_own_minigame.md)**
+* **[Create a minigame](create_a_minigame.md)**

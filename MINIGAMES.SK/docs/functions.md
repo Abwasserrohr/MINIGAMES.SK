@@ -117,14 +117,13 @@ Possible bar styles are: "solid","6","10","12","20"
 Opens a GUI menu to the player with the defined size, name and inventory type. This GUI function has an additional function to add items into it.
 Valid inventory types:
 ```
-chest inventory, dispenser inventory, dropper inventory, furnace inventory, workbench inventory, crafting table inventory, enchanting table inventory, brewing stand inventory, player inventory, creative inventory, merchant inventory, ender chest inventory, anvil inventory, beacon inventory, hopper inventory, shulker box inventory
+chest inventory, dispenser inventory, dropper inventory, furnace inventory, 
+workbench inventory, crafting table inventory, enchanting table inventory, 
+brewing stand inventory, player inventory, creative inventory, merchant inventory, 
+ender chest inventory, anvil inventory, beacon inventory, hopper inventory, 
+shulker box inventory
 ```
 
-
-
-
-
-
-
-
+#### setguiitem(player:player,slot:number,item:item,amount:integer,name:text,lore:text,exec:text="",close:boolean=false)
+Sets a specific item into the GUI of the player. You can execute a custom function on click by setting the exec parameter to a string based function. The function is later called with SkQuery evaluate.
 

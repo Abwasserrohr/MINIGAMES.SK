@@ -53,54 +53,14 @@ on leaves decay:
   cancel event
 
 options:
-  prefix: &7[&6&lEvent&7]&7
-  deliverlocation: location(14992, 83, -14995, "Spawn" parsed as world)
-  deliverradius: 4
-  deliverprotectionradius: 30
-  rewardsound: entity.experience_orb.pickup
   pickupsound: entity.sheep.ambient
-  stealsound: entity.arrow.shoot
-  counterprefix: &6&l
 
 on toggle sneak:
   set {_passengers} to player.getPassengers()
   if {_passengers}.get(0) is a sheep:
-    player.eject()
-    set {_color} to "%{_passengers}.get(0).getColor()%"
-    if block below player is white wool:
-      if {_color} is "WHITE":
-        set {_ok} to true
-    if block 2 below player is white wool:
-      if {_color} is "WHITE":
-        set {_ok} to true
-    if block below player is red wool:
-      if {_color} is "RED":
-        set {_ok} to true
-    if block 2 below player is red wool:
-      if {_color} is "RED":
-        set {_ok} to true
-    if block below player is yellow wool:
-      if {_color} is "YELLOW":
-        set {_ok} to true
-    if block 2 below player is yellow wool:
-      if {_color} is "YELLOW":
-        set {_ok} to true
-    if block below player is blue wool:
-      if {_color} is "BLUE":
-        set {_ok} to true
-    if block 2 below player is blue wool:
-      if {_color} is "BLUE":
-        set {_ok} to true
-    if {_ok} is true:
-      playsound("{@rewardsound}",0.1,0.5,location of player,player)
-      mgAddCurrentGamePoints("SheepDelivery",player,"Sheeps",1)
-      mgAddPlayerToplistScore("Spleef",player,1)
-      mgSetSidebarToplist("SheepDelivery","Sheeps",5,1)
-
-
-      set {_loc} to player's location
-      remove 500 from y-coord of {_loc}
-      teleport {_passengers}.get(0) to {_loc}
+    if block below player is not wool:
+      if block 2 below player is not wool:
+        player.eject()
 
 on rightclick on sheep:
   if event-entity is riding a player:
@@ -123,4 +83,7 @@ on damage of a sheep:
     cancel event
 
 every 1 second:
-  carrythesheepactionbarstats()
+  mgSheepDeliveryActionbarStats()
+  
+every 5 ticks:
+  mgSheepDeliveryCheckDelivery()

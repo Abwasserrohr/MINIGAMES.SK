@@ -42,6 +42,7 @@ function mgMyFirstGameRightclick(player:player):
 ---
 
 **4.** Add all events and function calls that need to be triggered for the functions into `init.sk`.
+
 **Example:**
 ```
 on rightclick:
@@ -51,6 +52,7 @@ on rightclick:
 ---
 
 **5.** Add a function or your scripting that starts your minigame to the `on load` event in `init.sk`
+
 **Example:**
 ```
 on load:

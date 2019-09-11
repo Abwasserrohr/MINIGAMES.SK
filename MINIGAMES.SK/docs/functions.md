@@ -141,40 +141,123 @@ If you don't want to use placeholders, use `null` to prevent any errors.
 
 ---
 
+## Database
+Persistent data is stored in the database. These functions use the database to retrieve the data.
+Since the database has to be called first, it takes some ticks until the data is available. To make the process easier, functions have been added to manage this.
+
+---
+
+##### `mgAddPlayerToplistWin(game:text="global",player:offline player,amount:number=1)`
+Adds a win by a player for the specified game to the toplist.
+
+---
+
+##### `mgRemovePlayerToplistWin(game:text="global",player:offline player,amount:number=1)`
+Removes a win by a player for the specified game from the toplist.
+
+---
+
+##### `mgAddPlayerToplistScore(game:text="global",player:offline player,amount:number=1)`
+Adds the specified score of a player for the specified game to the toplist.
+
+---
+
+##### `mgRemovePlayerToplistScore(game:text="global",player:offline player,amount:number=1)`
+Removes the specified score of a player for the specified game from the toplist.
+
+---
+
+##### `mgGetToplistByWin(game:text="global",limit:number=10)`
+Returns a uuid text that can be used to retrieve the toplist.
+Use `mgGetToplistByWinResponse(uuid:text) :: object` to get the HashMap(uuid,wins) that is the toplist.
+An example how you can use these functions is showed below at the `mgGetPlayerScore` function.
+
+---
+
+##### `mgGetToplistByScore(game:text="global",limit:number=10)`
+Returns a uuid text that can be used to retrieve the toplist.
+Use `mgGetToplistByScoreResponse(uuid:text) :: object` to get the HashMap(uuid,wins) that is the toplist.
+An example how you can use these functions is showed below at the `mgGetPlayerScore` function.
+
+---
+
+##### `mgGetPlayerWin(game:text="global",player:offline player)`
+Returns a uuid text that can be used to retrieve the wins of the player.
+Use `mgGetPlayerWinResponse(uuid:text) :: number` to get the wins.
+An example how you can use these functions is showed below at the `mgGetPlayerScore` function.
+
+---
+
+##### `mgGetPlayerScore(game:text="global",player:offline player)`
+Returns a uuid text that can be used to retrieve the score of the player.
+Use `mgGetPlayerScoreResponse(uuid:text) :: number` to get the score.
+Example usage, you can apply this also to other database functions that work similar.
+```
+command /score:
+  trigger:
+    set {_transaction} to mgGetPlayerScore("global",player)
+    while mgGetPlayerScoreResponse({_transaction}) is not set:
+      wait 1 tick
+    set {_score} to mgGetPlayerScoreResponse({_transaction})
+    message "Your Score: %{_score}%"
+```
+
+---
+
 ## Miscellaneous
 MINIGAMES.SK has various other function that haven't been categorized to one of the listed topics. These are listed here.
+
+---
 
 ##### `mgSetTemporaryGameData(key:text,object:object)`
 Set any variable to a key that is stored until the game is over.
 
+---
+
 ##### `mgGetTemporaryGameData(key:text) :: object`
 Returns the stored variable that has been stored to this key.
+
+---
 
 ##### `mgSetCurrentGameStatus(status:text)`
 Sets the current game status of the minigame. Can be used to determine the current game status within the minigame.
 
+---
+
 ##### `mgGetCurrentGameStatus() :: text`
 Returns the current game status that has been set previously.
+
+---
 
 ##### `mgSetCurrentGame(game:text)`
 Sets the current game name. Is used by the lobby script and internally.
 
+---
+
 ##### `mgGetCurrentGame() :: text`
 Returns the current game name. Can be used to stop while loops of the minigame once this changes.
 
-
+---
 
 ##### `mgFinishGame()`
 Use this function to stop your minigame once it has finished.
 
+---
+
 ##### `mgStartGame(game:text)`
 Starts a minigame with the given name. This should only be used by the Lobby game.
+
+---
 
 ##### `mgClearGameData()`
 Clears the temporary game data. Is being used by internal functions, use this only for debugging.
 
+---
+
 ##### `mgGetAvailableMinigames() :: objects`
 Returns a list that contains all minigame names as text.
+
+---
 
 ##### `mgDisplayBossbarCountdown(seconds:number,translationtextgame:text,translationtextkey: text,placeholders:object)`
 Creates a bossbar countdown for the given seconds and a specified translation game and key. Accepts placeholders, if no placeholders are given, use null.
@@ -184,33 +267,13 @@ set {_placeholder} to HashMap()
 {_placeholder}.put("<ReplaceMe>","replaced!")
 ```
 
+---
+
 ##### `mgCreateAnimatedTextList(text:text,color1:text,color2:text,effect:text) :: objects`
 Creates a list that can be played to animate the text. It allows to switch between two colors and animate with multiple effects.
 Currently available effects: "shine", "fill", "fillshine"
 
-## Database
-Persistent data is stored in the database. These functions use the database to retrieve the data.
-Since the database has to be called first, it takes some ticks until the data is available. To make the process easier, functions have been added to manage this.
-
-##### `mgAddPlayerToplistWin(game:text="global",player:offline player,amount:number=1)`
-
-##### `mgRemovePlayerToplistWin(game:text="global",player:offline player,amount:number=1)`
-
-
-##### `mgAddPlayerToplistScore(game:text="global",player:offline player,amount:number=1)`
-
-
-##### `mgRemovePlayerToplistScore(game:text="global",player:offline player,amount:number=1)`
-
-##### `mgGetToplistByWin(game:text="global",limit:number=10)`
-
-
-##### `mgGetToplistByScore(game:text="global",limit:number=10)`
-
-##### `mgGetPlayerWin(game:text="global",player:offline player)`
-
-##### `mgGetPlayerScore(game:text="global",player:offline player)`
-
+---
 
 ## Library
 MINIGAMES.SK uses some custom made libraries to allow custom features to be used.

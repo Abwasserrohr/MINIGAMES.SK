@@ -5,4 +5,4 @@ Do not use this script on an server that stores worlds or data that is valuable 
 
 ## Documentation
 
-*  **[Functions](MINIGAMES.SK/docs/functions.md)**
+*  **[Functions](functions.md)**

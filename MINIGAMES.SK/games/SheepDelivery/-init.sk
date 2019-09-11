@@ -45,15 +45,7 @@ on death:
     teleport player to {_loc}
 
 on break:
-  clear drops
-  if mgGetTemporaryGameData("status") is not "ingame":
-    cancel event
-
-on leaves decay:
   cancel event
-
-options:
-  pickupsound: entity.sheep.ambient
 
 on toggle sneak:
   set {_passengers} to player.getPassengers()
@@ -66,10 +58,14 @@ on rightclick on sheep:
   if event-entity is riding a player:
     cancel event
     stop
+  set {_countdown} to mgGetTemporaryGameData("roundendcountdown")
+  if {_countdown} is not set:
+    stop
   set {_passengers} to player.getPassengers()
   if {_passengers}.size! is 0:
     player.addPassenger(event-entity)
-    playsound("{@pickupsound}",2,1,location of player,player)
+    set {_pickupsound} to mgGetTranslation("config","SheepDelivery","pickupsound",null)
+    playsound({_pickupsound},2,1,location of player,player)
 
 on damage of a sheep:
   if "%damage cause%" is not "void":

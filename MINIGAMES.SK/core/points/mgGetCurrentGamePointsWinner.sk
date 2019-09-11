@@ -45,5 +45,4 @@ function mgGetCurrentGamePointsWinner(game:text,pointsname:text) :: offline play
     set {_i} to {_i}-1
   loop {_h2l::*}:
     add 1 to {_topnumber}
-    if {_topnumber} is between 0 and {_limit}:
-      return loop-value parsed as offline player
+    return "%loop-value%" parsed as offline player

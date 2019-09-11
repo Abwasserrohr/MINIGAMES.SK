@@ -1,0 +1,12 @@
+#
+# ==============
+# mgSetTranslation.sk
+# ==============
+# mgSetTranslation.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgSetTranslation
+# > Sets a translation for the language, game and the key to a value.
+function mgSetTranslation(lang:text,game:text,key:text,value:text):
+  set {MG::LANG::%{_game}%::%{_key}%::%{_lang}%} to {_value}

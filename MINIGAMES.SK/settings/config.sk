@@ -1,0 +1,54 @@
+#
+# ==============
+# config.sk
+# ==============
+# config.sk is part of the MINIGAMES.SK configuration.
+# ==============
+
+#
+# > Set these values to match your desire.
+options:
+  #
+  # > Chat prefix that is shown in MINIGAMES.SK addons.
+  chatprefix: "&7[&6&lMinigames&7] &8&l>>&7"
+  #
+  # > Currently supported formats: sqlite (default), mysql.
+  storagetype: "sqlite"
+  #
+  # > Enter the mysql url if storage type is set to "mysql".
+  mysqlurl: "mysql://localhost:3306/databasename?user=username&password=passwordhere&useSSL=false"
+  #
+  # > The lobby game that should be used to start the game and be used for the lobby and game selection.
+  gamelobby: "Lobby"
+  
+#
+# > Please do not change these functions, since they are used to share the data between
+# > other Skript files on the server. Be sure to never leak your private posting key!
+
+#
+# > Function - getStorageType
+# > Actions:
+# > Returns the current storage type.
+function getStorageType() :: text:
+  return {@storagetype}
+
+#
+# > Function - getMySQLURL
+# > Actions:
+# > Returns the mysql url to connect to the database.
+function getMySQLURL() :: text:
+  return {@mysqlurl}
+
+#
+# > Function - getChatPrefix
+# > Actions:
+# > Returns the chat prefix.
+function getChatPrefix() :: text:
+  return {@chatprefix}
+
+#
+# > Function - getGameLobby
+# > Actions:
+# > Returns the game lobby that should be used.
+function getGameLobby() :: text:
+  return {@gamelobby}

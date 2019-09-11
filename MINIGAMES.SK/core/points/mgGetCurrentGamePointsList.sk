@@ -1,0 +1,23 @@
+#
+# ==============
+# mgGetCurrentGamePointsList.sk
+# ==============
+# mgGetCurrentGamePointsList.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgGetCurrentGamePointsList
+# > Returns a points HashMap which contains all points of the game and pointsname.
+# > Parameters:
+# > <text>game name
+# > <text>name of wanted points
+function mgGetCurrentGamePointsList(game:text,pointsname:text) :: object:
+  set {_holders} to metadata value "MG.SK|points|holderlist" of getDummy()
+  set {_points} to HashMap()
+  loop ...{_holders}.keySet():
+    set {_value} to metadata value "MG.SK|points|%loop-value%|%{_game}%" of getDummy()
+    if {_value} is set:
+      loop ...{_value}.keySet():
+        if loop-value-2 is {_pointsname}:
+          {_points}.put("%loop-value-1%",{_value}.get(loop-value-2))
+  return {_points}

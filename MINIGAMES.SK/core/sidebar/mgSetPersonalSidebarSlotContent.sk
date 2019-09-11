@@ -1,0 +1,37 @@
+#
+# ==============
+# mgSetPersonalSidebarSlotContent.sk
+# ==============
+# mgSetPersonalSidebarSlotContent.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgSetPersonalSidebarSlotContent
+# > Sets a personal sidebar slot for a specific player. Uses interal translations and placeholders.
+# > Parameters:
+# > <number>slot(1-13 are available)
+# > <player>the player who should see this sidebar content
+# > <text>the game of which the translation is needed
+# > <text>the key of the translation
+# > <HashMap>placeholders which are replaced within the translation HashMap<translationkey,replacement>
+function mgSetPersonalSidebarSlotContent(slotnumber:number,player:player,translationgame:text,translationkey:text,placeholders:object):
+  if {_slotnumber} < 1:
+    stop
+  if {_slotnumber} > 13:
+    stop
+  set {_slotnumber} to 51 - {_slotnumber}
+  set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|PLAYER" of getDummy()
+  if {_sidebar} is not set:
+    set {_sidebar} to HashMap()
+  #
+  # > Store the personal slot content with a key "playername-slotnumber".
+  if {_sidebar}.get("%{_player}%-%{_slotnumber}%") is set:
+    {_sidebar}.remove("%{_player}%-%{_slotnumber}%")
+  #
+  # > Create a new HashMap for slot content, like translation game, translation key and translation placeholders.
+  set {_slot} to HashMap()
+  {_slot}.put("game",{_translationgame})
+  {_slot}.put("key",{_translationkey})
+  {_slot}.put("placeholders",{_placeholders})
+  {_sidebar}.put("%{_player}%-%{_slotnumber}%",{_slot})
+  set metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy() to {_sidebar}

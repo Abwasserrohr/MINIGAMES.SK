@@ -1,0 +1,48 @@
+#
+# ==============
+# mgDisplayBossbarCountdown.sk
+# ==============
+# mgDisplayBossbarCountdown.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgDisplayBossbarCountdown
+# > Creates a bossbar countdown with the defined translation text.
+# > Parameters:
+# > <number>the amount of seconds the countdown should take
+# > <text>the game for which the key should be translated
+# > <text>the key of the translation of which the value should be displayed 
+# > <HashMap(search,replacement)>Placeholders that might be used in the translation, null for no placeholders.
+function mgDisplayBossbarCountdown(seconds:number,translationtextgame:text,translationtextkey: text,placeholders:object):
+  #
+  # > Start with a progress of 0.
+  set {_progress} to 0.0
+  #
+  # > Continue the progress until we're done.
+  while {_done} is not set:
+    #
+    # > The countdown works with seconds, increase the counter every second.
+    wait 1 second
+    add 1 to {_timer}
+
+    #
+    # > Calculate the new progress.
+    set {_progress} to (1.0 / {_seconds}) * {_timer}
+
+    #
+    # > Give every player a unique bossbar to fit the language.
+    loop all players:
+      if {_bossbar::%loop-player%} is not set:
+        set {_lang} to getClientLanguage(loop-player)
+        set {_bossbar::%loop-player%} to createBossBar(mgGetTranslation({_lang},{_translationtextgame},{_translationtextkey},{_placeholders}),"yellow","20")
+      {_bossbar::%loop-player%}.setProgress({_progress})
+      {_bossbar::%loop-player%}.addPlayer(loop-player)
+      {_bossbar::%loop-player%}.setProgress({_progress})
+
+    #
+    # > If the countdown is done, remove the bossbar.
+    if {_timer} >= {_seconds}:
+      set {_done} to true
+      loop {_bossbar::*}:
+        loop-value.removeAll()
+      delete {_bossbar::*}

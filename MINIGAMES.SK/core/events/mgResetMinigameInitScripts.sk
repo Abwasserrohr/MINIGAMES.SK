@@ -1,0 +1,19 @@
+#
+# ==============
+# mgResetMinigameInitScripts.sk
+# ==============
+# mgResetMinigameInitScripts.sk is part of the MINIGAMES.SK library.
+# ==============
+
+on skript start: 
+  wait 1 tick
+  mgResetMinigameInitScripts()
+
+function mgResetMinigameInitScripts():
+  set {_games::*} to mgGetAvailableMinigames()
+  loop {_games::*}:
+    execute console command "/sk disable MINIGAMES.SK/games/%loop-value%/init.sk"
+  wait 1 second
+  mgClearGameData()
+  mgSetCurrentGame("")
+  mgStartGame(getGameLobby())

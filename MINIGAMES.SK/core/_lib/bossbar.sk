@@ -1,0 +1,55 @@
+#
+# ==============
+# bossbar.sk
+# ==============
+# bossbar.sk is part of the MINIGAMES.SK library.
+# ==============
+
+import:
+  org.bukkit.boss.BarStyle
+  org.bukkit.boss.BarColor
+  org.bukkit.Bukkit
+
+#
+# > Function - createBossBar
+# > Creates a bossbar which can be used.
+# > Parameters:
+# > <text> title which should be displayed
+# > [<text>] bossbar color - Options: "blue","green","pink","purple","red","white","yellow"
+# > [<text>] bossbar segments - Options: "solid","6","10","12","20"
+function createBossBar(title:text,barcolor:text="white",barstyle:text="solid") :: object:
+  #
+  # > Creates a bar color to the boxx bar. This is done to allow
+  # > the server operator easily calling the function with text.
+  if {_barcolor} is "blue":
+    set {_bc} to BarColor.BLUE!
+  else if {_barcolor} is "green":
+    set {_bc} to BarColor.GREEN!
+  else if {_barcolor} is "pink":
+    set {_bc} to BarColor.PINK!
+  else if {_barcolor} is "purple":
+    set {_bc} to BarColor.PURPLE!
+  else if {_barcolor} is "red":
+    set {_bc} to BarColor.RED!
+  else if {_barcolor} is "white":
+    set {_bc} to BarColor.WHITE!
+  else if {_barcolor} is "yellow":
+    set {_bc} to BarColor.YELLOW!
+
+  #
+  # > Creates a bar style to the boss bar. This is done to allow
+  # > the server operator easily calling the function with text.
+  if {_barstyle} is "solid":
+    set {_bs} to BarStyle.SOLID!
+  if {_barstyle} is "SEGMENTED_10" or "10":
+    set {_bs} to BarStyle.SEGMENTED_10!
+  if {_barstyle} is "SEGMENTED_12" or "12":
+    set {_bs} to BarStyle.SEGMENTED_12!
+  if {_barstyle} is "SEGMENTED_20" or "20":
+    set {_bs} to BarStyle.SEGMENTED_20!
+  if {_barstyle} is "SEGMENTED_6" or "6":
+    set {_bs} to BarStyle.SEGMENTED_6!
+
+  #
+  # > Return the created boss bar.
+  return Bukkit.createBossBar({_title}, {_bc}, {_bs}, null)

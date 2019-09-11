@@ -1,0 +1,24 @@
+#
+# ==============
+# mgGetTranslation.sk
+# ==============
+# mgGetTranslation.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgGetTranslation
+# > Returns the translation for the language, game and key.
+# > Parameters:
+# > <text>language, eg. en
+# > <text>the name of the game for which the translation has been made
+# > <text>the translation key that links to the translation
+# > [<HashMap>(placeholder,replacement)]placeholders that should be replaced within a Hashmap. 
+# > The key is the placeholder, the value the replacement.
+function mgGetTranslation(lang:text,game:text,key:text,placeholders:object=null) :: text:
+  if {_placeholders} is null:
+    return {MG::LANG::%{_game}%::%{_key}%::%{_lang}%}
+  else:
+    set {_translation} to {MG::LANG::%{_game}%::%{_key}%::%{_lang}%}
+    loop ...{_placeholders}.keySet():
+      replace all "%loop-value%" with "%{_placeholders}.get(loop-value)%" in {_translation}
+    return {_translation}

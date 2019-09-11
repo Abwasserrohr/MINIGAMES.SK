@@ -1,0 +1,194 @@
+#
+# ==============
+# functions.sk
+# ==============
+# functions.sk is part of the MINIGAMES.SK library.
+# ==============
+# > GAME: Spleef
+# ==============
+
+#
+# > Function - mgSpleefHandler
+# > Starts or stops the game depending on the parameter.
+# > Parameters:
+# > <text>task, either "start" or "stop"
+function mgSpleefHandler(task:text):
+  if {_task} is "start":
+    mgSetTemporaryGameData("round",0)
+    mgSetTemporaryGameData("status","loading")
+
+    loop all players:
+      mgSetCurrentGamePoints("Spleef",loop-player,"points",0)
+    mgSetSidebarToplist("Spleef","points",5,1)
+
+    mgSetTemporaryGameData("playersingame",number of all players)
+    mgSpleefStartNewRound()
+
+  #
+  # > If the game should be stopped, use the MINIGAMES.SK function to
+  # > clear out any temporary data and unload the game.
+  if {_task} is "stop":
+    mgFinishGame()
+
+#
+# > Function - mgSpleefStartNewRound
+# > Starts a new Spleef round.
+function mgSpleefStartNewRound():
+  set {_tplayers} to 0
+  set {_tplayers} to number of all players
+  if {_tplayers} is bigger than 1:
+
+    mgSetTemporaryGameData("playersingame",number of all players)
+    loop all players:
+      mgSetTemporaryGameData("playerstatus|%loop-player%",true)
+    mgSetTemporaryGameData("status","preparing")
+
+    set {_round} to mgGetTemporaryGameData("round")
+    add 1 to {_round}
+    mgSetTemporaryGameData("round",{_round})
+
+    if {_round} is bigger than 5:
+      mgSpleefHandler("stop")
+      stop
+    broadcast "%getChatPrefix()% Round %{_round}%/5"
+
+    #
+    # > Create a fitting arena. Base size 40x40 + 2x2 per player
+    set {_mapsize} to 10 + number of all players
+    set {_mainarena} to ""
+    set {_mainarena} to location at 0.5, 1, 0.5 in mgGetCurrentWorld()
+    mgSetTemporaryGameData("respawnloc",location at 0.5, 2, 0.5 in mgGetCurrentWorld())
+
+    loop all blocks in radius 76 around {_mainarena}:
+      if y-coordinate of loop-block is 1.5:
+        set loop-block to air
+
+    #
+    # > Select a random integer for different blocks and tools.
+    set {_rng} to random integer between 0 and 7
+
+    #
+    # > Set a block depending on the random integer.
+    if {_rng} is 0 OR 6 OR 7:
+      set {_block} to grass block
+      set {_tool} to diamond shovel of efficiency 5
+    if {_rng} is 1:
+      set {_block} to packed ice block
+      set {_tool} to diamond pickaxe of efficiency 500
+    if {_rng} is 2:
+      set {_block} to any leaves
+      set {_tool} to shears
+    if {_rng} is 3:
+      set {_block} to soul sand
+      set {_tool} to diamond shovel of efficiency 5
+    if {_rng} is 4:
+      set {_block} to blue concrete
+      set {_tool} to diamond pickaxe of efficiency 500
+    if {_rng} is 5:
+      set {_block} to any glazed terracotta
+      set {_tool} to diamond pickaxe of efficiency 500
+    if {_block} is not set:
+      set {_block} to dirt
+      set {_tool} to diamond shovel of efficiency 5
+
+    #
+	# > Create the spleef floor, make a short 1 tick break every 50 blocks.
+    loop all blocks in radius {_mapsize} around {_mainarena}:
+      add 1 to {_blocknumber}
+      if {_blocknumber} > 50:
+        wait 1 tick
+        set {_blocknumber} to 0
+      if y-coordinate of loop-block is 1.5:
+        set loop-block to {_block}
+
+    #
+    # > Create a countdown that lets the players wait for 5 seconds.
+    mgDisplayBossbarCountdown(5,"Spleef","bossbar_countdown",null)
+
+    apply haste 2 without particles to all players for 160 seconds
+    apply resistance 12 without particles to all players for 3 seconds
+    apply invisibility 1 without particles to all players for 1 second
+    set gamemode of all players to survival
+
+    set {_loc} to mgGetTemporaryGameData("respawnloc")
+    teleport all players to {_loc}
+
+    clear inventory of all players
+    give 1 of {_tool} to all players
+
+    set {_pitch} to 0.9
+    loop 5 times:
+      loop all players:
+        playsound("block.note_block.pling",1,{_pitch},location of loop-player,loop-player)
+
+      add 0.01 to {_pitch}	  
+      wait 1 second
+    loop all players:
+      playsound("block.note_block.pling",1,2,location of loop-player,loop-player)
+
+    #
+    # > Give the items to the players.
+    mgSetTemporaryGameData("status","ingame")
+    set {_rending} to 180
+    while mgGetTemporaryGameData("status") is "ingame":
+      add 1 to {_roundtime}
+      remove 1 from {_rending}
+      send action bar "%{_rending}%" to all players
+      loop all players:
+        if gamemode of loop-player is survival:
+          if -1 is bigger than y-coordinate of loop-player:
+            damage loop-player by 5 hearts
+      if {_roundtime} is bigger than 179:
+        mgSetTemporaryGameData("status","exitround")
+        mgSpleefStartNewRound()
+      wait 1 second
+
+  else:
+    broadcast "%getChatPrefix()% Not enough players."
+    mgSpleefHandler("stop")
+
+#
+# > Function - mgSpleefCheckSpleefRoundEnd
+# > Checks if the spleef round should be stopped.
+# > The Spleef round while loop will be stopped by this.
+function mgSpleefCheckSpleefRoundEnd():
+  if mgGetTemporaryGameData("status") is "ingame":
+    if mgGetTemporaryGameData("playersingame") is smaller than 2:
+      loop all players:
+        if loop-player's gamemode is survival:
+          mgAddPlayerToplistWin("Spleef",loop-player,1)
+          broadcast "%getChatPrefix()% %loop-player% has won this round."
+          mgSetTemporaryGameData("status","preparing")
+      mgSpleefStartNewRound()
+
+#
+# > Function - mgSpleefHandleGameDeath
+# > If a player died in Spleef, do everything needed.
+# > Parameters:
+# > <player>the player who died
+function mgSpleefHandleGameDeath(player:player):
+  set {_loc} to mgGetTemporaryGameData("respawnloc")
+  if mgGetTemporaryGameData("status") is "ingame":
+    set {_player}'s gamemode to spectator
+    clear inventory of {_player}
+    teleport {_player} to {_loc}
+
+    set {_playersingame} to mgGetTemporaryGameData("playersingame")
+    remove 1 from {_playersingame}
+    mgSetTemporaryGameData("playersingame",{_playersingame})
+
+    mgSetTemporaryGameData("playerstatus|%{_player}%",false)
+
+    mgAddCurrentGamePoints("Spleef",{_player},"points",1)
+    mgAddPlayerToplistScore("Spleef",{_player},1)
+
+    loop all players:
+      if loop-player's gamemode is survival:
+        mgAddCurrentGamePoints("Spleef",loop-player,"points",2)
+        mgAddPlayerToplistScore("Spleef",loop-player,2)
+        play sound "entity.experience_orb.pickup" with volume 1 with pitch 0.7 at location of loop-player for loop-player
+    mgSetSidebarToplist("Spleef","points",5,1)
+
+    mgSpleefCheckSpleefRoundEnd()
+  else:
+    teleport {_player} to {_loc}

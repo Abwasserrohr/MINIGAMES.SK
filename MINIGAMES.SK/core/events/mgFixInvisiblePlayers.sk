@@ -1,0 +1,11 @@
+#
+# ==============
+# mgFixInvisiblePlayers.sk
+# ==============
+# mgFixInvisiblePlayers.sk is part of the MINIGAMES.SK library.
+# ==============
+
+on join:
+  loop all players:
+    loop-player.showPlayer(player)
+    player.showPlayer(loop-player)

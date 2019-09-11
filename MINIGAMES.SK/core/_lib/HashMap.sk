@@ -1,0 +1,15 @@
+#
+# ==============
+# HashMap.sk
+# ==============
+# HashMap.sk is part of the MINIGAMES.SK library.
+# ==============
+
+import:
+  java.util.HashMap
+
+#
+# > Function - HashMap
+# > Returns a new HashMap.
+function HashMap() :: object:
+  return new HashMap()

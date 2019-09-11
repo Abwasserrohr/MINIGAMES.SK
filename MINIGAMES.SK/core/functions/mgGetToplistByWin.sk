@@ -1,0 +1,32 @@
+#
+# ==============
+# mgGetToplistByWin.sk
+# ==============
+# mgGetToplistByWin.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgGetToplistByWin
+# > Loads the toplist from the database into a pending transaction.
+# > Parameters:
+# > <text>game name (or "global" for the global wins)
+# > [<number>]size limitation, default = 10
+# > Returns:
+# > <text>transaction uuid get the response
+function mgGetToplistByWin(game:text="global",limit:number=10) :: text:
+  set {_txuuid} to addSQLCommandToQuene("SELECT * FROM `minigamesSK_toplist_global` ORDER BY `wins` DESC LIMIT %{_limit}%")
+  return {_txuuid}
+
+#
+# > Function - mgGetToplistByWinResponse
+# > Returns a HashMap with the toplist ordered by wins.
+# > Parameters:
+# > <text>transaction uuid get the response
+# > Returns:
+# > <HashMap>[uuid,wins]
+function mgGetToplistByWinResponse(uuid:text) :: object:
+  if {MG_DBResponse::%{_uuid}%::*} is set:
+    set {_result} to HashMap()
+    loop {MG_DBResponse::%{_uuid}%::uuid::*}:
+      {_result}.put(loop-value,{MG_DBResponse::%{_uuid}%::wins::%loop-index%})
+    return {_result}

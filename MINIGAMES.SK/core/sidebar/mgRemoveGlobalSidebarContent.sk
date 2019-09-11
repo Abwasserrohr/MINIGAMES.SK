@@ -1,0 +1,22 @@
+#
+# ==============
+# mgRemoveGlobalSidebarContent.sk
+# ==============
+# mgRemoveGlobalSidebarContent.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgRemoveGlobalSidebarContent
+# > Removes a specific slot out of the global sidebar.
+# > Parameters:
+# > <number>slot number
+function mgRemoveGlobalSidebarContent(slot:number):
+  if {_slotnumber} < 1:
+    stop
+  if {_slotnumber} > 13:
+    stop
+  set {_slotnumber} to 51 - {_slotnumber}
+  set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy()
+  if {_sidebar} is set:
+    {_sidebar}.remove("%{_slotnumber}%")
+    set metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy() to {_sidebar}

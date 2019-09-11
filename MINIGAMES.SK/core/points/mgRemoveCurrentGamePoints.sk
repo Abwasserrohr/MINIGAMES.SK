@@ -1,0 +1,19 @@
+#
+# ==============
+# mgRemoveCurrentGamePoints.sk
+# ==============
+# mgRemoveCurrentGamePoints.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgRemoveCurrentGamePoints
+# > Removes the points from a specfic game, player and pointsname.
+# > Parameters:
+# > <text>game name
+# > <player>player
+# > <text>name of wanted points
+# > <number>amount of points that should be removed
+function mgRemoveCurrentGamePoints(game:text,player:player,pointsname:text,points:number):
+  set {_pointsbalance} to mgGetCurrentGamePoints({_game},{_player},{_pointsname})
+  remove {_points} from {_pointsbalance}
+  mgSetCurrentGamePoints({_game},{_player},{_pointsname},{_pointsbalance})

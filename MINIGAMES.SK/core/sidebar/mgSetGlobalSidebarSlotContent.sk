@@ -1,0 +1,35 @@
+#
+# ==============
+# mgSetGlobalSidebarSlotContent.sk
+# ==============
+# mgSetGlobalSidebarSlotContent.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgSetGlobalSidebarSlotContent
+# > Sets sidebar content to the global sidebar. Uses internal translations and placeholders.
+# > Parameters:
+# > <number>slot(1-13 are available)
+# > <text>the game of which the translation is needed
+# > <text>the key of the translation
+# > <HashMap>placeholders which are replaced within the translation HashMap<translationkey,replacement>
+function mgSetGlobalSidebarSlotContent(slotnumber:number,translationgame:text,translationkey:text,placeholders:object):
+  if {_slotnumber} < 1:
+    stop
+  if {_slotnumber} > 13:
+    stop
+  set {_slotnumber} to 51 - {_slotnumber}
+
+  set {_sidebar} to metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy()
+  if {_sidebar} is not set:
+    set {_sidebar} to HashMap()
+  if {_sidebar}.get("%{_slotnumber}%") is set:
+    {_sidebar}.remove("%{_slotnumber}%")
+  #
+  # > Create a new HashMap for slot content, like translation game, translation key and translation placeholders.
+  set {_slot} to HashMap()
+  {_slot}.put("game",{_translationgame})
+  {_slot}.put("key",{_translationkey})
+  {_slot}.put("placeholders",{_placeholders})
+  {_sidebar}.put("%{_slotnumber}%",{_slot})
+  set metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy() to {_sidebar}

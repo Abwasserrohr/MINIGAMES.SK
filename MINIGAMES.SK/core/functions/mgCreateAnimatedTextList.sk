@@ -1,0 +1,127 @@
+#
+# ==============
+# mgCreateAnimatedTextList.sk
+# ==============
+# mgCreateAnimatedTextList.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgCreateAnimatedTextList
+# > Returns a list out of text that is animated and can be looped through on user interfaces.
+# > Parameters:
+# > <text>the text that should be animated
+# > <text>the first colour code that should be used
+# > <text>the second colour code that should be used
+# > <text>the effect that should be used, available: shine, fill, fillshine
+function mgCreateAnimatedTextList(text:text,color1:text,color2:text,effect:text) :: objects:
+  if {_effect} is "shine":
+    set {_length} to length of {_text}
+    set {_text::*} to {_text} split at ""
+  
+    loop {_length} times:
+      add 1 to {_i}
+      set {_textframe} to ""
+      loop {_length} times:
+        if loop-number-2 is {_i}:
+          set {_textframe} to "%{_textframe}%%{_color1}%%{_text::%loop-number-2%}%"
+        else:
+          set {_textframe} to "%{_textframe}%%{_color2}%%{_text::%loop-number-2%}%"
+      add {_textframe} to {_sidebar::*}
+    return {_sidebar::*}
+
+  if {_effect} is "fill":
+    set {_length} to length of {_text}
+    set {_text::*} to {_text} split at ""
+  
+    loop {_length} times:
+      add 1 to {_i}
+      set {_textframe} to ""
+      loop {_length} times:
+        if loop-number-2 is {_i}:
+          set {_textframe} to "%{_textframe}%%{_color1}%%{_text::%loop-number-2%}%"
+        else if loop-number-2 is bigger than {_i}:
+          set {_textframe} to "%{_textframe}%%{_text::%loop-number-2%}%"
+        else:
+          set {_textframe} to "%{_textframe}%%{_color2}%%{_text::%loop-number-2%}%"
+      add {_textframe} to {_sidebar::*}
+
+    set {_i} to 0
+    loop {_length} times:
+      add 1 to {_i}
+      set {_textframe} to ""
+      loop {_length} times:
+        if loop-number-2 is {_i}:
+          set {_textframe} to "%{_textframe}%%{_color2}%%{_text::%loop-number-2%}%"
+        else if loop-number-2 is bigger than {_i}:
+          set {_textframe} to "%{_textframe}%%{_text::%loop-number-2%}%"
+        else:
+          set {_textframe} to "%{_textframe}%%{_color1}%%{_text::%loop-number-2%}%"
+      add {_textframe} to {_sidebar::*}
+    return {_sidebar::*}
+
+  if {_effect} is "fillshine":
+    set {_length} to length of {_text}
+    set {_text::*} to {_text} split at ""
+  
+    loop {_length} times:
+      add 1 to {_i}
+      set {_textframe} to ""
+      loop {_length} times:
+        if loop-number-2 is {_i}:
+          if {_lastcolor} is {_color1}:
+            set {_textframe} to "%{_textframe}%%{_text::%loop-number-2%}%"
+          else:
+            set {_textframe} to "%{_textframe}%%{_color1}%%{_text::%loop-number-2%}%"
+            set {_lastcolor} to {_color1}
+        else if loop-number-2 is bigger than {_i}:
+          set {_textframe} to "%{_textframe}%%{_text::%loop-number-2%}%"
+        else:
+          if {_lastcolor} is {_color2}:
+            set {_textframe} to "%{_textframe}%%{_text::%loop-number-2%}%"
+          else:
+            set {_lastcolor} to {_color2}
+            set {_textframe} to "%{_textframe}%%{_color2}%%{_text::%loop-number-2%}%"
+      add {_textframe} to {_sidebar::*}
+
+    delete {_lastcolor}
+    set {_i} to 0
+    loop {_length} times:
+      add 1 to {_i}
+      set {_textframe} to ""
+      loop {_length} times:
+        if loop-number-2 is {_i}:
+          if {_lastcolor} is {_color1}:
+            set {_textframe} to "%{_textframe}%%{_text::%loop-number-2%}%"
+          else:
+            set {_textframe} to "%{_color2}%%{_textframe}%%{_color1}%%{_text::%loop-number-2%}%"
+            set {_lastcolor} to {_color1}
+        else:
+          if {_lastcolor} is {_color2}:
+            set {_textframe} to "%{_textframe}%%{_text::%loop-number-2%}%"
+          else:
+            set {_textframe} to "%{_textframe}%%{_color2}%%{_text::%loop-number-2%}%"
+            set {_lastcolor} to {_color2}
+      add {_textframe} to {_sidebar::*}
+
+    delete {_lastcolor}
+    set {_i} to 0
+    loop {_length} times:
+      add 1 to {_i}
+      set {_textframe} to ""
+      loop {_length} times:
+        if loop-number-2 is {_i}:
+          if {_lastcolor} is {_color2}:
+            set {_textframe} to "%{_textframe}%%{_text::%loop-number-2%}%"
+          else:
+            set {_textframe} to "%{_textframe}%%{_color2}%%{_text::%loop-number-2%}%"
+            set {_lastcolor} to {_color2}
+        else if loop-number-2 is bigger than {_i}:
+          set {_textframe} to "%{_textframe}%%{_text::%loop-number-2%}%"
+        else:
+          if {_lastcolor} is {_color1}:
+            set {_textframe} to "%{_textframe}%%{_text::%loop-number-2%}%"
+          else:
+            set {_textframe} to "%{_textframe}%%{_color1}%%{_text::%loop-number-2%}%"
+            set {_lastcolor} to {_color1}
+      add {_textframe} to {_sidebar::*}
+    return {_sidebar::*}

@@ -1,0 +1,76 @@
+#
+# ==============
+# mgCreateGameWorld.sk
+# ==============
+# mgCreateGameWorld.sk is part of the MINIGAMES.SK library.
+# ==============
+
+import:
+  org.apache.commons.io.FileUtils
+  java.io.File
+  org.bukkit.Bukkit
+  org.bukkit.WorldCreator
+  org.bukkit.World$Environment
+  org.bukkit.WorldType
+  org.bukkit.event.world.WorldInitEvent
+
+#
+# > Function - mgCreateGameWorld
+# > Copies and creates a ready to use game world for MINIGAMES.SK
+# > Parameters:
+# > <text>game name
+# > <text>map name or number (folder name in plugins/Skript/scripts/MINIGAMES.SK/games/Gamename/maps/)
+function mgCreateGameWorld(game:text,source:text):
+
+  #
+  # > Create a random uuid to save the new game world.
+  set {_worldid} to getRandomUUID()
+
+  #
+  # > Create a world name string for the world name.
+  set {_worldname} to "MG.SK-gameworld-%{_worldid}%"
+
+  #
+  # > Get the world folder of the server to copy the game world into the world folder.
+  set {_home} to Bukkit.getServer().getWorldContainer().getCanonicalFile()
+
+  #
+  # > Get the source of the needed world from the game maps folder.
+  set {_source} to new File("%{_home}%/plugins/Skript/scripts/MINIGAMES.SK/games/%{_game}%/maps/%{_source}%")
+
+  #
+  # > Create a File instance for the copy process.
+  set {_destination} to new File("%{_home}%/%{_worldname}%")
+
+  #
+  # > Copy the prepared map to the game world.
+  FileUtils.copyDirectory({_source}, {_destination})
+
+  #
+  # > To create a new world, the WorldCreator is very useful,
+  # > it allows to set the world type, environment, and generator
+  # > settings before actually creating it.
+  set {_world} to new WorldCreator({_worldname})
+  {_world}.environment(Environment.NORMAL!)
+  {_world}.type(WorldType.FLAT!)
+
+  #
+  # > Disable any villages from spawning in.
+  {_world}.generateStructures(false)
+
+  #
+  # > Remove any not necessary block layers from the world to reduce size.
+  {_world}.generatorSettings("{""biome"":""minecraft:plains"",""layers"":[{""block"":""minecraft:air"",""height"":1}],structures:{""village"":{}}}")
+
+  #
+  # > The world is created after all settings from the WorldCreator have
+  # > been done.
+  set {_finalworld} to Bukkit.createWorld({_world})
+  set metadata value "MG.SK|CurrentWorld" of getDummy() to {_finalworld}
+
+#
+# > Event - WorldInitEvent
+# > If a new world is initialized, the CurrentWorld value is changed to that world.
+on WorldInitEvent with priority HIGHEST:
+  if "%event.getWorld()%" contains "MG.SK-":
+    set metadata value "MG.SK|CurrentWorld" of getDummy() to event.getWorld()

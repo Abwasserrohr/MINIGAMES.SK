@@ -1,0 +1,65 @@
+#
+# ==============
+# sql.sk
+# ==============
+# sql.sk is part of the MINIGAMES.SK core functions.
+# ==============
+
+import:
+  org.bukkit.Bukkit
+
+#
+# > Event - on initial load of Skript
+# > Initializes a database which is used to write persistent money & statistics.
+on script load:
+  wait 1 tick
+  if getStorageType() is "sqlite":
+    set {_home} to Bukkit.getServer().getWorldContainer().getCanonicalPath()
+    set {MG_DATABASE} to the database "jdbc:sqlite:%{_home}%/plugins/Skript/storage/minigames.db"
+  if getStorageType() is "mysql":
+    set {MG_DATABASE} to the database getMySQLURL()
+  mgCreateGameTables("global")
+
+#
+# > Event - Periodical
+# > If there is any data to be written to or from the database,
+# > this event will handle one command per tick.
+every 1 tick:
+  set {_taskuuid} to getRandomUUID()
+  loop {MG_DBQuene::*}:
+    delete {MG_DBQuene::%loop-index%}
+    execute unsafe "%loop-value%" in {MG_DATABASE} and store the result in {MG_DBResponse::%loop-index%::*}
+    removeSQLResponse(loop-index)
+    stop
+
+#
+# > Function - removeSQLResponse
+# > Removes the SQL response to the give uuid.
+# > Parameters:
+# > <text>uuid of the SQL response
+function removeSQLResponse(uuid:text):
+  wait 5 seconds
+  delete {MG_DBResponse::%{_uuid}%::*}
+  delete {MG_DBResponse::%{_uuid}%}
+
+#
+# > Function - addSQLCommandToQuene:
+# > Adds a SQL command to the quene, returns a uuid which is used to get the response.
+# > Parameters:
+# > <text>SQL command
+function addSQLCommandToQuene(command:text) :: text:
+  set {_uuid} to getRandomUUID()
+  while {MG_DBQuene::%{_uuid}%} is set:
+    set {_uuid} to getRandomUUID()
+  set {MG_DBQuene::%{_uuid}%} to {_command}
+  return {_uuid}
+
+#
+# > Function - mgCreateGameTables
+# > Prepares the files for the game that are needed for statistics.
+# > Parameters:
+# > <text>game name
+function mgCreateGameTables(game:text):
+  set {MG::PREPTABLES} to {_game}
+  execute "CREATE TABLE IF NOT EXISTS `minigamesSK_toplist_%unsafe {MG::PREPTABLES}%` (`uuid` varchar(100) UNIQUE,`wins` bigint(20) NOT NULL,`score` bigint(20) NOT NULL)" in {MG_DATABASE}
+  execute "CREATE TABLE IF NOT EXISTS `minigamesSK_currency_%unsafe {MG::PREPTABLES}%` (`uuid_currency` varchar(100) UNIQUE,`amount` bigint(20) NOT NULL)" in {MG_DATABASE}

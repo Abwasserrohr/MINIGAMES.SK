@@ -1,1 +1,46 @@
+#
+# ==============
+# init.sk
+# ==============
+# init.sk is part of the MINIGAMES.SK library.
+# ==============
+# > GAME: Lobby
+# ==============
 
+options:
+  spawnpoint: location(-253.5, 47, -157.5, mgGetCurrentWorld())
+  backgrounditem: gray stained glass pane
+  gameitem: yellow stained glass pane
+  game: Lobby
+
+on load:
+  delete metadata value "MG.SK|Lobby|Votes" of getDummy()
+  wait 3 seconds
+  loop all players:
+    mgLobbyTeleportPlayer(loop-player)
+  set {_games::*} to mgGetAvailableMinigames()
+  mgSetGlobalSidebarSlotContent(13,"Lobby","vote_scoreboard",null)
+
+on join:
+  mgLobbyTeleportPlayer(player)
+  message "%getChatPrefix()% Welcome to the Minigames."
+
+on damage:
+  cancel event
+  if "%damage cause%" is "void":
+    teleport victim to {@spawnpoint}
+
+on respawn:
+  teleport player to {@spawnpoint}
+
+command /vote:
+  trigger:
+    mgLobbyVoteMenu(player)
+
+every 1 second:
+  set {_votes} to metadata value "MG.SK|Lobby|Votes" of getDummy()
+  feed all players
+  heal all players
+  if {_votes} is not set:
+    loop all players:
+      send action bar "%getChatPrefix()% &fCountdown starts after the first vote &8&l|&f Vote now for a game: &6&l/vote" to loop-player

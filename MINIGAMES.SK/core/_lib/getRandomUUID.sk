@@ -1,0 +1,15 @@
+#
+# ==============
+# getRandomUUID.sk
+# ==============
+# getRandomUUID.sk is part of the MINIGAMES.SK library.
+# ==============
+
+import:
+  java.util.UUID
+
+#
+# > Function - getRandomUUID()
+# > Returns a random uuid.
+function getRandomUUID() :: text:
+  return "%UUID.randomUUID()%"

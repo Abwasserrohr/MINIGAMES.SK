@@ -1,0 +1,225 @@
+#
+# ==============
+# functions.sk
+# ==============
+# functions.sk is part of the MINIGAMES.SK library.
+# ==============
+# > GAME: SheepDelivery
+# ==============
+
+#
+# > Function - mgSheepDeliveryHandler
+# > Starts or stops the game depending on the parameter.
+# > Parameters:
+# > <text>task, either "start" or "stop"
+function mgSheepDeliveryHandler(task:text):
+  if {_task} is "start":
+    mgSetTemporaryGameData("round",0)
+    mgSetTemporaryGameData("status","loading")
+
+    loop all players:
+      mgSetCurrentGamePoints("SheepDelivery",loop-player,"Sheeps",0)
+    mgSetSidebarToplist("SheepDelivery","Sheeps",5,1)
+
+
+    mgSetTemporaryGameData("playersingame",number of all players)
+    mgSheepDeliveryStartNewRound()
+
+  #
+  # > If the game should be stopped, use the MINIGAMES.SK function to
+  # > clear out any temporary data and unload the game.
+  if {_task} is "stop":
+    mgFinishGame()
+
+#
+# > Function - mgSheepDeliveryStartNewRound
+# > Starts a new Sheep delivery round.
+function mgSheepDeliveryStartNewRound():
+  set {_tplayers} to 0
+  set {_tplayers} to number of all players
+  if {_tplayers} >= 1:
+
+    mgSetTemporaryGameData("playersingame",number of all players)
+    loop all players:
+      mgSetTemporaryGameData("playerstatus|%loop-player%",true)
+    mgSetTemporaryGameData("status","preparing")
+
+    set {_round} to mgGetTemporaryGameData("round")
+    add 1 to {_round}
+    mgSetTemporaryGameData("round",{_round})
+
+    if {_round} is bigger than 1:
+      mgSheepDeliveryHandler("stop")
+      stop
+
+    #
+    # > Create a fitting arena. Base size 40x40 + 2x2 per player
+    set {_mapsize} to 10 + number of all players
+    set {_mainarena} to ""
+    set {_mainarena} to location at -253.5, 47, -157 in mgGetCurrentWorld()
+    mgSetTemporaryGameData("respawnloc",location at -253.5, 47, -157 in mgGetCurrentWorld())
+    set {_sheepsingame} to 50
+    mgSetTemporaryGameData("sheepsingame",{_sheepsingame})
+    loop {_sheepsingame} times:
+      set {_rng} to random integer between 1 and 4
+      if {_rng} is 1:
+        spawn a white sheep at {_mainarena}
+      else if {_rng} is 2:
+        spawn a red sheep at {_mainarena}
+      else if {_rng} is 3:
+        spawn a blue sheep at {_mainarena}
+      else if {_rng} is 4:
+        spawn a yellow sheep at {_mainarena}
+      wait 1 tick
+	  
+    #
+    # > Create a countdown that lets the players wait for 5 seconds.
+    mgDisplayBossbarCountdown(5,"SheepDelivery","bossbar_countdown",null)
+
+    apply resistance 12 without particles to all players for 3 seconds
+    apply invisibility 1 without particles to all players for 1 second
+    set gamemode of all players to survival
+
+    set {_loc} to mgGetTemporaryGameData("respawnloc")
+    teleport all players to {_loc}
+
+    clear inventory of all players
+    give 1 of {_tool} to all players
+
+    set {_pitch} to 0.9
+    loop 5 times:
+      loop all players:
+        playsound("block.note_block.pling",1,{_pitch},location of loop-player,loop-player)
+
+      add 0.01 to {_pitch}	  
+      wait 1 second
+    loop all players:
+      playsound("block.note_block.pling",1,2,location of loop-player,loop-player)
+
+    #
+    # > Give the items to the players.
+    mgSetTemporaryGameData("status","ingame")
+    set {_rending} to 180
+    while mgGetTemporaryGameData("status") is "ingame":
+      add 1 to {_roundtime}
+      remove 1 from {_rending}
+      mgSetTemporaryGameData("roundendcountdown",{_rending})
+      mgSheepDeliveryCheckRoundEnd()
+      wait 1 second
+
+  else:
+    mgSheepDeliveryHandler("stop")
+
+#
+# > Function - mgSheepDeliveryCheckRoundEnd
+# > Checks if the sheep delivery round should be stopped.
+function mgSheepDeliveryCheckRoundEnd():
+  if mgGetTemporaryGameData("status") is "ingame":
+    set {_countdown} to mgGetTemporaryGameData("roundendcountdown")
+    set {_sheepsingame} to mgGetTemporaryGameData("sheepsingame")
+    if {_sheepsingame} is 0:
+      set {_end} to true
+    if {_countdown} is 0:
+      set {_end} to true
+    if {_end} is true:
+      loop all players:
+        loop-player.eject()
+        set {_lang} to getClientLanguage(loop-player)
+
+        set {_winner} to mgGetCurrentGamePointsWinner("SheepDelivery","Sheeps")
+        set {_placewinner} to HashMap()
+        {_placewinner}.put("<player>","%{_winner}%")
+
+        set {_winnermessage} to mgGetTranslation({_lang},"SheepDelivery","playerhaswon",{_placewinner})
+
+        message "%getChatPrefix()% %{_winnermessage}%" to loop-player
+      mgAddPlayerToplistWin("SheepDelivery",{_winner},1)
+      mgSetTemporaryGameData("status","exitround")
+      mgSheepDeliveryStartNewRound()
+
+function mgSheepDeliveryActionbarStats():
+  set {_countdown} to mgGetTemporaryGameData("roundendcountdown")
+  if {_countdown} is not set:
+    stop
+  #
+  # > Loop all players to give them the action bar in their language.
+  loop all players:
+    set {_uuid} to uuid of loop-player
+    set {_lang} to getClientLanguage(loop-player)
+    set {_sheeps} to mgGetCurrentGamePoints("SheepDelivery",loop-player,"Sheeps")
+    set {_delivered} to mgGetTranslation({_lang},"SheepDelivery","delivered",null)
+    if loop-player.getPassengers().get(0) is a sheep:
+      set {_color} to "%loop-player.getPassengers().get(0).getColor()%"
+      set {_color} to mgGetTranslation({_lang},"SheepDelivery","%{_color}%",null)
+      set {_colorplaceholder} to HashMap()
+      {_colorplaceholder}.put("<color>",{_color})
+
+      set {_yoursheepcolor} to mgGetTranslation({_lang},"SheepDelivery","yoursheepcolor",{_colorplaceholder})
+      send action bar "%getChatPrefix()% &7&l%{_countdown}% &8&l| &7&l %{_delivered}% %{_sheeps}% &8&l|&7 %{_yoursheepcolor}%" to loop-player
+
+    else:
+      if {_sheeps} is 0:
+        set {_howtocarry} to mgGetTranslation({_lang},"SheepDelivery","howtocarry",null)
+        send action bar "%getChatPrefix()% &7&l%{_countdown}% &8&l| %{_howtocarry}%" to loop-player
+      else:
+        send action bar "%getChatPrefix()% &7&l%{_countdown}% &8&l|&7&l %{_delivered}% %{_sheeps}%" to loop-player
+
+function mgSheepDeliveryCheckDelivery():
+  loop all players:
+    delete {_wool}
+    delete {_passengers}
+    set {_passengers} to loop-player.getPassengers()
+    if {_passengers}.size! is not 0:
+      if {_passengers}.get(0) is a sheep:
+        if block below loop-player is wool:
+          set {_wool} to true
+        else if block 2 below loop-player is wool:
+          set {_wool} to true
+    if {_wool} is true:
+      delete {_ok}
+      set {_color} to "%{_passengers}.get(0).getColor()%"
+      if block below loop-player is white wool:
+        if {_color} is "WHITE":
+          set {_ok} to true
+      if block 2 below loop-player is white wool:
+        if {_color} is "WHITE":
+          set {_ok} to true
+      if block below loop-player is red wool:
+        if {_color} is "RED":
+          set {_ok} to true
+      if block 2 below loop-player is red wool:
+        if {_color} is "RED":
+          set {_ok} to true
+      if block below loop-player is yellow wool:
+        if {_color} is "YELLOW":
+          set {_ok} to true
+      if block 2 below loop-player is yellow wool:
+        if {_color} is "YELLOW":
+          set {_ok} to true
+      if block below loop-player is blue wool:
+        if {_color} is "BLUE":
+          set {_ok} to true
+      if block 2 below loop-player is blue wool:
+        if {_color} is "BLUE":
+          set {_ok} to true
+      if {_ok} is true:
+        set {_sheep} to {_passengers}.get(0)
+
+        set {_player} to loop-player
+        {_player}.eject()
+        set {_rewardsound} to mgGetTranslation("config","SheepDelivery","rewardsound",null)
+        playsound({_rewardsound},0.1,0.5,location of {_player},{_player})
+        mgAddCurrentGamePoints("SheepDelivery",{_player},"Sheeps",1)
+        mgAddPlayerToplistScore("SheepDelivery",{_player},1)
+        mgSetSidebarToplist("SheepDelivery","Sheeps",5,1)
+
+        set {_sheepsingame} to mgGetTemporaryGameData("sheepsingame")
+        remove 1 from {_sheepsingame}
+        mgSetTemporaryGameData("sheepsingame",{_sheepsingame})
+
+        set {_loc} to {_player}'s location
+        remove 10 from y-coord of {_loc}
+        teleport {_sheep} to {_loc}
+        wait 5 ticks
+        remove 500 from y-coord of {_loc}
+        teleport {_sheep} to {_loc}

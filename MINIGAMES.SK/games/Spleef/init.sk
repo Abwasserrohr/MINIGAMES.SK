@@ -1,0 +1,52 @@
+#
+# ==============
+# init.sk
+# ==============
+# init.sk is part of the MINIGAMES.SK library.
+# ==============
+# > GAME: Spleef
+# ==============
+
+on load:  
+  wait 1 tick
+  mgSpleefHandler("start")
+
+every 1 second:
+  feed all players
+  heal all players
+
+on place:
+  cancel event
+
+on quit:
+  if mgGetTemporaryGameData("playerstatus|%player%") is true:
+    set {_playersingame} to mgGetTemporaryGameData("playersingame")
+    remove 1 from {_playersingame}
+    mgSetTemporaryGameData("playersingame",{_playersingame})
+    mgSetTemporaryGameData("playerstatus|%player%",false)
+    mgSpleefCheckSpleefRoundEnd()
+
+on join:
+  clear inventory of player
+  set gamemode of player to spectator
+  set {_loc} to mgGetTemporaryGameData("respawnloc")
+  teleport player to {_loc}
+
+on damage:
+  if victim is a player:
+    cancel event
+    if attacker is a player:
+      stop
+    mgSpleefHandleGameDeath(victim)
+
+on death:
+  if victim is a player:
+    mgSpleefHandleGameDeath(victim)
+
+on break:
+  clear drops
+  if mgGetTemporaryGameData("status") is not "ingame":
+    cancel event
+
+on leaves decay:
+  cancel event

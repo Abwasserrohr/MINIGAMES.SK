@@ -1,0 +1,78 @@
+#
+# ==============
+# init.sk
+# ==============
+# init.sk is part of the MINIGAMES.SK library.
+# ==============
+# > GAME: SheepDelivery
+# ==============
+
+on load:  
+  wait 1 tick
+  mgSheepDeliveryHandler("start")
+
+every 1 second:
+  feed all players
+  heal all players
+
+on place:
+  cancel event
+
+on quit:
+  if mgGetTemporaryGameData("playerstatus|%player%") is true:
+    set {_playersingame} to mgGetTemporaryGameData("playersingame")
+    remove 1 from {_playersingame}
+    mgSetTemporaryGameData("playersingame",{_playersingame})
+    mgSetTemporaryGameData("playerstatus|%player%",false)
+    mgSpleefCheckSpleefRoundEnd()
+
+on join:
+  clear inventory of player
+  set gamemode of player to survival
+  set {_loc} to mgGetTemporaryGameData("respawnloc")
+  teleport player to {_loc}
+
+on damage:
+  if victim is a player:
+    cancel event
+
+on death:
+  if victim is a player:
+    wait 1 tick
+    clear inventory of player
+    set gamemode of player to survival
+    set {_loc} to mgGetTemporaryGameData("respawnloc")
+    teleport player to {_loc}
+
+on break:
+  cancel event
+
+on toggle sneak:
+  set {_passengers} to player.getPassengers()
+  if {_passengers}.get(0) is a sheep:
+    if block below player is not wool:
+      if block 2 below player is not wool:
+        player.eject()
+
+on rightclick on sheep:
+  if event-entity is riding a player:
+    cancel event
+    stop
+  set {_countdown} to mgGetTemporaryGameData("roundendcountdown")
+  if {_countdown} is not set:
+    stop
+  set {_passengers} to player.getPassengers()
+  if {_passengers}.size! is 0:
+    player.addPassenger(event-entity)
+    set {_pickupsound} to mgGetTranslation("config","SheepDelivery","pickupsound",null)
+    playsound({_pickupsound},2,1,location of player,player)
+
+on damage of a sheep:
+  if "%damage cause%" is not "void":
+    cancel event
+
+every 1 second:
+  mgSheepDeliveryActionbarStats()
+  
+every 5 ticks:
+  mgSheepDeliveryCheckDelivery()

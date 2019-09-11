@@ -1,0 +1,12 @@
+#
+# ==============
+# mgGetCurrentWorld.sk
+# ==============
+# mgGetCurrentWorld.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgGetCurrentWorld
+# > Returns the current minigame world.
+function mgGetCurrentWorld() :: world:
+  return metadata value "MG.SK|CurrentWorld" of getDummy()

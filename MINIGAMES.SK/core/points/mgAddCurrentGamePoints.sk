@@ -1,0 +1,19 @@
+#
+# ==============
+# mgAddCurrentGamePoints.sk
+# ==============
+# mgAddCurrentGamePoints.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgAddCurrentGamePoints
+# > Adds the points for a specfic game, player and pointsname.
+# > Parameters:
+# > <text>game name
+# > <player>player
+# > <text>name of wanted points
+# > <number>amount of points that should be added
+function mgAddCurrentGamePoints(game:text,player:player,pointsname:text,points:number):
+  set {_pointsbalance} to mgGetCurrentGamePoints({_game},{_player},{_pointsname})
+  add {_points} to {_pointsbalance}
+  mgSetCurrentGamePoints({_game},{_player},{_pointsname},{_pointsbalance})

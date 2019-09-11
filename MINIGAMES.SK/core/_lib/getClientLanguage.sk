@@ -1,0 +1,14 @@
+#
+# ==============
+# getClientLanguage.sk
+# ==============
+# getClientLanguage.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - getClientLanguage
+# > Returns the language of the client.
+function getClientLanguage(player:player) :: text:
+  set {_lang} to player.getLocale()
+  if {_lang} is not set:
+    set {_lang} to "en"

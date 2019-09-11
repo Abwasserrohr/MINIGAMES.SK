@@ -1,0 +1,12 @@
+#
+# ==============
+# mgWipeGlobalSidebarContent.sk
+# ==============
+# mgWipeGlobalSidebarContent.sk is part of the MINIGAMES.SK library.
+# ==============
+
+#
+# > Function - mgWipeGlobalSidebarContent
+# > Wipes the entire global sidebar content.
+function mgWipeGlobalSidebarContent():
+  delete metadata value "MG.SK|SIDEBARCONTENT|GLOBAL" of getDummy()

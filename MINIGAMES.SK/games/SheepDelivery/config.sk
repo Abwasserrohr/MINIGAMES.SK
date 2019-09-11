@@ -8,6 +8,8 @@
 on load:
   wait 1 tick
   set {_game} to "SheepDelivery"
+  mgSetTranslation("config",{_game},"rewardsound","entity.experience_orb.pickup")
+
   mgSetTranslation("en",{_game},"name","SheepDelivery")
   mgSetTranslation("en",{_game},"desc","Sort the sheeps out and deliver them to the right corner.")
   mgSetTranslation("en",{_game},"bossbar_countdown","Prepare yourself...")

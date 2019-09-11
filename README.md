@@ -1,6 +1,7 @@
 # MINIGAMES.SK
 A minigames library for servers using [Skript](https://github.com/SkriptLang/Skript) with high customizability and an easy API to add new minigames on your own. Created for small server networks that don't need an entire network out of minigame servers.
 
+**MINIGAMES.SK is still work in progress. It might work, but issues can occcur.**
 
 ### Dependencies
 - [Spigot](https://hub.spigotmc.org/stash/projects/SPIGOT) Minecraft Java version 1.14.4

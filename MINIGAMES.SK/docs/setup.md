@@ -1,3 +1,6 @@
+| [MINIGAMES.SK](https://github.com/Abwasserrohr/MINIGAMES.SK) Documentation | [Index](index.md) | [Setup](setup.md) | [Functions](functions.md) | [Create a minigame](create_a_minigame.md) |
+| -------- | -------- | -------- | -------- | -------- |
+
 # Setup
 
 1. Create an empty spigot or paper server.

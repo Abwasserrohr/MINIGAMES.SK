@@ -3,6 +3,16 @@
 
 Here, the functions of MINIGAMES.SK core are explained. Use `Strg + F` to search in your browser for what you want.
 
+Index:
+
+* [Points](#Points)
+* [Sidebar](#Sidebar)
+* [World](#World)
+* [Language](#Language)
+* [Database](#Database)
+* [Miscellaneous](#Miscellaneous)
+* [Library](#Library)
+
 
 ## Points
 Points are used to determine the progress of a player. You are able to create custom points for every game, points are always non-persistent and get deleted once a game ends.

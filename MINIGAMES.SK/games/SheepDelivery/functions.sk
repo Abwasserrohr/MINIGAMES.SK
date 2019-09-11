@@ -58,7 +58,9 @@ function mgSheepDeliveryStartNewRound():
     set {_mainarena} to ""
     set {_mainarena} to location at -253.5, 47, -157 in mgGetCurrentWorld()
     mgSetTemporaryGameData("respawnloc",location at -253.5, 47, -157 in mgGetCurrentWorld())
-    loop 50 times:
+    set {_sheepsingame} to 50
+    mgSetTemporaryGameData("sheepsingame",{_sheepsingame})
+    loop {_sheepsingame} times:
       set {_rng} to random integer between 1 and 4
       if {_rng} is 1:
         spawn a white sheep at {_mainarena}
@@ -210,6 +212,10 @@ function mgSheepDeliveryCheckDelivery():
         mgAddCurrentGamePoints("SheepDelivery",{_player},"Sheeps",1)
         mgAddPlayerToplistScore("SheepDelivery",{_player},1)
         mgSetSidebarToplist("SheepDelivery","Sheeps",5,1)
+
+        set {_sheepsingame} to mgGetTemporaryGameData("sheepsingame")
+        remove 1 from {_sheepsingame}
+        mgSetTemporaryGameData("sheepsingame",{_sheepsingame})
 
         set {_loc} to {_player}'s location
         remove 10 from y-coord of {_loc}

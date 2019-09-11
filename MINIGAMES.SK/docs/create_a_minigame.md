@@ -56,4 +56,4 @@ on load:
 
 ---
 
-**6.** Once your game finishes, call the `mgFinishGame()` function.
+**6.** Once your game finishes, call the `mgFinishGame()` function. You can do much more with MINIGAMES.SK, check out the [functions](functions.md) and the [documentation](documentation.md).

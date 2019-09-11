@@ -1,3 +1,6 @@
+| [MINIGAMES.SK](https://github.com/Abwasserrohr/MINIGAMES.SK) Documentation | [Index](index.md) | [Setup](setup.md) | [Functions](functions.md) | [Create a minigame](create_a_minigame.md) |
+| -------- | -------- | -------- | -------- | -------- |
+
 # Create a minigame
 MINIGAMES.SK offers server operators to use Skript to make their minigames.
 It uses functions that are used in Skript to make it easy to create minigames in Skript.

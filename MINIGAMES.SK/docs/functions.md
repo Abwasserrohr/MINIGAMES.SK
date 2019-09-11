@@ -1,3 +1,4 @@
+
 # functions.md
 
 Here, the functions of MINIGAMES.SK core are explained. Use `Strg + F` to search in your browser for what you want.
@@ -139,6 +140,60 @@ set {_placeholder} to HashMap()
 If you don't want to use placeholders, use `null` to prevent any errors. 
 
 ---
+
+## Miscellaneous
+MINIGAMES.SK has various other function that haven't been categorized to one of the listed topics. These are listed here.
+
+##### `mgSetTemporaryGameData(key:text,object:object)`
+Set any variable to a key that is stored until the game is over.
+
+##### `mgGetTemporaryGameData(key:text) :: object`
+Returns the stored variable that has been stored to this key.
+
+##### `mgSetCurrentGameStatus(status:text)`
+Sets the current game status of the minigame. Can be used to determine the current game status within the minigame.
+
+##### `mgGetCurrentGameStatus() :: text`
+Returns the current game status that has been set previously.
+
+##### `mgSetCurrentGame(game:text)`
+Sets the current game name. Is used by the lobby script and internally.
+
+##### `mgGetCurrentGame() :: text`
+Returns the current game name. Can be used to stop while loops of the minigame once this changes.
+
+
+
+##### `mgFinishGame()`
+Use this function to stop your minigame once it has finished.
+
+##### `mgStartGame(game:text)`
+Starts a minigame with the given name. This should only be used by the Lobby game.
+
+##### `mgClearGameData()`
+Clears the temporary game data. Is being used by internal functions, use this only for debugging.
+
+##### `mgGetAvailableMinigames() :: objects`
+Returns a list that contains all minigame names as text.
+
+##### `mgDisplayBossbarCountdown(seconds:number,translationtextgame:text,translationtextkey: text,placeholders:object)`
+Creates a bossbar countdown for the given seconds and a specified translation game and key. Accepts placeholders, if no placeholders are given, use null.
+The placeholder parameter must be a HashMap(find, replace), example:
+```
+set {_placeholder} to HashMap()
+{_placeholder}.put("<ReplaceMe>","replaced!")
+```
+
+##### `mgCreateAnimatedTextList(text:text,color1:text,color2:text,effect:text) :: objects`
+Creates a list that can be played to animate the text. It allows to switch between two colors and animate with multiple effects.
+Currently available effects: "shine", "fill", "fillshine"
+
+## Database
+Persistent data is stored in the database. These functions use the database to retrieve the data.
+Since the database has to be called first, it takes some ticks until the data is available. To make the process easier, functions have been added to manage this.
+
+
+
 
 ## Library
 MINIGAMES.SK uses some custom made libraries to allow custom features to be used.

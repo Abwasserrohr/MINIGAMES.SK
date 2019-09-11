@@ -2,15 +2,18 @@
 MINIGAMES.SK offers server operators to use Skript to make their minigames.
 It uses functions that are used in Skript to make it easy to create minigames in Skript.
 
-**WIP** needs example script.
 
-1. Select a name for your minigame and create a folder named by it (case sensitive) into the `plugins/Skript/scripts/MINIGAMES.SK/games/` folder.
+**1.** Select a name for your minigame and create a folder named by it (case sensitive) into the `plugins/Skript/scripts/MINIGAMES.SK/games/` folder.
 
-2. Create the following files that can be empty for now: `init.sk`, `functions.sk`, `config.sk`.
+---
 
+**2.** Create the following files that can be empty for now: `init.sk`, `functions.sk`, `config.sk`.
 
-3. Create functions that handle all interactions that can be made by players and add them to `functions.sk`.
-Example:
+---
+
+**3.** Create functions that handle all interactions that can be made by players and add them to `functions.sk`.
+
+**Example:**
 
 ```
 function mgMyFirstGameStartgame():
@@ -33,22 +36,24 @@ function mgMyFirstGameRightclick(player:player):
   
 ```
 
+---
 
-4. Add all events and function calls that need to be triggered for the functions into `init.sk`.
-Example:
+**4.** Add all events and function calls that need to be triggered for the functions into `init.sk`.
+**Example:**
 ```
 on rightclick:
   mgMyFirstGameRightclick(player)
 ```
 
-5. Add a function or your scripting that starts your minigame to the `on load` event in `init.sk`
-Example:
+---
+
+**5.** Add a function or your scripting that starts your minigame to the `on load` event in `init.sk`
+**Example:**
 ```
 on load:
   mgMyFirstGameStartgame()
 ```
 
-6. Once your game finishes, call the `mgFinishGame()` function.
+---
 
-
-
+**6.** Once your game finishes, call the `mgFinishGame()` function.

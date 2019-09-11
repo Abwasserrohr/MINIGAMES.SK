@@ -6,7 +6,7 @@ Here, the functions of MINIGAMES.SK core are explained. Use `Strg + F` to search
 ## Points
 Points are used to determine the progress of a player. You are able to create custom points for every game, points are always non-persistent and get deleted once a game ends.
 
-#### `mgSetCurrentGamePoints(game:text,player:player,pointsname:text,points:number)`
+##### `mgSetCurrentGamePoints(game:text,player:player,pointsname:text,points:number)`
 This function allows you to set the points for a specific game and points name of a player to a value. If the points don't exist yet, they will be created automatically by this.
 
 #### mgRemoveCurrentGamePoints(game:text,player:player,pointsname:text,points:number)

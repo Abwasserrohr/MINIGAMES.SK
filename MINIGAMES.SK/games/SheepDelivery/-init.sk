@@ -65,18 +65,11 @@ on toggle sneak:
 on rightclick on sheep:
   if event-entity is riding a player:
     cancel event
-    set {_lang} to getClientLanguage(player)
-    set {_cannotsteal} to mgGetTranslation({_lang},{_game},"cannotsteal",null)
-    message "%getChatPrefix()% %{_cannotsteal}%" to player
-
+    stop
   set {_passengers} to player.getPassengers()
   if {_passengers}.size! is 0:
     player.addPassenger(event-entity)
     playsound("{@pickupsound}",2,1,location of player,player)
-  else:
-    set {_lang} to getClientLanguage(player)
-    set {_carryonlyone} to mgGetTranslation({_lang},{_game},"carryonlyone",null)
-    message "%getChatPrefix()% %{_carryonlyone}%" to player
 
 on damage of a sheep:
   if "%damage cause%" is not "void":

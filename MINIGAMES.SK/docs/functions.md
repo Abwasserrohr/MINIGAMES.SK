@@ -110,8 +110,8 @@ Returns a new HashMap, removes the need to load java.util.HashMap in Skript.
 
 #### createBossBar(title:text,barcolor:text="white",barstyle:text="solid") :: Bossbar
 Returns a Bossbar that can be used for display purposes. If you use bossbars in your minigame, make sure to remove them from the view of the player once the game stops.
-Possible bar colors are: "blue","green","pink","purple","red","white","yellow"
-Possible bar styles are: "solid","6","10","12","20"
+Possible bar colors are: `"blue","green","pink","purple","red","white","yellow"`
+Possible bar styles are: `"solid","6","10","12","20"`
 
 #### opengui(player:player,size:integer,name:text,invtype:inventory type=chest inventory)
 Opens a GUI menu to the player with the defined size, name and inventory type. This GUI function has an additional function to add items into it.
@@ -126,4 +126,3 @@ shulker box inventory
 
 #### setguiitem(player:player,slot:number,item:item,amount:integer,name:text,lore:text,exec:text="",close:boolean=false)
 Sets a specific item into the GUI of the player. You can execute a custom function on click by setting the exec parameter to a string based function. The function is later called with SkQuery evaluate.
-

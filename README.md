@@ -9,6 +9,7 @@ A minigames library for servers using [Skript](https://github.com/SkriptLang/Skr
 - [skript-db](https://github.com/btk5h/skript-db)
 - [SkQuery](https://www.spigotmc.org/resources/unofficial-skquery-fork-1-6-1-12.36631/)
 
+### [Documentation](https://github.com/Abwasserrohr/MINIGAMES.SK/blob/master/MINIGAMES.SK/docs/index.md)
 
 ### Why MINIGAMES.SK
 MINIGAMES.SK has a unique vote & play system which allows even small servers to offer minigames, since it only needs one server on which all minigames are being voted and played. Thanks to a changeable minimum amount of players for specific minigames, only fitting minigames for the amount of players are available.

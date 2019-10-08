@@ -36,7 +36,7 @@ function mgColorRunHandler(task:text):
 function mgColorRunStartNewRound():
   set {_tplayers} to 0
   set {_tplayers} to number of all players
-  if {_tplayers} is bigger than 0:
+  if {_tplayers} is bigger than 1:
 
     mgSetTemporaryGameData("playersingame",number of all players)
     loop all players:

@@ -6,6 +6,7 @@
 # ==============
 
 on join:
+  wait 1 second
   loop all players:
     loop-player.showPlayer(player)
     player.showPlayer(loop-player)

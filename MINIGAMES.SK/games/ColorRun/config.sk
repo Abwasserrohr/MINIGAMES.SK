@@ -1,0 +1,14 @@
+#
+# ==============
+# config.sk
+# ==============
+# config.sk is part of the MINIGAMES.SK library.
+# ==============
+
+on load:
+  wait 1 tick
+  set {_game} to "ColorRun"
+  mgSetTranslation("en",{_game},"name","ColorRun")
+  mgSetTranslation("en",{_game},"desc","Run around and change the colors of the blocks until they disappear.")
+  mgSetTranslation("en",{_game},"bossbar_countdown","Prepare yourself...")
+  mgSetTranslation("en",{_game},"toplist_scoreboard","&7&l<place> | &f<player> &7&l>> &e&l<points>")

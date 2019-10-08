@@ -1,0 +1,176 @@
+#
+# ==============
+# functions.sk
+# ==============
+# functions.sk is part of the MINIGAMES.SK library.
+# ==============
+# > GAME: ColorRun
+# ==============
+
+#
+# > Function - mgColorRunHandler
+# > Starts or stops the game depending on the parameter.
+# > Parameters:
+# > <text>task, either "start" or "stop"
+function mgColorRunHandler(task:text):
+  if {_task} is "start":
+    mgSetTemporaryGameData("round",0)
+    mgSetTemporaryGameData("status","loading")
+
+    loop all players:
+      mgSetCurrentGamePoints("ColorRun",loop-player,"points",0)
+    mgSetSidebarToplist("ColorRun","points",5,1)
+
+    mgSetTemporaryGameData("playersingame",number of all players)
+    mgColorRunStartNewRound()
+
+  #
+  # > If the game should be stopped, use the MINIGAMES.SK function to
+  # > clear out any temporary data and unload the game.
+  if {_task} is "stop":
+    mgFinishGame()
+
+#
+# > Function - mgColorRunStartNewRound
+# > Starts a new ColorRun round.
+function mgColorRunStartNewRound():
+  set {_tplayers} to 0
+  set {_tplayers} to number of all players
+  if {_tplayers} is bigger than 1:
+
+    mgSetTemporaryGameData("playersingame",number of all players)
+    loop all players:
+      mgSetTemporaryGameData("playerstatus|%loop-player%",true)
+    mgSetTemporaryGameData("status","preparing")
+
+    set {_round} to mgGetTemporaryGameData("round")
+    add 1 to {_round}
+    mgSetTemporaryGameData("round",{_round})
+
+    if {_round} is bigger than 5:
+      mgSpleefHandler("stop")
+      stop
+    broadcast "%getChatPrefix()% Round %{_round}%/5"
+
+    #
+    # > Create a fitting arena. Base size 40x40 + 2x2 per player
+    set {_mapsize} to 10 + number of all players
+    set {_mainarena} to ""
+    set {_mainarena} to location at 0.5, 1, 0.5 in mgGetCurrentWorld()
+    mgSetTemporaryGameData("respawnloc",location at 0.5, 2, 0.5 in mgGetCurrentWorld())
+
+    loop all blocks in radius 76 around {_mainarena}:
+      if y-coordinate of loop-block is 1.5:
+        set loop-block to air
+
+
+    set {_block} to lime concrete
+    set {_tool} to air
+
+
+    #
+	# > Create the spleef floor, make a short 1 tick break every 50 blocks.
+    loop all blocks in radius {_mapsize} around {_mainarena}:
+      add 1 to {_blocknumber}
+      if {_blocknumber} > 50:
+        wait 1 tick
+        set {_blocknumber} to 0
+      if y-coordinate of loop-block is 1.5:
+        set loop-block to {_block}
+
+    #
+    # > Create a countdown that lets the players wait for 5 seconds.
+    mgDisplayBossbarCountdown(5,"ColorRun","bossbar_countdown",null)
+
+    apply resistance 12 without particles to all players for 1 seconds
+    apply invisibility 1 without particles to all players for 0.1 seconds
+    set gamemode of all players to survival
+
+    set {_loc} to mgGetTemporaryGameData("respawnloc")
+    teleport all players to {_loc}
+
+    clear inventory of all players
+    give 1 of {_tool} to all players
+
+    set {_pitch} to 0.9
+    loop 5 times:
+      loop all players:
+        playsound("block.note_block.pling",1,{_pitch},location of loop-player,loop-player)
+
+      add 0.01 to {_pitch}	  
+      wait 1 second
+    loop all players:
+      playsound("block.note_block.pling",1,2,location of loop-player,loop-player)
+
+    #
+    # > Give the items to the players.
+    mgSetTemporaryGameData("status","ingame")
+    set {_rending} to 180
+    while mgGetTemporaryGameData("status") is "ingame":
+      add 1 to {_roundtime}
+      remove 1 from {_rending}
+      send action bar "%{_rending}%" to all players
+      loop all players:
+        if gamemode of loop-player is survival:
+          if -1 is bigger than y-coordinate of loop-player:
+            damage loop-player by 5 hearts
+      if {_roundtime} is bigger than 179:
+        mgSetTemporaryGameData("status","exitround")
+        mgColorRunStartNewRound()
+      wait 1 second
+
+  else:
+    broadcast "%getChatPrefix()% Not enough players."
+    mgSpleefHandler("stop")
+
+#
+# > Function - mgCheckColorRunRoundEnd
+# > Checks if the ColorRun round should be stopped.
+function mgCheckColorRunRoundEnd():
+  if mgGetTemporaryGameData("status") is "ingame":
+    if mgGetTemporaryGameData("playersingame") is smaller than 2:
+      loop all players:
+        if loop-player's gamemode is survival:
+          mgAddPlayerToplistWin("ColorRun",loop-player,1)
+          broadcast "%getChatPrefix()% %loop-player% has won this round."
+          mgSetTemporaryGameData("status","preparing")
+      mgColorRunStartNewRound()
+
+#
+# > Function - mgColorRunHandleGameDeath
+# > If a player died in ColorRun, do everything needed.
+# > Parameters:
+# > <player>the player who died
+function mgColorRunHandleGameDeath(player:player):
+  set {_loc} to mgGetTemporaryGameData("respawnloc")
+  if mgGetTemporaryGameData("status") is "ingame":
+    set {_player}'s gamemode to spectator
+    clear inventory of {_player}
+    teleport {_player} to {_loc}
+
+    set {_playersingame} to mgGetTemporaryGameData("playersingame")
+    remove 1 from {_playersingame}
+    mgSetTemporaryGameData("playersingame",{_playersingame})
+
+    mgSetTemporaryGameData("playerstatus|%{_player}%",false)
+
+    mgAddCurrentGamePoints("ColorRun",{_player},"points",1)
+    mgAddPlayerToplistScore("ColorRun",{_player},1)
+
+    loop all players:
+      if loop-player's gamemode is survival:
+        mgAddCurrentGamePoints("ColorRun",loop-player,"points",2)
+        mgAddPlayerToplistScore("ColorRun",loop-player,2)
+        play sound "entity.experience_orb.pickup" with volume 1 with pitch 0.7 at location of loop-player for loop-player
+    mgSetSidebarToplist("ColorRun","points",5,1)
+
+    mgCheckColorRunRoundEnd()
+  else:
+    teleport {_player} to {_loc}
+
+function mgColorRunFloor(loc:location):
+  set block at {_loc} to yellow concrete
+  wait 5 ticks
+  set block at {_loc} to red concrete
+  wait 5 ticks
+  set block at {_loc} to air

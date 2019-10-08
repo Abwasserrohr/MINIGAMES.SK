@@ -9,6 +9,23 @@
 # > Function - getClientLanguage
 # > Returns the language of the client.
 function getClientLanguage(player:player) :: text:
-  set {_lang} to player.getLocale()
+  set {_lang} to metadata value "MG.SK|Language" of {_player}
+  set {_lang} to "en"
   if {_lang} is not set:
     set {_lang} to "en"
+  return {_lang}
+
+#
+# > Event - on join
+# > Called when a player joins, saves the language of the player
+# > to metadata.
+on join:
+  wait 5 ticks
+  set {_lang} to player.getLocale()
+  set metadata value "MG.SK|Language" of player to {_lang}
+
+#
+# > Event - on quit
+# > Called when a player quits, deletes the language of the player.
+on quit:
+  delete metadata value "MG.SK|Language" of player

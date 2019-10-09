@@ -5,8 +5,9 @@
 # mgResetMinigameInitScripts.sk is part of the MINIGAMES.SK library.
 # ==============
 
-on skript start: 
+on load:
   wait 1 tick
+  mgSetTemporaryGameData("status","")
   mgResetMinigameInitScripts()
 
 function mgResetMinigameInitScripts():

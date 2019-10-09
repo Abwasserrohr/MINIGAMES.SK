@@ -1,0 +1,160 @@
+#
+# ==============
+# functions.sk
+# ==============
+# functions.sk is part of the MINIGAMES.SK library.
+# ==============
+# > GAME: CannonBattle
+# ==============
+
+options:
+  gamerounds: 1
+
+#
+# > Function - mgCannonBattleHandler
+# > Starts or stops the game depending on the parameter.
+# > Parameters:
+# > <text>task, either "start" or "stop"
+function mgCannonBattleHandler(task:text):
+  if {_task} is "start":
+    mgSetTemporaryGameData("round",0)
+    mgSetTemporaryGameData("status","loading")
+
+    loop all players:
+      mgSetCurrentGamePoints("CannonBattle",loop-player,"points",0)
+    mgSetSidebarToplist("CannonBattle","points",5,1)
+
+    mgSetTemporaryGameData("playersingame",number of all players)
+    mgCannonBattleStartNewRound()
+
+  #
+  # > If the game should be stopped, use the MINIGAMES.SK function to
+  # > clear out any temporary data and unload the game.
+  if {_task} is "stop":
+    mgFinishGame()
+
+#
+# > Function - mgCannonBattleStartNewRound
+# > Starts a new CannonBattle round.
+function mgCannonBattleStartNewRound():
+  set {_tplayers} to 0
+  set {_tplayers} to number of all players
+  if {_tplayers} is bigger than 0:
+
+    mgSetTemporaryGameData("playersingame",number of all players)
+    loop all players:
+      mgSetTemporaryGameData("playerstatus|%loop-player%",true)
+    mgSetTemporaryGameData("status","preparing")
+
+    set {_round} to mgGetTemporaryGameData("round")
+    add 1 to {_round}
+    mgSetTemporaryGameData("round",{_round})
+
+    if {_round} is bigger than {@gamerounds}:
+      mgSpleefHandler("stop")
+      stop
+    broadcast "%getChatPrefix()% Round %{_round}%/{@gamerounds}"
+
+    #
+    # > Create a fitting arena. Base size 40x40 + 2x2 per player
+    set {_mapsize} to 10 + number of all players
+    set {_mainarena} to ""
+    set {_mainarena} to location at 0.5, 1, 0.5 in mgGetCurrentWorld()
+    mgSetTemporaryGameData("respawnloc",location at 0.5, 2, 0.5 in mgGetCurrentWorld())
+
+    set {_xstart} to -50000
+    set {_zstart} to -50000
+	
+    loop {_round} times:
+      add 50000 to {_xstart}
+      add 50000 to {_zstart}
+
+    loop all players:
+      add 1 to {_playerloop}
+      set {_islandloc} to location at {_xstart}, 20, {_zstart} in mgGetCurrentWorld()
+      mgSetTemporaryGameData("Island|%loop-player%",{_islandloc})
+
+      set {_spawnloc} to {_islandloc}
+      add 2 to y-coord of {_spawnloc}
+      mgSetTemporaryGameData("Respawnloc|%loop-player%",{_spawnloc})
+
+      loop all blocks in radius 5 around {_islandloc}:
+        if y-coord of loop-block is 20.5:
+          set loop-block to grass block
+
+      if {_playerloop} is 1:
+        add 50 to {_xstart}
+        if {_removez} is true:
+          remove {_zstart} from {_zstart}
+          delete {_removez}
+      if {_playerloop} is 2:
+        add 50 to {_zstart}
+        set {_removez} to true
+        delete {_playerloop}
+
+    wait 1 second
+    loop all players:
+      set {_loc} to mgGetTemporaryGameData("Respawnloc|%loop-player%")
+      teleport loop-player to {_loc}
+
+    #
+    # > Create a countdown that lets the players wait for 5 seconds.
+    mgDisplayBossbarCountdown(5,"CannonBattle","bossbar_countdown",null)
+
+    apply resistance 12 without particles to all players for 1 seconds
+    apply invisibility 1 without particles to all players for 0.1 seconds
+    set gamemode of all players to survival
+
+    set {_loc} to mgGetTemporaryGameData("respawnloc")
+    teleport all players to {_loc}
+    clear inventory of all players
+
+    #
+    # > Give the items to the players.
+    mgSetTemporaryGameData("status","ingame")
+    set {_rending} to 180
+    while mgGetTemporaryGameData("status") is "ingame":
+      add 1 to {_roundtime}
+      remove 1 from {_rending}
+      send action bar "%{_rending}%" to all players
+      loop all players:
+        if gamemode of loop-player is survival:
+          if -1 is bigger than y-coordinate of loop-player:
+            damage loop-player by 5 hearts
+      if {_roundtime} is bigger than 179:
+        mgSetTemporaryGameData("status","exitround")
+        mgCannonBattleStartNewRound()
+      wait 1 second
+
+  else:
+    broadcast "%getChatPrefix()% Not enough players."
+    mgSpleefHandler("stop")
+
+#
+# > Function - mgCheckCannonBattleRoundEnd
+# > Checks if the CannonBattle round should be stopped.
+function mgCheckCannonBattleRoundEnd():
+  if mgGetTemporaryGameData("status") is "ingame":
+    if mgGetTemporaryGameData("playersingame") is smaller than 2:
+      loop all players:
+        if loop-player's gamemode is survival:
+          mgAddPlayerToplistWin("CannonBattle",loop-player,1)
+          broadcast "%getChatPrefix()% %loop-player% has won this round."
+          mgSetTemporaryGameData("status","preparing")
+      mgCannonBattleStartNewRound()
+
+#
+# > Function - mgCannonBattleHandleGameDeath
+# > If a player died in CannonBattle, do everything needed.
+# > Parameters:
+# > <player>the player who died
+function mgCannonBattleHandleGameDeath(player:player):
+  set {_loc} to mgGetTemporaryGameData("Respawnloc|%{_player}%")
+  teleport {_player} to {_loc}
+
+function mgCannonBattleFloor(loc:location):
+  set block at {_loc} to yellow concrete
+  wait 5 ticks
+  set block at {_loc} to red concrete
+  wait 5 ticks
+  set block at {_loc} to air

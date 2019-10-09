@@ -51,9 +51,10 @@ on break:
 every 1 tick:
   if mgGetTemporaryGameData("status") is "ingame":
     loop all players:
-      set {_loc} to location of loop-player
-      remove 1 from y-coord of {_loc}
-      loop blocks in radius 1.2 around {_loc}:
-        if loop-block is lime concrete:
-          set {_bloc} to location of loop-block
-          mgColorRunFloor({_bloc})
+      if loop-player's gamemode is survival:
+        set {_loc} to location of loop-player
+        remove 0.3 from y-coord of {_loc}
+        loop blocks in radius 1.2 around {_loc}:
+          if loop-block is lime concrete:
+            set {_bloc} to location of loop-block
+            mgColorRunFloor({_bloc})

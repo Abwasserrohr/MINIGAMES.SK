@@ -71,12 +71,9 @@ function mgColorRunStartNewRound():
     #
 	# > Create the spleef floor, make a short 1 tick break every 50 blocks.
     loop all blocks in radius {_mapsize} around {_mainarena}:
-      add 1 to {_blocknumber}
-      if {_blocknumber} > 50:
-        wait 1 tick
-        set {_blocknumber} to 0
       if y-coordinate of loop-block is 1.5:
         set loop-block to {_block}
+        set block 1 below loop-block to {_block}
 
     #
     # > Create a countdown that lets the players wait for 5 seconds.

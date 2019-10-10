@@ -1,3 +1,4 @@
+
 #
 # ==============
 # init.sk
@@ -13,7 +14,6 @@ on load:
 
 every 1 second:
   feed all players
-  heal all players
 
 on quit:
   if mgGetTemporaryGameData("playerstatus|%player%") is true:
@@ -31,14 +31,35 @@ on join:
 
 on damage:
   if victim is a player:
-    cancel event
-    if attacker is a player:
-      stop
-    mgCannonBattleHandleGameDeath(victim)
+    if "%event.getCause()%" is "unknown" or "fall":
+      cancel event
+      mgCannonBattleHandleGameDeath(victim)
 
 on death:
   if victim is a player:
-    mgCannonBattleHandleGameDeath(victim)
+    wait 1 tick
+    force victim to respawn
+    wait 1 tick
+    mgCannonBattleHandleGameDeath(player)
+	
+on explosion:
+  loop all blocks in radius 5 around event-location:
+    if loop-block is grass block or dirt or sandstone:
+      add location of loop-block to {_expblocks::*}
+      add loop-block.getBlockData() to {_expdata::*}
+  wait 1 tick
+  loop {_expblocks::*}:
+    if block at loop-value is air:
+      chance of 50%:
+        set {_direction} to direction from event-location to loop-value
+        set {_e} to (event-locations's world).spawnFallingBlock(loop-value, {_expdata::%loop-index%})
+        push {_e} {_direction} at speed 1
+
+
+on respawn:
+  wait 1 tick
+  mgCannonBattleHandleGameDeath(player)
+
 
 on break:
   clear drops

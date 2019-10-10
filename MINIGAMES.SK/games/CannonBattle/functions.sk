@@ -8,6 +8,113 @@
 # ==============
 
 options:
+  islandsize: 100
+  walldepth: 5
+  wallheight: 40
+  gametime: 3600
+#Regeln:
+#        1. Der Becon darf nur mit tnt zerstört werden.
+#        2. die tnt kanonen dürfen nur auf seiner eigenen seite gebaut werden.
+#        3. kein PVP
+#        4. ein verkämpen
+#        5. alle tnt kanonen sin erlaubt
+#        6. keine hacks beleidigungen oder semtliches anderes zeug
+#
+#Anleitung: Es gibt zwei oder mehr sh. unten Teams mit jeweils einer Insel. Zwichen den Inseln befindet sich eine dicke mauer die erst mit tnt zerstört werden muss um den Becon des anderen teams zu zerstören.
+#           Auf der Insel befinden sich chest mit notwendigen sachen wie z.b. obsidian restone tnt (tnt sapawner) redston kram ...
+#
+#Funktionen: - man wird unendlich respawnt (kann so oft sterben wie möglich).
+#            - es gibt ein tnt spawner.
+#            - mann sollte haste 3 und effi 5 haben.
+#            - 1vs.1 oder 2vs.2 oder 1vs.1vs.1vs.1 oder 4vs.4 oder 2vs.2vs.2 oder 1vs.1vs.1 semtliche kombis auf grund der spieleranzahlen von skyroad 
+#
+#Tips: man solte im team komuniziren
+#      man sollte sich vorher über tnt kanonen informirt haben
+
+
+function mgCannonBattleSpawnSupplyVillager(loc:location,name:text):
+  loop all entities in radius 0.2 around {_loc}:
+    if loop-entity is a villager:
+      kill loop-entity
+  spawn villager at {_loc}
+  set {_villager} to last spawned entity
+  set {_head} to 1 of button
+  set {_head} to setnbtvalue({_head},"CannonBattle","true")
+  set {_villager}'s helmet to {_head}
+  {_villager}.setCustomName({_name})
+  {_villager}.setCustomNameVisible(true)
+  {_villager}.setInvulnerable(true)
+  {_villager}.setSilent(true)
+  {_villager}.setAI(false)
+  {_villager}.setRotation(-180)
+  {_villager}.setVillagerType(2)
+
+on damage of villager:
+  if victim's helmet is set:
+    set {_cannonbattle} to getnbtvalue(victim's helmet,"CannonBattle")
+    if {_cannonbattle} is "true":
+      mgBattleOpenSupplyMenu(attacker)
+      cancel event
+on rightclick on villager:
+  if event-entity's helmet is set:
+    set {_cannonbattle} to getnbtvalue(event-entity's helmet,"CannonBattle")
+    if {_cannonbattle} is "true":
+      mgBattleOpenSupplyMenu(player)
+      cancel event
+
+function mgBattleOpenSupplyMenu(player:player):
+  opengui({_player},54,"&lSupplies")
+  set {_inv} to {_player}'s current inventory
+  loop 54 times:
+    set {_loop} to loop-number - 1
+    if {_loop} is 0 or 1 or 2 or 9 or 10 or 11 or 18 or 19 or 20 or 27 or 28 or 29 or 36 or 37 or 38 or 45 or 46 or 47:
+      set {_item} to 64 of tnt
+    if {_loop} is 3 or 4:
+      set {_item} to 64 of dispenser
+    if {_loop} is 5 or 6:
+      set {_item} to 64 of cobblestone
+    if {_loop} is 7 or 8:
+      set {_item} to 64 of redstone repeater
+    if {_loop} is 12 or 13:
+      set {_item} to 64 of sticky piston
+    if {_loop} is 14 or 15:
+      set {_item} to 64 of smooth stone slab
+    if {_loop} is 16 or 17:
+      set {_item} to 64 of redstone comparator
+    if {_loop} is 21 or 22:
+      set {_item} to 64 of piston
+    if {_loop} is 23 or 24:
+      set {_item} to 64 of stone pressure plate
+    if {_loop} is 25 or 26:
+      set {_item} to 64 of redstone
+    if {_loop} is 30 or 31:
+      set {_item} to 64 of obsidian
+    if {_loop} is 32 or 33:
+      set {_item} to 64 of ladder
+    if {_loop} is 34 or 35:
+      set {_item} to 16 of oak sign
+    if {_loop} is 39 or 40:
+      set {_item} to 1 of water bucket
+    if {_loop} is 41:
+      set {_item} to 64 of lever
+    if {_loop} is 42:
+      set {_item} to 64 of stone button
+    if {_loop} is 43:
+      set {_item} to 1 of flint and steel
+    if {_loop} is 44:
+      set {_item} to 1 of diamond pickaxe of efficiency 10
+    if {_loop} is 48 or 49:
+      set {_item} to 1 of water bucket
+    if {_loop} is 50 or 51:
+      set {_item} to 64 of oak fence
+    if {_loop} is 52:
+      set {_item} to 1 of diamond pickaxe of efficiency 10
+    if {_loop} is 53:
+      set {_item} to 1 of flint and steel
+    set slot {_loop} of {_inv} to {_item}
+
+
+options:
   gamerounds: 1
 
 #
@@ -73,33 +180,43 @@ function mgCannonBattleStartNewRound():
       add 1 to {_playerloop}
       set {_islandloc} to location at {_xstart}, 20, {_zstart} in mgGetCurrentWorld()
       mgSetTemporaryGameData("Island|%loop-player%",{_islandloc})
-
+      mgSetTemporaryGameData("Islandloc|%{_xstart}%|%{_zstart}%",true)
       set {_spawnloc} to {_islandloc}
-      add 2 to y-coord of {_spawnloc}
+      set y-coord of {_spawnloc} to 21
       mgSetTemporaryGameData("Respawnloc|%loop-player%",{_spawnloc})
+      remove 3 from z-coord of {_spawnloc}
+      mgCannonBattleSpawnSupplyVillager({_spawnloc},"&lSupply")
 
-      loop all blocks in radius 5 around {_islandloc}:
-        if y-coord of loop-block is 20.5:
+      loop all blocks in radius 10 around {_islandloc}:
+        if 20.5 is bigger than y-coord of loop-block:
           set loop-block to grass block
+      loop all blocks in radius 3 around {_islandloc}:
+        if 20.5 is bigger than y-coord of loop-block:
+          set loop-block to obsidian
 
       if {_playerloop} is 1:
-        add 50 to {_xstart}
+        add {@islandsize} to {_xstart}
         if {_removez} is true:
           remove {_zstart} from {_zstart}
           delete {_removez}
       if {_playerloop} is 2:
-        add 50 to {_zstart}
+        add {@islandsize} to {_zstart}
         set {_removez} to true
         delete {_playerloop}
 
-    wait 1 second
+    loop all players:
+      set {_loc} to mgGetTemporaryGameData("Island|%loop-player%")
+      mgCannonBattleCalculateWalls({_loc}, red sandstone, sandstone, red sandstone)
+
+    #
+    # > Create a countdown that lets the players wait for 5 seconds.
+    mgDisplayBossbarCountdown(10,"CannonBattle","bossbar_countdown",null)
+
+    wait 1 seconds
     loop all players:
       set {_loc} to mgGetTemporaryGameData("Respawnloc|%loop-player%")
       teleport loop-player to {_loc}
 
-    #
-    # > Create a countdown that lets the players wait for 5 seconds.
-    mgDisplayBossbarCountdown(5,"CannonBattle","bossbar_countdown",null)
 
     apply resistance 12 without particles to all players for 1 seconds
     apply invisibility 1 without particles to all players for 0.1 seconds
@@ -112,7 +229,7 @@ function mgCannonBattleStartNewRound():
     #
     # > Give the items to the players.
     mgSetTemporaryGameData("status","ingame")
-    set {_rending} to 180
+    set {_rending} to {@gametime}
     while mgGetTemporaryGameData("status") is "ingame":
       add 1 to {_roundtime}
       remove 1 from {_rending}
@@ -121,7 +238,7 @@ function mgCannonBattleStartNewRound():
         if gamemode of loop-player is survival:
           if -1 is bigger than y-coordinate of loop-player:
             damage loop-player by 5 hearts
-      if {_roundtime} is bigger than 179:
+      if {_roundtime} is bigger than {@gametime}:
         mgSetTemporaryGameData("status","exitround")
         mgCannonBattleStartNewRound()
       wait 1 second
@@ -129,6 +246,190 @@ function mgCannonBattleStartNewRound():
   else:
     broadcast "%getChatPrefix()% Not enough players."
     mgSpleefHandler("stop")
+import:
+  java.lang.Math
+
+#
+# > Function - mgCannonBattleCreateWalls
+# > Creates a Wall of the defined material between the two locations.
+# > Parameters:
+# > <location> One of the two points where the block should be placed.
+# > <location> One of the two points where the block should be placed.
+# > <item> The block (item) that should be placed.
+function mgCannonBattleCreateWalls(loc1:location,loc2:location,block:item,mode:text="x",xwait:number=0,ywait:number=0,zwait:number=0):
+  set {_minx} to Math.min(x-coord of {_loc1},x-coord of {_loc2})
+  set {_miny} to Math.min(y-coord of {_loc1},y-coord of {_loc2})
+  set {_minz} to Math.min(z-coord of {_loc1},z-coord of {_loc2})
+  set {_maxx} to Math.max(x-coord of {_loc1},x-coord of {_loc2})
+  set {_maxy} to Math.max(y-coord of {_loc1},y-coord of {_loc2})
+  set {_maxz} to Math.max(z-coord of {_loc1},z-coord of {_loc2})
+  set {_world} to {_loc1}'s world
+
+  set {_diffx} to difference between {_minx} and {_maxx}
+  set {_diffy} to difference between {_miny} and {_maxy}
+  set {_diffz} to difference between {_minz} and {_maxz}
+  
+  if {_xwait} is not 0:
+    set {_xwait} to "%{_xwait}% ticks" parsed as timespan
+  if {_ywait} is not 0:
+    set {_ywait} to "%{_ywait}% ticks" parsed as timespan
+  if {_zwait} is not 0:
+    set {_zwait} to "%{_zwait}% ticks" parsed as timespan
+  if {_mode} is "x":
+    set {_x} to {_minx}
+    loop {_diffx} times:
+      if {_xwait} is not 0:
+        wait {_xwait}
+      set {_z} to {_minz}
+      add 1 to {_x}
+      loop {_diffz} times:
+        if {_zwait} is not 0:
+          wait {_zwait}
+        set {_y} to {_miny}
+        add 1 to {_z}
+        loop {_diffy} times:
+          if {_ywait} is not 0:
+            wait {_ywait}
+          set {_blockloc} to location at {_x}, {_y}, {_z} in {_world}
+          add 1 to {_y}
+          set block at {_blockloc} to {_block}
+  else if {_mode} is "z":
+    set {_z} to {_minz}
+    loop {_diffz} times:
+      if {_zwait} is not 0:
+        wait {_zwait}
+      set {_x} to {_minx}
+      add 1 to {_z}
+      loop {_diffx} times:
+        if {_xwait} is not 0:
+          wait {_xwait}
+        set {_y} to {_miny}
+        add 1 to {_x}
+        loop {_diffy} times:
+          if {_ywait} is not 0:
+            wait {_ywait}
+          set {_blockloc} to location at {_x}, {_y}, {_z} in {_world}
+          add 1 to {_y}
+          set block at {_blockloc} to {_block}
+  else if {_mode} is "y":
+    set {_y} to {_miny}
+    loop {_diffy} times:
+      if {_ywait} is not 0:
+        wait {_ywait}
+      set {_x} to {_minx}
+      add 1 to {_y}
+      loop {_diffx} times:
+        if {_xwait} is not 0:
+          wait {_xwait}
+        set {_z} to {_minz}
+        add 1 to {_x}
+        loop {_diffz} times:
+          if {_zwait} is not 0:
+            wait {_zwait}
+          set {_blockloc} to location at {_x}, {_y}, {_z} in {_world}
+          add 1 to {_z}
+          set block at {_blockloc} to {_block}
+
+function mgCannonBattleCalculateWalls(loc:location, floor:item, filling:item, top:item):
+  wait 1 tick
+  set {_floorheight} to y-coord of {_loc}
+  remove 10 from {_floorheight}
+  set {_walldistance} to {@islandsize} / 2
+  
+  set {_checkx} to x-coord of {_loc}
+  set {_checkz} to z-coord of {_loc}
+  remove {@islandsize} from {_checkz}
+  if mgGetTemporaryGameData("Islandloc|%{_checkx}%|%{_checkz}%") is true:
+    set {_northwall1} to {_loc}
+    remove {_walldistance} from z-coord of {_northwall1}
+    set {_northwall2} to {_northwall1}
+    add {_walldistance} to x-coord of {_northwall1}
+    remove {_walldistance} from x-coord of {_northwall2}
+    add {@walldepth} to z-coord of {_northwall2}
+    set y-coord of {_northwall1} to {_floorheight}
+    set y-coord of {_northwall2} to {_floorheight} + 1
+    if {_floor} is not air:
+      mgCannonBattleCreateWalls({_northwall1},{_northwall2},{_floor})
+    if {_filling} is not air:
+      set y-coord of {_northwall1} to {_floorheight} + 1
+      set y-coord of {_northwall2} to {_floorheight} + {@wallheight}
+      mgCannonBattleCreateWalls({_northwall1},{_northwall2},{_filling})
+    if {_top} is not air:
+      set y-coord of {_northwall1} to {_floorheight} + {@wallheight}
+      set y-coord of {_northwall2} to {_floorheight} + {@wallheight} + 1
+      mgCannonBattleCreateWalls({_northwall1},{_northwall2},{_top})
+
+  set {_checkx} to x-coord of {_loc}
+  set {_checkz} to z-coord of {_loc}
+  add {@islandsize} to {_checkz}
+  if mgGetTemporaryGameData("Islandloc|%{_checkx}%|%{_checkz}%") is true:
+    set {_southwall1} to {_loc}
+    add {_walldistance} to z-coord of {_southwall1}
+    set {_southwall2} to {_southwall1}
+    add {_walldistance} to x-coord of {_southwall1}
+    remove {_walldistance} from x-coord of {_southwall2}
+    remove {@walldepth} from z-coord of {_southwall2}
+
+    set y-coord of {_southwall1} to {_floorheight}
+    set y-coord of {_southwall2} to {_floorheight} + 1
+    if {_floor} is not air:
+      mgCannonBattleCreateWalls({_southwall1},{_southwall2},{_floor})
+    if {_filling} is not air:
+      set y-coord of {_southwall1} to {_floorheight} + 1
+      set y-coord of {_southwall2} to {_floorheight} + {@wallheight}
+      mgCannonBattleCreateWalls({_southwall1},{_southwall2},{_filling})
+    if {_top} is not air:
+      set y-coord of {_southwall1} to {_floorheight} + {@wallheight}
+      set y-coord of {_southwall2} to {_floorheight} + {@wallheight} + 1
+      mgCannonBattleCreateWalls({_southwall1},{_southwall2},{_top})
+
+  set {_checkx} to x-coord of {_loc}
+  set {_checkz} to z-coord of {_loc}
+  remove {@islandsize} from {_checkx}
+  if mgGetTemporaryGameData("Islandloc|%{_checkx}%|%{_checkz}%") is true:
+    set {_westwall1} to {_loc}
+    remove {_walldistance} from x-coord of {_westwall1}
+    set {_westwall2} to {_westwall1}
+    add {_walldistance} to z-coord of {_westwall1}
+    remove {_walldistance} from z-coord of {_westwall2}
+    add {@walldepth} to x-coord of {_westwall2}
+
+    set y-coord of {_westwall1} to {_floorheight}
+    set y-coord of {_westwall2} to {_floorheight} + 1
+    if {_floor} is not air:
+      mgCannonBattleCreateWalls({_westwall1},{_westwall2},{_floor})
+    if {_filling} is not air:
+      set y-coord of {_westwall1} to {_floorheight} + 1
+      set y-coord of {_westwall2} to {_floorheight} + {@wallheight}
+      mgCannonBattleCreateWalls({_westwall1},{_westwall2},{_filling})
+    if {_top} is not air:
+      set y-coord of {_westwall1} to {_floorheight} + {@wallheight}
+      set y-coord of {_westwall2} to {_floorheight} + {@wallheight} + 1
+      mgCannonBattleCreateWalls({_westwall1},{_westwall2},{_top})
+
+  set {_checkx} to x-coord of {_loc}
+  set {_checkz} to z-coord of {_loc}
+  add {@islandsize} to {_checkx}
+  if mgGetTemporaryGameData("Islandloc|%{_checkx}%|%{_checkz}%") is true:
+    set {_eastwall1} to {_loc}
+    add {_walldistance} to x-coord of {_eastwall1}
+    set {_eastwall2} to {_eastwall1}
+    add {_walldistance} to z-coord of {_eastwall1}
+    remove {_walldistance} from z-coord of {_eastwall2}
+    remove {@walldepth} from x-coord of {_eastwall2}
+
+    set y-coord of {_eastwall1} to {_floorheight}
+    set y-coord of {_eastwall2} to {_floorheight} + 1
+    if {_floor} is not air:
+      mgCannonBattleCreateWalls({_eastwall1},{_eastwall2},{_floor})
+    if {_filling} is not air:
+      set y-coord of {_eastwall1} to {_floorheight} + 1
+      set y-coord of {_eastwall2} to {_floorheight} + {@wallheight}
+      mgCannonBattleCreateWalls({_eastwall1},{_eastwall2},{_filling})
+    if {_top} is not air:
+      set y-coord of {_eastwall1} to {_floorheight} + {@wallheight}
+      set y-coord of {_eastwall2} to {_floorheight} + {@wallheight} + 1
+      mgCannonBattleCreateWalls({_eastwall1},{_eastwall2},{_top})
 
 #
 # > Function - mgCheckCannonBattleRoundEnd

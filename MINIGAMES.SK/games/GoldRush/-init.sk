@@ -1,0 +1,181 @@
+
+#
+# ==============
+# init.sk
+# ==============
+# init.sk is part of the MINIGAMES.SK library.
+# ==============
+# > GAME: GoldRush
+# ==============
+
+on load:
+  wait 1 tick
+  mgGoldRushHandler("start")
+
+every 1 second:
+  feed all players
+
+import:
+  java.util.ArrayList
+
+on quit:
+  if mgGetTemporaryGameData("playerstatus|%player%") is true:
+    set {_playersingame} to mgGetTemporaryGameData("playersingame")
+    remove 1 from {_playersingame}
+    mgSetTemporaryGameData("playersingame",{_playersingame})
+    mgSetTemporaryGameData("playerstatus|%player%",false)
+    mgCheckGoldRushRoundEnd()
+
+on join:
+  clear inventory of player
+  set gamemode of player to survival
+  set {_loc} to mgGetTemporaryGameData("respawnloc")
+  if mgGetTemporaryGameData("Base|%player%") is not set:
+    mgGoldRushGiveBaseItem(player)
+  teleport player to {_loc}
+
+
+every 1 second:
+  loop all zombies:
+    if block below loop-entity is not magenta glazed terracotta:
+      set {_loc} to loop-entity's location
+      set {_gold} to metadata value "Gold" of loop-entity
+      drop {_gold} of gold ingot at {_loc}
+      remove 500 from y-coord of {_loc}
+      teleport loop-entity to {_loc}
+    else:
+      set {_block} to block below loop-entity
+      set {_loc} to location of loop-entity
+      set {_direction} to "%{_block}.getData()%" parsed as number
+      mgGoldRushFluidMovement(loop-entity,{_direction})
+
+on death:
+  if victim is a player:
+    wait 1 tick
+    force victim to respawn
+    wait 1 tick
+    mgGoldRushHandleGameDeath(player)
+	
+on explosion:
+  loop all blocks in radius 5 around event-location:
+    if loop-block is grass block or dirt or sandstone:
+      add location of loop-block to {_expblocks::*}
+      add loop-block.getBlockData() to {_expdata::*}
+  wait 1 tick
+  loop {_expblocks::*}:
+    if block at loop-value is air:
+      chance of 50%:
+        set {_direction} to direction from event-location to loop-value
+        set {_e} to (event-locations's world).spawnFallingBlock(loop-value, {_expdata::%loop-index%})
+        push {_e} {_direction} at speed 1
+
+on explosion:
+  cancel event
+
+on respawn:
+  wait 1 tick
+  mgGoldRushHandleGameDeath(player)
+
+on build:
+  if "%event.getHand()%" is "HAND":
+    set {_tool} to player's tool
+  else if "%event.getHand()%" is "OFF_HAND":
+    set {_tool} to player's offhand tool
+  set {_val} to getnbtvalue({_tool},"Placeable")
+  if {_val} is "true":
+    set {_val1} to getnbtvalue({_tool},"BaseItem")
+    set {_specialtool} to getnbtvalue({_tool},"Specialtool")
+    if {_val1} is "true":
+      set {_bases} to mgGetTemporaryGameData("GoldRushBases")
+      if {_bases} is set:
+        loop ...{_bases}:
+          if distance between loop-value and event-location <= 10:
+            message "%getChatPrefix()% You have to build at least 10 blocks away from other bases."
+            cancel event 
+            stop
+      mgGoldRushPlaceBase(event-player,location of event-block)
+    else if {_specialtool} is "Golddrill":
+      if block 1 below event-block is grass block or stone:
+        set block 1 below event-block to event-block
+        set event-block to air
+        mgGoldRushPlaceDrill(location of event-block)
+      else:
+        cancel event
+    else:
+      if {_tool} is magenta glazed terracotta:
+        if block 1 below event-block is grass block or magenta glazed terracotta or stone:
+          set block 1 below event-block to event-blocks
+          set event-block to air
+        else:
+          cancel event
+
+  else:
+    cancel event
+on break:
+  cancel event
+on damage:
+  if victim is a player:
+    if attacker is a player:
+      cancel event
+
+on death of zombie:
+  if metadata value "Gold" of victim is set:
+    set {_gold} to metadata value "Gold" of victim
+    clear drops
+    set {_goldaccount} to mgGetTemporaryGameData("Gold|%attacker%")
+    set {_goldaccount} to {_goldaccount} parsed as number
+    if {_goldaccount} is not set:
+      set {_goldaccount} to 0
+    add {_gold} to {_goldaccount}
+    mgSetTemporaryGameData("Gold|%attacker%","%{_goldaccount}%")
+    set {_uuid} to uuid of attacker
+    add {_gold} to {cobble::%{_uuid}%}
+on drop:
+  cancel event
+
+on pickup of gold ingot:
+  wait 1 tick
+  set {_picked} to number of gold ingot in event-player's inventory
+  set {_gold} to mgGetTemporaryGameData("Gold|%event-player%")
+  set {_gold} to {_gold} parsed as number
+  if {_gold} is not set:
+    set {_gold} to 0
+  add {_picked} to {_gold}
+  mgSetTemporaryGameData("Gold|%event-player%","%{_gold}%")
+  remove {_picked} of gold ingot from event-player's inventory
+  mgAddCurrentGamePoints("GoldRush",player,"points",{_picked})
+  #mgAddPlayerToplistScore("GoldRush",loop-player,%{_picked}%)
+  mgSetSidebarToplist("GoldRush","points",5,1)
+  set {_uuid} to uuid of event-player
+  add {_picked} to {cobble::%{_uuid}%}
+on damage of villager:
+  if victim's helmet is set:
+    set {_GoldRush} to getnbtvalue(victim's helmet,"MineLoc")
+    if {_GoldRush} is set:
+      set {_loc} to getnbtvalue(victim's helmet,"MineLoc")
+      mgGoldRushOpenMineMenu(attacker,{_loc})
+      cancel event
+      stop
+    set {_base} to getnbtvalue(victim's helmet,"Base")
+    if {_base} is set:
+      if {_base} is "%attacker%":
+        mgGoldRushOpenBaseMenu(attacker)
+        cancel event
+
+on rightclick on villager:
+  if event-entity's helmet is set:
+    set {_GoldRush} to getnbtvalue(event-entity's helmet,"MineLoc")
+    if {_GoldRush} is set:
+      set {_loc} to getnbtvalue(event-entity's helmet,"MineLoc")
+      mgGoldRushOpenMineMenu(player,{_loc})
+      cancel event
+      stop
+    set {_base} to getnbtvalue(event-entity's helmet,"Base")
+    if {_base} is set:
+      if {_base} is "%player%":
+        mgGoldRushOpenBaseMenu(player)
+        cancel event
+every 1 second:
+  mgGoldRushInformation()
+every 3 seconds:
+  mgGoldRushSpawnGold()

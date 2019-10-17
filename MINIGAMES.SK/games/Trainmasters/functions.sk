@@ -24,9 +24,6 @@ function mgTrainmastersHandler(task:text):
     mgSetTemporaryGameData("round",0)
     mgSetTemporaryGameData("status","loading")
 
-    loop all players:
-      mgSetCurrentGamePoints("Trainmasters",loop-player,"points",0)
-    mgSetSidebarToplist("Trainmasters","points",5,1)
 
     mgSetTemporaryGameData("playersingame",number of all players)
     mgTrainmastersStartNewRound()
@@ -58,7 +55,6 @@ function mgTrainmastersStartNewRound():
     if {_round} is bigger than {@gamerounds}:
       mgSpleefHandler("stop")
       stop
-    broadcast "%getChatPrefix()% Round %{_round}%/{@gamerounds}"
 
     mgSetTemporaryGameData("respawnloc",location at -4, 8, -6 in mgGetCurrentWorld())
 
@@ -73,9 +69,17 @@ function mgTrainmastersStartNewRound():
 
     set {_loc} to mgGetTemporaryGameData("respawnloc")
     teleport all players to {_loc}
-    clear inventory of all players
     loop all players:
-      mgTrainmastersGiveBaseItem(loop-player)
+      mgTrainmastersGiveTools(loop-player)
+
+    loop 10 times:
+      loop all players:
+        play sound "block.note_block.pling" with volume 0.5 with pitch 0.7 at loop-player's location for loop-player
+      wait 1 second
+    loop all players:
+      play sound "block.note_block.pling" with volume 0.5 with pitch 2 at loop-player's location for loop-player
+
+    mgTrainmastersSummonTrain()
 
     #
     # > Give the items to the players.
@@ -86,10 +90,6 @@ function mgTrainmastersStartNewRound():
       remove 1 from {_rending}
       mgSetTemporaryGameData("TimeLeft",{_rending})
 
-      loop all players:
-        if gamemode of loop-player is survival:
-          if -1 is bigger than y-coordinate of loop-player:
-            damage loop-player by 5 hearts
       if {_roundtime} is bigger than {@gametime}:
         mgSetTemporaryGameData("status","exitround")
 		
@@ -115,4 +115,5 @@ function mgCheckTrainmastersRoundEnd():
 # > <player>the player who died
 function mgTrainmastersHandleGameDeath(player:player):
   set {_loc} to mgGetTemporaryGameData("respawnloc")
+  mgTrainmastersGiveTools({_player})
   teleport {_player} to {_loc}

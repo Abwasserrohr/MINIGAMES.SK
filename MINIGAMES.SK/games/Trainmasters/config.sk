@@ -12,3 +12,4 @@ on load:
   mgSetTranslation("en",{_game},"desc","&7Help the train move further\nhow far will you get?")
   mgSetTranslation("en",{_game},"bossbar_countdown","Prepare yourself...")
   mgSetTranslation("en",{_game},"toplist_scoreboard","&7&l<place> | &f<player> &7&l>> &e&l<points>")
+  mgSetTranslation("en",{_game},"train_distance","&7&lDriven Blocks &7&l>> &e&l<distance>")

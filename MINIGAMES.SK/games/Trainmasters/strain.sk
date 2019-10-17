@@ -6,42 +6,21 @@ import:
   org.bukkit.event.player.PlayerArmorStandManipulateEvent
   org.bukkit.WorldBorder
 
-command /testtrain:
-  trigger:
-    mgTrainmastersGiveTools(player)
-    delete metadata value "worldborder" of getMetadataBlock()
-    mgTrainmastersSummonTrain()
 function mgTrainmastersGiveTools(player:player):
   clear {_player}'s inventory
   set slot 0 of {_player}'s inventory to iron pickaxe
   set slot 1 of {_player}'s inventory to iron axe
 
-on click:
-  if target block is water:
-    cancel event
-    give 1 of light blue concrete named "&rWater" to player
+function mgTrainmastersUpdateSidebarStats():
+  set {_placeholder} to HashMap()
+  set {_distance} to mgGetTemporaryGameData("traindistance")
+  if {_distance} is not set:
+    set {_distance} to 0
+  if {_distance} is smaller than 0:
+    set {_distance} to 0
+  {_placeholder}.put("<distance>",{_distance})
+  mgSetGlobalSidebarSlotContent(12,"Trainmasters","train_distance",{_placeholder})
 
-on PlayerArmorStandManipulateEvent:
-  event.setCancelled(true)
-
-import:
-  org.bukkit.event.player.PlayerInteractAtEntityEvent
-
-on PlayerInteractAtEntityEvent:
-  set {_player} to event.getPlayer()
-  set {_entity} to event.getRightClicked()
-  if "%{_entity}%" is "armor stand":
-    set {_checkitem} to {_entity}'s chestplate
-    if display name of {_entity}'s chestplate is "clickevent":
-      if 1st line of lore of {_entity}'s chestplate is "storage":
-        mgTrainmastersHandleStorageClick({_player},{_entity})
-      if 1st line of lore of {_entity}'s chestplate is "water":
-        mgTrainmastersHandleWaterClick({_player},{_entity})
-      if 1st line of lore of {_entity}'s chestplate is "coal":
-        mgTrainmastersHandleCoalClick({_player},{_entity})
-      if 1st line of lore of {_entity}'s chestplate is "producer":
-        mgTrainmastersHandleProducerClick({_player},{_entity})
-  event.setCancelled(true)
 function mgTrainmastersHandleProducerClick(player:player,vehiclepart:entity):
   set {_eventitem} to rail
   set {_vehicleuuid} to metadata value "vehicles.sk|vehicleuuid" of {_vehiclepart}
@@ -149,8 +128,6 @@ function mgTrainmastersCreateStatusBar(max:number,currently:number,filledcolor:t
       set {_bar} to "%{_bar}%%{_emptycolor}%%{_statussymbol}%"
   return {_bar}
 
-every 1 second:
-  mgTrainmastersProduceRail()
 
 function mgTrainmastersProduceRail():
   set {_eventitem} to rail
@@ -186,6 +163,7 @@ function mgTrainmastersProduceRail():
       set {_nloop} to {_loopid} - {_i} 
       if {_storageparts::%{_nloop}%}'s helmet is {_eventitem}:
         set {_logslot} to {_storageparts::%{_nloop}%}
+        stop loop
       add 1 to {_i}
 
   if {_logslot} is set:
@@ -201,8 +179,9 @@ function mgTrainmastersProduceRail():
       set {_nloop} to {_loopid} - {_i} 
       if {_storageparts::%{_nloop}%}'s helmet is {_eventitem}:
         set {_ironslot} to {_storageparts::%{_nloop}%}
+        stop loop
       add 1 to {_i}
-  if {_logslot} is set:
+  if {_ironslot} is set:
     set {_ironslot}'s helmet to air
     set {_logslot}'s helmet to air
     set {_produceslot}'s helmet to rail
@@ -317,7 +296,7 @@ function mgTrainmastersSummonWagon(type:text,loc:location):
     #
     # > Rail heads:
     set {_storageitem} to rail
-    set {_y} to -0.2
+    set {_y} to -0.1
     loop 10 times:
       add 1 to {_producerheadid}
       set 1st line of lore of {_storageitem} to "%{_producerheadid}%"
@@ -598,26 +577,13 @@ function mgTrainmastersSummonTrain():
   #  wait 1 tick
   #  vehiclesTeleportVehicleRelative({_uuid},vector(0.1,0,0))
   #  wait 1 tick
-  
-on spawn of armor stand:
-  wait 1 tick
-  if event-entity's boots is barrier named "wagoncontrol":
-    set metadata value "lastwagonfront" of getMetadataBlock() to event-entity
-  if event-entity's leggings is water bucket:
-    set metadata value "waterwagon" of getMetadataBlock() to event-entity
-  if event-entity's leggings is coal:
-    set metadata value "coalwagon" of getMetadataBlock() to event-entity
-  if event-entity's leggings is rail:
-    set metadata value "producerwagon" of getMetadataBlock() to event-entity
-  if event-entity's leggings is oak log:
-    set metadata value "storagewagon" of getMetadataBlock() to event-entity
 
 
 function mgTrainmastersHandleSetBorderTrain(borderfollow:entity):
-  if metadata value "worldborder" of getMetadataBlock() is not set:
+  if mgGetTemporaryGameData("worldborder") is not set:
     set {_world} to {_borderfollow}'s world
     set {_worldborder} to {_world}.getWorldBorder()
-    set metadata value "worldborder" of getMetadataBlock() to {_worldborder}
+    mgSetTemporaryGameData("worldborder",{_worldborder})
     {_worldborder}.setSize(30.00)
     {_worldborder}.setWarningDistance(0)
     {_worldborder}.setWarningTime(1)
@@ -625,9 +591,8 @@ function mgTrainmastersHandleSetBorderTrain(borderfollow:entity):
     while {_borderfollow} is alive:
       wait 1 tick
       {_worldborder}.setCenter(x-coord of {_borderfollow}, 0)
-    delete metadata value "worldborder" of getMetadataBlock()
 
-function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other"):
+function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other",speed:number=1):
 
   set {_wagonfront} to metadata value "lastwagonfront" of getMetadataBlock()
   mgTrainmastersHandleSetBorderTrain({_wagonfront})
@@ -636,6 +601,7 @@ function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other"):
     if {_trainpart} is "locomotive":
       mgTrainmastersUseCoal()
       mgTrainmastersUseWater()
+      mgSetTemporaryGameData("traindistance",x-coord of {_wagonfront})
     set {_center} to vehiclesGetTmpData("vehicles.sk|center|%{_uuid}%")
     add 0.5 to y-coord of {_center}
     set {_block} to block at {_wagonfront}.getLocation()
@@ -647,6 +613,8 @@ function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other"):
 
       mgTrainmastersHandler("stop")
       stop
+    mgSetTemporaryGameData("respawnloc",{_wagonfront}.getLocation())
+
     set {_railshape} to "%{_block}.getBlockData().getShape()%"
     loop 20 times:
 	
@@ -765,11 +733,7 @@ function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other"):
           delete {_semode}
 
 
-      if {_i} >= 500:
-        set {_endit} to true
       add 1 to {_wait}
-      if {_wait} is 1:
+      if {_wait} >= {_speed}:
         delete {_wait}
         wait 1 tick
-
-

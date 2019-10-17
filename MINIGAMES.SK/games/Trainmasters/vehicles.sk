@@ -1,0 +1,442 @@
+
+command /testsummon:
+  trigger:
+    vehiclesKillAllVehicles()
+    make player execute "/kill @e[type=minecraft:armor_stand]"
+    set {_vehicle} to vehiclesCreateVehicle()
+    set {_i} to -5.5
+    loop 10 times:
+      add 1 to {_i}
+      set {_part} to vehicesCreateVehiclePart(black concrete)
+      set {_part} to vehiclesSetVehiclePartSetting({_part},"name","Test: %loop-number%")
+      set {_part} to vehiclesSetVehiclePartSetting({_part},"namevisible",true)
+
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_i},0,0)
+
+    set {_part} to vehicesCreateVehiclePart(black concrete)
+    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_i},0,0)
+
+    set {_loc} to location(x-coord of player's location,y-coord of player's location,z-coord of player's location,player's world)
+    set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
+    add 1 to {_i}
+    set {_part} to vehicesCreateVehiclePart(red concrete,air,air,air,air,air,"test")
+    set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+    vehiclesAddVehiclePartToLivingVehicle({_uuid},{_part},{_i},0,0)
+    wait 1 second
+    vehiclesKillVehiclePartFromLivingVehicle({_uuid},"test")
+    loop 360 times:
+      if loop-number is between 1 and 90:
+        vehiclesTeleportVehicleRelative({_uuid},vector(0.1,0,0))
+      if loop-number is between 91 and 180:
+        vehiclesTeleportVehicleRelative({_uuid},vector(-0.1,0,0))
+      if loop-number is between 181 and 270:
+        vehiclesTeleportVehicleRelative({_uuid},vector(0.1,0,0))
+      if loop-number is between 271 and 360:
+        vehiclesTeleportVehicleRelative({_uuid},vector(-0.1,0,0))
+      wait 1 ticks
+      vehiclesRotateVehicle({_uuid},1)
+
+
+
+import:
+  java.util.HashMap
+  java.util.ArrayList
+  java.lang.Math
+  java.util.UUID
+  org.bukkit.util.EulerAngle
+
+
+function vehiclesSaveTmpData(key:text,value:object):
+  if metadata value "vehiclesTmpData" of getMetadataBlock() is set:
+    (metadata value "vehiclesTmpData" of getMetadataBlock()).put({_key},{_value})
+  else:
+    set metadata value "vehiclesTmpData" of getMetadataBlock() to new HashMap()
+    (metadata value "vehiclesTmpData" of getMetadataBlock()).put({_key},{_value})
+
+function vehiclesGetTmpData(key:text) :: object:
+  if metadata value "vehiclesTmpData" of getMetadataBlock() is set:
+    return (metadata value "vehiclesTmpData" of getMetadataBlock()).get({_key})
+
+function vehiclesRemoveTmpData(key:text):
+  if metadata value "vehiclesTmpData" of getMetadataBlock() is set:
+    try (metadata value "vehiclesTmpData" of getMetadataBlock()).remove({_key})
+
+#
+# > Function - getMetadataBlock
+# > Actions:
+# > Returns a block as a dummy for metadata storage.
+function getMetadataBlock() :: block:
+  if {vehiclesmetadatablock} is not a block:
+    add all worlds to {_worlds::*}
+    set {vehiclesmetadatablock} to block at location at 0.0, 0.0, 0.0 in {_worlds::1}
+  return {vehiclesmetadatablock}
+
+
+function vehicesCreateVehiclePart(head:item=air,boots:item=air,chestplate:item=air,leggings:item=air,righthand:item=air,lefthand:item=air,uuid:text="none") :: object:
+  set {_part} to new HashMap()
+  set {_equipment} to new HashMap()
+  set {_poses} to new HashMap()
+  set {_settings} to new HashMap()
+  {_equipment}.put("head",{_head})
+  {_equipment}.put("boots",{_boots})
+  {_equipment}.put("chestplate",{_chestplate})
+  {_equipment}.put("righthand",{_righthand})
+  {_equipment}.put("lefthand",{_lefthand})
+  {_equipment}.put("leggings",{_leggings})
+  if {_uuid} is "none":
+    set {_uuid} to UUID.randomUUID().toString()
+  {_part}.put("uuid",{_uuid})
+  {_part}.put("poses",{_poses})
+  {_part}.put("equipment", {_equipment})
+  {_part}.put("settings",{_settings})
+  return {_part}
+
+function vehiclesSetVehiclePartPose(part:object,pose:text,angle:object) :: object:
+  set {_poses} to {_part}.get("poses")
+  set {_EulerAngle} to new EulerAngle({_angle}.getX(), {_angle}.getY(), {_angle}.getZ())
+  if {_EulerAngle} is instance of EulerAngle:
+    {_poses}.put({_pose},{_EulerAngle})
+    {_part}.put("poses",{_poses})
+  return {_part}
+
+function vehiclesSetVehiclePartSetting(part:object,setting:text,value:object) :: object:
+  set {_settings} to {_part}.get("settings")
+  {_settings}.put({_setting},{_value})
+  {_part}.put("settings",{_settings})
+  return {_part}
+
+function vehiclesCreateVehicle() :: object:
+  set {_vehicle} to new HashMap()
+  {_vehicle}.put("uuid",UUID.randomUUID().toString())
+  {_vehicle}.put("parts",new HashMap())
+  return {_vehicle}
+
+function vehiclesKillVehiclePartFromLivingVehicle(vehicleuuid:text,partuuid:text):
+  set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+
+  loop {_alivevehicles}.get({_vehicleuuid}).get("parts").size! times:
+    if {_alivevehicles}.get({_vehicleuuid}).get("parts").get(loop-number - 1).get("uuid") is {_partuuid}:
+      set {_part} to {_alivevehicles}.get({_vehicleuuid}).get("parts").get(loop-number - 1)
+      {_alivevehicles}.get({_vehicleuuid}).get("parts").remove({_part})
+      set {_part} to {_part}.get("part")
+
+  delete metadata value "vehicles.sk|vehicleuuid" of {_part}
+  kill {_part}
+  {_alivevehicles}.get({_vehicleuuid}).get("parts").remove({_partuuid})
+  vehiclesSaveTmpData("alivevehicles",{_alivevehicles})
+
+function vehiclesApplyEntitySettings(entity:entity,partdata:object):
+
+  if {_partdata}.get("settings").get("arms") is set:
+    set {_arms} to {_partdata}.get("settings").get("arms")
+  else:
+    set {_arms} to false
+  {_entity}.setArms({_arms})
+
+  if {_partdata}.get("settings").get("baseplate") is set:
+    set {_baseplate} to {_partdata}.get("settings").get("baseplate")
+  else:
+    set {_baseplate} to false
+  {_entity}.setBasePlate({_baseplate})
+
+  if {_partdata}.get("settings").get("small") is set:
+    set {_small} to {_partdata}.get("settings").get("small")
+  else:
+    set {_small} to false
+  {_entity}.setSmall({_small})
+
+  if {_partdata}.get("settings").get("visible") is set:
+    set {_visible} to  {_partdata}.get("settings").get("visible")
+  else:
+    set {_visible} to false
+  {_entity}.setVisible({_visible})
+
+  if {_partdata}.get("settings").get("name") is set:
+    set {_name} to  {_partdata}.get("settings").get("name")
+  else:
+    set {_name} to ""
+  {_entity}.setCustomName("%{_name}%")
+
+  if {_partdata}.get("settings").get("namevisible") is set:
+    set {_namevisible} to  {_partdata}.get("settings").get("namevisible")
+  else:
+    set {_namevisible} to false
+  {_entity}.setCustomNameVisible({_namevisible})
+
+  if {_partdata}.get("settings").get("gravity") is set:
+    set {_gravity} to {_partdata}.get("settings").get("gravity")
+  else:
+    set {_gravity} to false
+  {_entity}.setGravity({_gravity})
+
+function vehiclesAddVehiclePartToLivingVehicle(vehicleuuid:text,part:object,relx:number=0,rely:number=0,relz:number=0):
+
+  set {_center} to vehiclesGetTmpData("vehicles.sk|center|%{_vehicleuuid}%")
+  set {_partloc} to {_center}.clone()
+
+  set {_uuid} to {_part}.get("uuid")
+
+  add {_relx} to x-coord of {_partloc}
+
+  add {_rely} to y-coord of {_partloc}
+
+  add {_relz} to z-coord of {_partloc}  
+  
+  spawn 1 armor stand at {_partloc}
+  set {_vehiclepart} to last spawned entity
+
+  vehiclesApplyEntitySettings({_vehiclepart},{_part})
+  
+
+
+  #
+  # > Equip armor and tools.
+  {_vehiclepart}.setBoots({_part}.get("equipment").get("boots"))
+  {_vehiclepart}.setChestplate({_part}.get("equipment").get("chestplate"))
+  {_vehiclepart}.setHelmet({_part}.get("equipment").get("head"))
+  {_vehiclepart}.setItemInHand({_part}.get("equipment").get("righthand"))
+  set {_vehiclepart}'s offhand tool to {_part}.get("equipment").get("lefthand")
+  {_vehiclepart}.setLeggings({_part}.get("equipment").get("leggings"))
+
+  #
+  # > Set poses of the armor stand to the predefined settings.
+  if {_part}.get("poses").get("body") is set:
+    {_vehiclepart}.setBodyPose({_part}.get("poses").get("body"))
+
+  if {_part}.get("poses").get("head") is set:
+    {_vehiclepart}.setHeadPose({_part}.get("poses").get("head"))
+
+  if {_part}.get("poses").get("leftarm") is set:
+    {_vehiclepart}.setLeftArmPose({_part}.get("poses").get("leftarm"))
+
+  if {_part}.get("poses").get("leftleg") is set:
+    {_vehiclepart}.setLeftLegPose({_part}.get("poses").get("leftleg"))
+
+  if {_part}.get("poses").get("rightarm") is set:
+    {_vehiclepart}.setRightArmPose({_part}.get("poses").get("rightarm"))
+
+  if {_part}.get("poses").get("rightleg") is set:
+    {_vehiclepart}.setRightLegPose({_part}.get("poses").get("rightleg"))
+  set {_alivepart} to new HashMap()
+  {_alivepart}.put("part",{_vehiclepart})
+  {_alivepart}.put("uuid",{_uuid})
+  {_alivepart}.put("relativeX",{_relativeX})
+  {_alivepart}.put("relativeY",{_relativeY})
+  {_alivepart}.put("relativeZ",{_relativeZ})
+
+  set metadata value "vehicles.sk|vehicleuuid" of {_vehiclepart} to {_vehicleuuid}
+
+  set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+
+  {_alivevehicles}.get({_vehicleuuid}).get("parts").add({_alivepart})
+
+  vehiclesSaveTmpData("alivevehicles",{_alivevehicles})
+
+
+
+function vehiclesAddVehiclePart(vehicle:object,part:object,relx:number=0,rely:number=0,relz:number=0) :: object:
+  set {_parts} to {_vehicle}.get("parts")
+  set {_uuid} to {_part}.get("uuid")
+  set {_partdata} to new HashMap()
+  {_partdata}.put("part",{_part})
+  {_partdata}.put("relativeX",{_relx})
+  {_partdata}.put("relativeY",{_rely})
+  {_partdata}.put("relativeZ",{_relz})
+
+  {_parts}.put({_uuid},{_partdata})
+  {_vehicle}.put("parts",{_parts})
+  return {_vehicle}
+
+function vehiclesSpawnVehicle(vehicle:object,loc:location) :: text:
+  set {_parts} to {_vehicle}.get("parts")
+  set {_vehicleuuid} to {_vehicle}.get("uuid")
+  
+  set {_aliveparts} to new ArrayList()
+  loop ...{_parts}.keySet():
+    set {_partloc} to {_loc}.clone()
+    set {_uuid} to loop-value
+
+    set {_relativeX} to {_parts}.get({_uuid}).get("relativeX")
+    add {_relativeX} to x-coord of {_partloc}
+
+    set {_relativeY} to {_parts}.get({_uuid}).get("relativeY")
+    add {_relativeY} to y-coord of {_partloc}
+
+    set {_relativeZ} to {_parts}.get({_uuid}).get("relativeZ")
+    add {_relativeZ} to z-coord of {_partloc}
+
+    spawn 1 armor stand at {_partloc}
+    set {_part} to last spawned entity
+    vehiclesApplyEntitySettings({_part},{_parts}.get({_uuid}).get("part"))
+
+  
+    #
+    # > Equip armor and tools.
+    {_part}.setBoots({_parts}.get({_uuid}).get("part").get("equipment").get("boots"))
+    {_part}.setChestplate({_parts}.get({_uuid}).get("part").get("equipment").get("chestplate"))
+    {_part}.setHelmet({_parts}.get({_uuid}).get("part").get("equipment").get("head"))
+    {_part}.setItemInHand({_parts}.get({_uuid}).get("part").get("equipment").get("righthand"))
+    set {_part}'s offhand tool to {_parts}.get({_uuid}).get("part").get("equipment").get("lefthand")
+    {_part}.setLeggings({_parts}.get({_uuid}).get("part").get("equipment").get("leggings"))
+
+    #
+    # > Set poses of the armor stand to the predefined settings.
+    if {_parts}.get({_uuid}).get("part").get("poses").get("body") is set:
+      {_part}.setBodyPose({_parts}.get({_uuid}).get("part").get("poses").get("body"))
+
+    if {_parts}.get({_uuid}).get("part").get("poses").get("head") is set:
+      {_part}.setHeadPose({_parts}.get({_uuid}).get("part").get("poses").get("head"))
+
+    if {_parts}.get({_uuid}).get("part").get("poses").get("leftarm") is set:
+      {_part}.setLeftArmPose({_parts}.get({_uuid}).get("part").get("poses").get("leftarm"))
+
+    if {_parts}.get({_uuid}).get("part").get("poses").get("leftleg") is set:
+      {_part}.setLeftLegPose({_parts}.get({_uuid}).get("part").get("poses").get("leftleg"))
+
+    if {_parts}.get({_uuid}).get("part").get("poses").get("rightarm") is set:
+      {_part}.setRightArmPose({_parts}.get({_uuid}).get("part").get("poses").get("rightarm"))
+
+    if {_parts}.get({_uuid}).get("part").get("poses").get("rightleg") is set:
+      {_part}.setRightLegPose({_parts}.get({_uuid}).get("part").get("poses").get("rightleg"))
+    set {_alivepart} to new HashMap()
+    {_alivepart}.put("part",{_part})
+    {_alivepart}.put("uuid",{_uuid})
+    {_alivepart}.put("relativeX",{_relativeX})
+    {_alivepart}.put("relativeY",{_relativeY})
+    {_alivepart}.put("relativeZ",{_relativeZ})
+
+    {_aliveparts}.add({_alivepart})
+    set metadata value "vehicles.sk|vehicleuuid" of {_part} to {_vehicleuuid}
+
+  set {_alivevehicle} to new HashMap()
+  {_alivevehicle}.put("parts",{_aliveparts})
+  {_alivevehicle}.put("uuid",{_vehicleuuid})
+  {_alivevehicle}.put("centerloc",{_loc}.clone())
+  
+  set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+  if {_alivevehicles} is not set:
+    set {_alivevehicles} to new HashMap()
+  {_alivevehicles}.put({_vehicleuuid},{_alivevehicle})
+  vehiclesSaveTmpData("alivevehicles",{_alivevehicles})
+  vehiclesSaveTmpData("vehicles.sk|center|%{_vehicleuuid}%",{_loc}.clone())
+  vehiclesSaveTmpData("vehicles.sk|rotation|%{_vehicleuuid}%",0)
+
+  return {_vehicleuuid}
+
+on death of armor stand:
+  if metadata value "vehicles.sk|vehicleuuid" of victim is set:
+    set {_uuid} to metadata value "vehicles.sk|vehicleuuid" of victim
+    set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+    set {_vehicle} to {_alivevehicles}.get({_uuid})
+    set {_parts} to {_vehicle}.get("parts")
+    loop ...{_parts}:
+      kill loop-value.get("part")
+
+    {_alivevehicles}.remove({_uuid})
+    vehiclesSaveTmpData("alivevehicles",{_alivevehicles})
+
+
+function vehiclesKillAllVehicles():
+  set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+  loop ...{_alivevehicles}.keySet():
+    vehiclesKillVehicle("%loop-value%")
+
+function vehiclesKillVehicle(uuid:text):
+  set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+  set {_vehicle} to {_alivevehicles}.get({_uuid})
+  set {_parts} to {_vehicle}.get("parts")
+  loop ...{_parts}:
+    kill loop-value.get("part")
+  {_alivevehicles}.remove({_uuid})
+  vehiclesSaveTmpData("alivevehicles",{_alivevehicles})
+  vehiclesRemoveTmpData("vehicles.sk|center|%{_uuid}%")
+
+function vehiclesTeleportVehicle(uuid:text,loc:location):
+  set {_loc} to {_loc}.clone()
+
+  set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+  set {_vehicle} to {_alivevehicles}.get("%{_uuid}%")
+  if {_vehicle} is set:
+    set {_parts} to {_vehicle}.get("parts")
+    vehiclesSaveTmpData("vehicles.sk|center|%{_uuid}%",{_loc})
+
+    loop ...{_parts}:
+      set {_part} to loop-value.get("part")
+      set {_relx} to loop-value.get("relativeX")
+      set {_rely} to loop-value.get("relativeY")
+      set {_relz} to loop-value.get("relativeZ")
+
+      set {_tplocation} to {_loc}.clone()
+      add {_relx} to x-coord of {_tplocation}
+      add {_rely} to y-coord of {_tplocation}
+      add {_relz} to z-coord of {_tplocation}
+
+      if {_tplocation} is set:
+        {_part}.teleport({_tplocation})
+
+function vehiclesTeleportVehicleRelative(uuid:text,vector:object):
+  set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+  set {_vehicle} to {_alivevehicles}.get("%{_uuid}%")
+  if {_vehicle} is set:
+    set {_parts} to {_vehicle}.get("parts")
+    set {_loc} to vehiclesGetTmpData("vehicles.sk|center|%{_uuid}%")
+
+    add {_vector}.getX() to x-coord of {_loc}
+    add {_vector}.getY() to y-coord of {_loc}
+    add {_vector}.getZ() to z-coord of {_loc}
+
+    vehiclesSaveTmpData("vehicles.sk|center|%{_uuid}%",{_loc})
+
+    loop ...{_parts}:
+      set {_part} to loop-value.get("part")
+
+      set {_loc} to {_part}'s location
+
+      set {_tplocation} to {_loc}.clone()
+      add {_vector}.getX() to x-coord of {_tplocation}
+      add {_vector}.getY() to y-coord of {_tplocation}
+      add {_vector}.getZ() to z-coord of {_tplocation}
+
+      if {_tplocation} is set:
+        try {_part}.teleport({_tplocation})
+
+function vehiclesRotateVehicle(uuid:text,degrees:number):
+  set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+  set {_vehicle} to {_alivevehicles}.get("%{_uuid}%")
+
+  if {_vehicle} is set:
+    set {_parts} to {_vehicle}.get("parts")
+
+    set {_center} to vehiclesGetTmpData("vehicles.sk|center|%{_uuid}%")
+	
+    set {_rotation} to vehiclesGetTmpData("vehicles.sk|rotation|%{_uuid}%")
+    vehiclesSaveTmpData("vehicles.sk|rotation|%{_uuid}%",{_rotation} + {_degrees})
+
+    loop ...{_parts}:
+      set {_part} to loop-value.get("part")
+      set {_tplocation} to vehiclesCalculateRotation({_center}.clone(), {_part}.getLocation().clone(), {_degrees})
+
+      if {_tplocation} is not null:
+        try {_part}.teleport({_tplocation})
+
+
+function vehiclesCalculateRotation(center:location,partloc:location,degrees:number) :: object:
+  {_center}.setY({_partloc}.getY())
+  set {_oldyaw} to {_partloc}'s yaw
+  set {_oldyaw} to mod({_oldyaw}, 360.0F)
+  set {_distance} to {_center}.distance({_partloc})
+  set {_angle} to Math.acos((x-coord of {_partloc} - x-coord of {_center})/{_distance})
+
+  if {_partloc}.getZ() < {_center}.getZ():
+    set {_newangle} to 2 * Math.PI! - {_angle} + ({_degrees} * Math.PI! / 180)
+  else:
+    set {_newangle} to {_angle} + ({_degrees} * Math.PI! / 180)
+
+  set {_newx} to Math.cos({_newangle}) * {_distance}
+  set {_newz} to Math.sin({_newangle}) * {_distance}
+  set {_partloc} to {_center}.clone().add({_newx}, 0, {_newz})
+  set {_newyaw} to {_oldyaw} + {_degrees}
+  set {_newyaw} to mod({_newyaw}, 360.0F)
+  set {_newloc} to {_partloc}.clone()
+  {_newloc}.setYaw({_newyaw})
+  return {_newloc}

@@ -1,0 +1,14 @@
+#
+# ==============
+# config.sk
+# ==============
+# config.sk is part of the MINIGAMES.SK library.
+# ==============
+
+on load:
+  wait 1 tick
+  set {_game} to "Trainmasters"
+  mgSetTranslation("en",{_game},"name","TrainMasters")
+  mgSetTranslation("en",{_game},"desc","&7Help the train move further\nhow far will you get?")
+  mgSetTranslation("en",{_game},"bossbar_countdown","Prepare yourself...")
+  mgSetTranslation("en",{_game},"toplist_scoreboard","&7&l<place> | &f<player> &7&l>> &e&l<points>")

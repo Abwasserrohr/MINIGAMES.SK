@@ -1,0 +1,75 @@
+
+#
+# ==============
+# init.sk
+# ==============
+# init.sk is part of the MINIGAMES.SK library.
+# ==============
+# > GAME: Trainmasters
+# ==============
+
+on load:
+  wait 1 tick
+  mgTrainmastersHandler("start")
+
+every 1 second:
+  feed all players
+
+import:
+  java.util.ArrayList
+
+on quit:
+  if mgGetTemporaryGameData("playerstatus|%player%") is true:
+    set {_playersingame} to mgGetTemporaryGameData("playersingame")
+    remove 1 from {_playersingame}
+    mgSetTemporaryGameData("playersingame",{_playersingame})
+    mgSetTemporaryGameData("playerstatus|%player%",false)
+    mgCheckTrainmastersRoundEnd()
+
+
+on join:
+  clear inventory of player
+  set gamemode of player to survival
+  set {_loc} to mgGetTemporaryGameData("respawnloc")
+  if mgGetTemporaryGameData("Base|%player%") is not set:
+    mgTrainmastersGiveBaseItem(player)
+  wait 5 ticks
+  teleport player to {_loc}
+
+every 5 seconds:
+  mgTrainmastersRotateBaseHeads()
+
+on death:
+  if victim is a player:
+    wait 1 tick
+    force victim to respawn
+    wait 1 tick
+    mgTrainmastersHandleGameDeath(player)
+	
+on explosion:
+  loop all blocks in radius 5 around event-location:
+    if loop-block is grass block or dirt or sandstone:
+      add location of loop-block to {_expblocks::*}
+      add loop-block.getBlockData() to {_expdata::*}
+  wait 1 tick
+  loop {_expblocks::*}:
+    if block at loop-value is air:
+      chance of 50%:
+        set {_direction} to direction from event-location to loop-value
+        set {_e} to (event-locations's world).spawnFallingBlock(loop-value, {_expdata::%loop-index%})
+        push {_e} {_direction} at speed 1
+
+on explosion:
+  cancel event
+
+on respawn:
+  wait 1 tick
+  mgTrainmastersHandleGameDeath(player)
+
+on break:
+  cancel event
+
+on damage:
+  if victim is a player:
+    if attacker is a player:
+      cancel event

@@ -1,6 +1,6 @@
 
 options:
-  trainloc: location(0.0, 7.5, -0.5, "Immanuel94" parsed as player's world)
+  trainloc: location(0.0, 7.5, -0.5, mgGetCurrentWorld())
 
 import:
   org.bukkit.event.player.PlayerArmorStandManipulateEvent
@@ -127,10 +127,9 @@ function mgTrainmastersCreateStatusBar(max:number,currently:number,filledcolor:t
     else:
       set {_bar} to "%{_bar}%%{_emptycolor}%%{_statussymbol}%"
   return {_bar}
-command /testcreate:
+command /testcr:
   trigger:
     mgTrainmastersCreateResources()
-
 function mgTrainmastersCreateResources():
   set {_distance} to mgGetTemporaryGameData("traindistance")
   set {_waituntildistancereached} to mgGetTemporaryGameData("distanceuntilresourcecreate")
@@ -161,9 +160,72 @@ import:
   org.bukkit.TreeType
 function mgTrainmastersCreateResource(action:text,x:number,z:number):
   set {_world} to mgGetCurrentWorld()
+  set {_loc} to location({_x}, 8, {_z}, {_world})
   if {_action} is "tree":
-    set {_loc} to location({_x},8,{_z},{_world})
-    {_world}.generateTree({_loc}, TreeType.TREE!)
+    if block 1 below {_loc} is grass block or dirt:
+      loop all blocks in radius 2 around {_loc}:
+        if loop-block is oak log:
+          stop
+      {_world}.generateTree({_loc}, TreeType.TREE!)
+  if {_action} is "bigtree":
+    if block 1 below {_loc} is grass block or dirt:
+      loop all blocks in radius 2 around {_loc}:
+        if loop-block is oak log:
+          stop
+      {_world}.generateTree({_loc}, TreeType.BIG_TREE!)
+  if {_action} is "floor":
+    if block 1 below {_loc} is grass block or dirt:
+      if block at {_loc} is air:
+        loop {MG::Trainmasters::floorchances::*}:
+          if {_chance} is not set:
+            chance of loop-value%:
+              set {_chance} to true
+              set {_block} to {MG::Trainmasters::floorblocks::%loop-index%}
+              if {_block} is tall grass:
+                add 1.1 to y-coord of {_loc}
+              set block at {_loc} to {_block}
+
+  if {_action} is "smallhill":
+    loop all blocks in radius 3 around {_loc}:
+      if block 1 below loop-block is not water or air or oak leaves:
+        if loop-block is not oak leaves or oak log or grass block or dirt:
+          delete {_chance}
+          loop {MG::Trainmasters::hillchances::*}:
+            if {_chance} is not set:
+              chance of loop-value-2%:
+                set {_chance} to true
+                set loop-block to {MG::Trainmasters::hillblocks::%loop-index%}
+  if {_action} is "mediumhill":
+    loop all blocks in radius 6 around {_loc}:
+      if block 1 below loop-block is not water or air or oak leaves:
+        if loop-block is not oak leaves or oak log or grass block or dirt:
+          delete {_chance}
+          loop {MG::Trainmasters::hillchances::*}:
+            if {_chance} is not set:
+              chance of loop-value-2%:
+                set {_chance} to true
+                set loop-block to {MG::Trainmasters::hillblocks::%loop-index%}
+  if {_action} is "bighill":
+    loop all blocks in radius 10 around {_loc}:
+      if block 1 below loop-block is not water or air or oak leaves:
+        if loop-block is not oak leaves or oak log or grass block or dirt:
+          delete {_chance}
+          loop {MG::Trainmasters::hillchances::*}:
+            if {_chance} is not set:
+              chance of loop-value-2%:
+                set {_chance} to true
+                set loop-block to {MG::Trainmasters::hillblocks::%loop-index%}
+
+  if {_action} is "smallpond":
+    loop all blocks in radius 3 around {_loc}:
+      if loop-block is not air or grass block or dirt or short grass or tall grass:
+        stop
+    loop all blocks in radius 3 around {_loc}:
+      if loop-block is grass block or dirt:
+        set loop-block to water
+      if loop-block is short grass or tall grass:
+        set loop-block to air
+        set block 1 above loop-block to air
 
 function mgTrainmastersProduceRail():
   set {_eventitem} to rail
@@ -624,10 +686,14 @@ function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other",speed:number
   set {_wagonfront} to metadata value "lastwagonfront" of getMetadataBlock()
   mgTrainmastersHandleSetBorderTrain({_wagonfront})
 
-  while {_endit} is not set:
+  while mgGetTemporaryGameData("status") is "ingame":
     if {_trainpart} is "locomotive":
       mgTrainmastersUseCoal()
+      set block 1 below {_wagonfront} to iron block
       mgTrainmastersUseWater()
+      mgTrainmastersCreateResources()
+      mgSetTemporaryGameData("respawnloc",{_wagonfront}.getLocation().clone())
+
       mgSetTemporaryGameData("traindistance",x-coord of {_wagonfront})
     set {_center} to vehiclesGetTmpData("vehicles.sk|center|%{_uuid}%")
     add 0.5 to y-coord of {_center}
@@ -640,7 +706,6 @@ function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other",speed:number
 
       mgTrainmastersHandler("stop")
       stop
-    mgSetTemporaryGameData("respawnloc",{_wagonfront}.getLocation())
 
     set {_railshape} to "%{_block}.getBlockData().getShape()%"
     loop 20 times:

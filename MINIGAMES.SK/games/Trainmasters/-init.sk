@@ -21,6 +21,8 @@ every 5 ticks:
 
 import:
   java.util.ArrayList
+  org.bukkit.event.player.PlayerInteractAtEntityEvent
+  org.bukkit.event.player.PlayerArmorStandManipulateEvent
 
 on quit:
   if mgGetTemporaryGameData("playerstatus|%player%") is true:
@@ -83,13 +85,19 @@ on spawn of armor stand:
 on click:
   if target block is water:
     cancel event
+    set target block to air
     give 1 of light blue concrete named "&rWater" to player
 
 on PlayerArmorStandManipulateEvent:
   event.setCancelled(true)
 
-import:
-  org.bukkit.event.player.PlayerInteractAtEntityEvent
+on break:
+  if event-block is grass or dirt:
+    cancel event
+  if event-block is rail:
+    if block 1 below event-block is not grass block or dirt:
+      cancel event
+
 
 on PlayerInteractAtEntityEvent:
   set {_player} to event.getPlayer()

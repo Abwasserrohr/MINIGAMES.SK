@@ -72,9 +72,11 @@ function mgTrainmastersStartNewRound():
     loop all players:
       mgTrainmastersGiveTools(loop-player)
 
+    set {_pitch} to 0.7
     loop 10 times:
+      add 0.1 to {_pitch}
       loop all players:
-        play sound "block.note_block.pling" with volume 0.5 with pitch 0.7 at loop-player's location for loop-player
+        play sound "block.note_block.pling" with volume 0.5 with pitch {_pitch} at loop-player's location for loop-player
       wait 1 second
     loop all players:
       play sound "block.note_block.pling" with volume 0.5 with pitch 2 at loop-player's location for loop-player

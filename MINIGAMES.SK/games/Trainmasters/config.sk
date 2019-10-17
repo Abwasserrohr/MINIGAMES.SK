@@ -16,7 +16,49 @@ on load:
 
   delete {MG::%{_game}%::chances::*}
   delete {MG::%{_game}%::actions::*}
-  add 2.5 to {MG::%{_game}%::chances::*}
+  delete {MG::%{_game}%::hillchances::*}
+  delete {MG::%{_game}%::hillblocks::*}
+  delete {MG::%{_game}%::floorchances::*}
+  delete {MG::%{_game}%::floorblocks::*}
+  
+
+  add 0.5 to {MG::%{_game}%::chances::*}
+  add "smallpond" to {MG::%{_game}%::actions::*}
+
+  add 1.5 to {MG::%{_game}%::chances::*}
   add "tree" to {MG::%{_game}%::actions::*}
+  
+  add 0.5 to {MG::%{_game}%::chances::*}
+  add "bigtree" to {MG::%{_game}%::actions::*}
 
+  add 0.4 to {MG::%{_game}%::chances::*}
+  add "smallhill" to {MG::%{_game}%::actions::*}
 
+  add 0.05 to {MG::%{_game}%::chances::*}
+  add "mediumhill" to {MG::%{_game}%::actions::*}
+  
+  add 0.01 to {MG::%{_game}%::chances::*}
+  add "bighill" to {MG::%{_game}%::actions::*}
+
+  add 50 to {MG::%{_game}%::chances::*}
+  add "floor" to {MG::%{_game}%::actions::*}
+
+  add 40 to {MG::%{_game}%::hillchances::*}
+  add coal ore to {MG::%{_game}%::hillblocks::*}
+  add 40 to {MG::%{_game}%::hillchances::*}
+  add iron ore to {MG::%{_game}%::hillblocks::*}
+  add 0.01 to {MG::%{_game}%::hillchances::*}
+  add diamond ore to {MG::%{_game}%::hillblocks::*}
+
+  add 3 to {MG::%{_game}%::floorchances::*}
+  add dandelion to {MG::%{_game}%::floorblocks::*}
+  add 3 to {MG::%{_game}%::floorchances::*}
+  add poppy to {MG::%{_game}%::floorblocks::*}
+  add 3 to {MG::%{_game}%::floorchances::*}
+  add oxeye daisy to {MG::%{_game}%::floorblocks::*}
+  add 50 to {MG::%{_game}%::floorchances::*}
+  add short grass to {MG::%{_game}%::floorblocks::*}
+  add 10 to {MG::%{_game}%::floorchances::*}
+  add tall grass to {MG::%{_game}%::floorblocks::*}
+
+  

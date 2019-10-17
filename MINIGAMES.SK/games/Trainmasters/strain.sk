@@ -127,9 +127,7 @@ function mgTrainmastersCreateStatusBar(max:number,currently:number,filledcolor:t
     else:
       set {_bar} to "%{_bar}%%{_emptycolor}%%{_statussymbol}%"
   return {_bar}
-command /testcr:
-  trigger:
-    mgTrainmastersCreateResources()
+
 function mgTrainmastersCreateResources():
   set {_distance} to mgGetTemporaryGameData("traindistance")
   set {_waituntildistancereached} to mgGetTemporaryGameData("distanceuntilresourcecreate")
@@ -185,30 +183,16 @@ function mgTrainmastersCreateResource(action:text,x:number,z:number):
                 add 1.1 to y-coord of {_loc}
               set block at {_loc} to {_block}
 
-  if {_action} is "smallhill":
-    loop all blocks in radius 3 around {_loc}:
-      if block 1 below loop-block is not water or air or oak leaves:
-        if loop-block is not oak leaves or oak log or grass block or dirt:
-          delete {_chance}
-          loop {MG::Trainmasters::hillchances::*}:
-            if {_chance} is not set:
-              chance of loop-value-2%:
-                set {_chance} to true
-                set loop-block to {MG::Trainmasters::hillblocks::%loop-index%}
-  if {_action} is "mediumhill":
-    loop all blocks in radius 6 around {_loc}:
-      if block 1 below loop-block is not water or air or oak leaves:
-        if loop-block is not oak leaves or oak log or grass block or dirt:
-          delete {_chance}
-          loop {MG::Trainmasters::hillchances::*}:
-            if {_chance} is not set:
-              chance of loop-value-2%:
-                set {_chance} to true
-                set loop-block to {MG::Trainmasters::hillblocks::%loop-index%}
-  if {_action} is "bighill":
-    loop all blocks in radius 10 around {_loc}:
-      if block 1 below loop-block is not water or air or oak leaves:
-        if loop-block is not oak leaves or oak log or grass block or dirt:
+  if {_action} is "smallhill" or "mediumhill" or "bighill":
+    if {_action} is "smallhill":
+      set {_radius} to 3
+    else if {_action} is "mediumhill":
+      set {_radius} to 6
+    else if {_action} is "bighill":
+      set {_radius} to 10
+    loop all blocks in radius {_radius} around {_loc}:
+      if block 1 below loop-block is not water or air or oak leaves or short grass or tall grass or dandelion or poppy or oxeye daisy:
+        if loop-block is not oak leaves or oak log or grass block or dirt or short grass or tall grass or dandelion or poppy or oxeye daisy:
           delete {_chance}
           loop {MG::Trainmasters::hillchances::*}:
             if {_chance} is not set:
@@ -411,7 +395,7 @@ function mgTrainmastersSummonWagon(type:text,loc:location):
       add 0.04 to {_y}
     set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
     wait 2 ticks
-    mgTrainmastersHandleTrain({_uuid})
+    mgTrainmastersHandleTrain({_uuid},"other",0.5)
  
   #
   # > Water wagon
@@ -453,7 +437,7 @@ function mgTrainmastersSummonWagon(type:text,loc:location):
     set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.5,0.2,0)
     set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
     wait 2 ticks
-    mgTrainmastersHandleTrain({_uuid})
+    mgTrainmastersHandleTrain({_uuid},"other",0.5)
   if {_type} is "water":
     set {_x} to -0.8
     #
@@ -485,7 +469,7 @@ function mgTrainmastersSummonWagon(type:text,loc:location):
 
     set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
     wait 2 ticks
-    mgTrainmastersHandleTrain({_uuid})
+    mgTrainmastersHandleTrain({_uuid},"other",0.5)
   #
   # > Storage wagon
   if {_type} is "storage":
@@ -559,7 +543,7 @@ function mgTrainmastersSummonWagon(type:text,loc:location):
 	  
     set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
     wait 2 ticks
-    mgTrainmastersHandleTrain({_uuid})
+    mgTrainmastersHandleTrain({_uuid},"other",0.5)
 
 
 function mgTrainmastersSummonTrain():
@@ -665,7 +649,7 @@ function mgTrainmastersSummonTrain():
   set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
   remove 2 from x-coord of {_loc}
   wait 2 ticks
-  mgTrainmastersHandleTrain({_uuid},"locomotive")
+  mgTrainmastersHandleTrain({_uuid},"locomotive",0.5)
 
 
 function mgTrainmastersHandleSetBorderTrain(borderfollow:entity):
@@ -680,6 +664,14 @@ function mgTrainmastersHandleSetBorderTrain(borderfollow:entity):
     while {_borderfollow} is alive:
       wait 1 tick
       {_worldborder}.setCenter(x-coord of {_borderfollow}, 0)
+
+function mgTrainmastersGiveScores():
+  set {_score} to mgGetTemporaryGameData("traindistance")
+  set {_score} to round({_score})
+  loop all players:
+    mgAddPlayerToplistScore("Trainmasters",loop-player,{_score})
+    set {_uuid} to uuid of loop-player
+    add {_score} to {cobble::%{_uuid}%}
 
 function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other",speed:number=1):
 
@@ -703,7 +695,7 @@ function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other",speed:number
       play 20 explosion at {_wagonfront}.getLocation()
       play sound "entity.generic.explode" with volume 0.5 with pitch 0.7 at {_wagonfront}.getLocation() for all players
       set {_endit} to true
-
+      mgTrainmastersGiveScores()
       mgTrainmastersHandler("stop")
       stop
 
@@ -723,6 +715,7 @@ function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other",speed:number
         play 20 huge explosion at {_wagonfront}.getLocation()
         play sound "entity.generic.explode" with volume 0.5 with pitch 0.7 at {_wagonfront}.getLocation() for all players
         set {_endit} to true
+        mgTrainmastersGiveScores()
         mgTrainmastersHandler("stop")
         stop
       add 1 to {_i}
@@ -828,4 +821,8 @@ function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other",speed:number
       add 1 to {_wait}
       if {_wait} >= {_speed}:
         delete {_wait}
-        wait 1 tick
+        if {_speed} is 0.5:
+          set {_timespan} to "2 ticks" parsed as timespan
+          wait {_timespan}
+        else:
+          wait 1 tick

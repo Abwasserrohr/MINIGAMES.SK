@@ -15,8 +15,6 @@ on load:
 every 1 second:
   feed all players
   mgTrainmastersProduceRail()
-
-every 5 ticks:
   mgTrainmastersUpdateSidebarStats()
 
 import:
@@ -37,10 +35,9 @@ on join:
   clear inventory of player
   set gamemode of player to survival
   set {_loc} to mgGetTemporaryGameData("respawnloc")
-  if mgGetTemporaryGameData("Base|%player%") is not set:
-    mgTrainmastersGiveBaseItem(player)
   wait 5 ticks
   teleport player to {_loc}
+  mgTrainmastersGiveTools(player)
 
 on death:
   if victim is a player:
@@ -51,16 +48,8 @@ on death:
 	
 on explosion:
   loop all blocks in radius 5 around event-location:
-    if loop-block is grass block or dirt or sandstone:
-      add location of loop-block to {_expblocks::*}
-      add loop-block.getBlockData() to {_expdata::*}
-  wait 1 tick
-  loop {_expblocks::*}:
-    if block at loop-value is air:
-      chance of 50%:
-        set {_direction} to direction from event-location to loop-value
-        set {_e} to (event-locations's world).spawnFallingBlock(loop-value, {_expdata::%loop-index%})
-        push {_e} {_direction} at speed 1
+    if loop-block is iron ore or coal ore or oak log or oak leaves or stone:
+      loop-block.breakNaturally()
 
 on explosion:
   cancel event
@@ -92,6 +81,7 @@ on PlayerArmorStandManipulateEvent:
   event.setCancelled(true)
 
 on break:
+  repair player's tool
   if event-block is grass or dirt:
     cancel event
   if event-block is rail:

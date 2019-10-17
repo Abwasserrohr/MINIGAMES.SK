@@ -66,8 +66,6 @@ on respawn:
   wait 1 tick
   mgTrainmastersHandleGameDeath(player)
 
-on break:
-  cancel event
 
 on damage:
   if victim is a player:

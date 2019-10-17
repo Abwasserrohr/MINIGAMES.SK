@@ -2,39 +2,45 @@
 options:
   trainloc: location(0.0, 7.5, -0.5, "Immanuel94" parsed as player's world)
 
-on join:
-  make player execute "/sw visit immanuel94 be-library"
-
 import:
   org.bukkit.event.player.PlayerArmorStandManipulateEvent
   org.bukkit.WorldBorder
 
 command /testtrain:
   trigger:
+    mgTrainmastersGiveTools(player)
     delete metadata value "worldborder" of getMetadataBlock()
     mgTrainmastersSummonTrain()
+function mgTrainmastersGiveTools(player:player):
+  clear {_player}'s inventory
+  set slot 0 of {_player}'s inventory to iron pickaxe
+  set slot 1 of {_player}'s inventory to iron axe
 
 on click:
   if target block is water:
     cancel event
     give 1 of light blue concrete named "&rWater" to player
 
-	
 on PlayerArmorStandManipulateEvent:
   event.setCancelled(true)
 
-on damage:
-  if attacker is a player:
-    if victim is a armor stand:
-      set {_checkitem} to victim's chestplate
-      if display name of victim's chestplate is "clickevent":
-        if 1st line of lore of victim's chestplate is "storage":
-          mgTrainmastersHandleStorageClick(attacker,victim)
-        if 1st line of lore of victim's chestplate is "water":
-          mgTrainmastersHandleWaterClick(attacker,victim)
-        if 1st line of lore of victim's chestplate is "coal":
-          mgTrainmastersHandleCoalClick(attacker,victim)
-      cancel event
+import:
+  org.bukkit.event.player.PlayerInteractAtEntityEvent
+
+on PlayerInteractAtEntityEvent:
+  set {_player} to event.getPlayer()
+  set {_entity} to event.getRightClicked()
+  if "%{_entity}%" is "armor stand":
+    set {_checkitem} to {_entity}'s chestplate
+    if display name of {_entity}'s chestplate is "clickevent":
+      if 1st line of lore of {_entity}'s chestplate is "storage":
+        mgTrainmastersHandleStorageClick({_player},{_entity})
+      if 1st line of lore of {_entity}'s chestplate is "water":
+        mgTrainmastersHandleWaterClick({_player},{_entity})
+      if 1st line of lore of {_entity}'s chestplate is "coal":
+        mgTrainmastersHandleCoalClick({_player},{_entity})
+  event.setCancelled(true)
+
 function mgTrainmastersHandleWaterClick(player:player,vehiclepart:entity):
   if {_player}'s tool is light blue concrete:
     set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
@@ -48,7 +54,9 @@ function mgTrainmastersHandleWaterClick(player:player,vehiclepart:entity):
           if {_player} has 1 of light blue concrete:
             add 1 to {_currentwater}
             remove 1 light blue concrete from {_player}'s inventory
-        set 1st line of lore of loop-value.get("part")'s leggings to "%{_currentwater}%"
+        set {_item} to loop-value.get("part")'s leggings
+        set 1st line of lore of {_item} to "%{_currentwater}%"
+        set loop-value.get("part")'s leggings to {_item}
         set {_bar} to mgTrainmastersCreateStatusBar({_maxwater},{_currentwater},"&b&l","&7&l","|")
         loop-value.get("part").setCustomName("&7[%{_bar}%&7]")
         stop
@@ -66,7 +74,9 @@ function mgTrainmastersHandleCoalClick(player:player,vehiclepart:entity):
           if {_player} has 1 of coal:
             add 1 to {_currentcoal}
             remove 1 coal from {_player}'s inventory
-        set 1st line of lore of loop-value.get("part")'s leggings to "%{_currentcoal}%"
+        set {_item} to loop-value.get("part")'s leggings
+        set 1st line of lore of {_item} to "%{_currentcoal}%"
+        set loop-value.get("part")'s leggings to {_item}
         set {_bar} to mgTrainmastersCreateStatusBar({_maxcoal},{_currentcoal},"&0&l","&7&l","|")
         loop-value.get("part").setCustomName("&7[%{_bar}%&7]")
         stop
@@ -104,7 +114,8 @@ function mgTrainmastersHandleStorageClick(player:player,vehiclepart:entity):
     set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
     loop ...{_alivevehicles}.get({_vehicleuuid}).get("parts"):
       if loop-value.get("part")'s leggings is {_eventitem}:
-        set {_storageid} to 1st line of lore of loop-value.get("part")'s leggings
+        set {_part} to loop-value.get("part")
+        set {_storageid} to 1st line of lore of {_part}'s leggings
         set {_storageparts::%{_storageid}%} to loop-value.get("part")
     loop {_storageparts::*}:
       if loop-value's helmet is not {_eventitem}:

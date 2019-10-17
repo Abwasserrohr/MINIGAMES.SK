@@ -135,6 +135,9 @@ function mgTrainmastersSummonWagon(type:text,loc:location):
   if {_type} is "water":
     set {_item} to barrier named "clickevent"
     set 1st line of lore of {_item} to "water"
+  else if {_type} is "producer":
+    set {_item} to barrier named "clickevent"
+    set 1st line of lore of {_item} to "producer"
   else if {_type} is "coal":
     set {_item} to barrier named "clickevent"
     set 1st line of lore of {_item} to "coal"
@@ -183,6 +186,76 @@ function mgTrainmastersSummonWagon(type:text,loc:location):
 
   #
   # > Special train wagon setups:
+  #
+  # > Water wagon
+  if {_type} is "producer":
+    set {_x} to -0.8
+    set {_y} to -0.4
+    loop 3 times:
+      add 0.62 to {_x}
+
+      set {_part} to vehicesCreateVehiclePart(iron block,air,{_item})
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-1,{_y},-0.31)
+      set {_part} to vehicesCreateVehiclePart(iron block,air,{_item})
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-1,{_y},0.31)
+
+    set {_y} to 0.43
+    set {_x} to -1.52
+    loop 2 times:
+      set {_part} to vehicesCreateVehiclePart(heavy weighted pressure plate,air,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,-1.57))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},{_y},-0.35)
+
+      set {_part} to vehicesCreateVehiclePart(heavy weighted pressure plate,air,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,-1.57))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},{_y},0.35)
+      add 0.547 to {_y}
+
+    set {_y} to 0.43
+    set {_x} to 0.31
+    loop 2 times:
+      set {_part} to vehicesCreateVehiclePart(heavy weighted pressure plate,air,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,-1.57))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},{_y},-0.35)
+
+      set {_part} to vehicesCreateVehiclePart(heavy weighted pressure plate,air,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,-1.57))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},{_y},0.35)
+      add 0.547 to {_y}
+    set {_x} to -1.18
+    loop 3 times:
+      set {_part} to vehicesCreateVehiclePart(iron trapdoor,air,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},1.2,-0.31)
+
+      set {_part} to vehicesCreateVehiclePart(iron trapdoor,air,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},1.2,0.31)
+      add 0.62 to {_x}
+
+    set {_part} to vehicesCreateVehiclePart(daylight sensor,air,{_item})
+    set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,3.14))
+    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.56,1.15,0)
+    add 0.62 to {_x}
+
+    #
+    # > Rail heads:
+    set {_storageitem} to crafting table
+    set {_y} to -0.2
+    loop 10 times:
+      set 1st line of lore of {_storageitem} to "%loop-number%" 
+      set {_part} to vehicesCreateVehiclePart(rail,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(1.57,1.57,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},0.17,{_y},0)
+      add 0.04 to {_y}
+      set {_part} to vehicesCreateVehiclePart(rail,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(1.57,0,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.6,{_y},-0.755)
+      add 0.04 to {_y}
+    set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
+    wait 2 ticks
+    mgTrainmastersHandleTrain({_uuid})
+
   #
   # > Water wagon
   if {_type} is "coal":
@@ -344,7 +417,10 @@ function mgTrainmastersSummonTrain():
   remove 2 from x-coord of {_loc}
   mgTrainmastersSummonWagon("storage",{_loc}.clone())
   wait 1 tick
-  add 6 to x-coord of {_loc}
+  remove 2 from x-coord of {_loc}
+  mgTrainmastersSummonWagon("producer",{_loc}.clone())
+  wait 1 tick
+  add 8 to x-coord of {_loc}
   wait 1 tick
   set {_vehicle} to vehiclesCreateVehicle()
   loop 2 times:
@@ -483,8 +559,9 @@ function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other"):
       vehiclesKillVehicle("%{_uuid}%")
       play 20 explosion at {_wagonfront}.getLocation()
       play sound "entity.generic.explode" with volume 0.5 with pitch 0.7 at {_wagonfront}.getLocation() for all players
-
       set {_endit} to true
+
+      mgTrainmastersHandler("stop")
       stop
     set {_railshape} to "%{_block}.getBlockData().getShape()%"
     loop 20 times:
@@ -502,7 +579,7 @@ function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other"):
         play 20 huge explosion at {_wagonfront}.getLocation()
         play sound "entity.generic.explode" with volume 0.5 with pitch 0.7 at {_wagonfront}.getLocation() for all players
         set {_endit} to true
-
+        mgTrainmastersHandler("stop")
         stop
       add 1 to {_i}
       #send action bar "%{_railshape}% - %{_wagonfront}.getLocation().getYaw()% " to "Immanuel94" parsed as player
@@ -604,7 +681,7 @@ function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other"):
           delete {_semode}
 
 
-      if {_i} >= 2500:
+      if {_i} >= 500:
         set {_endit} to true
       add 1 to {_wait}
       if {_wait} is 1:

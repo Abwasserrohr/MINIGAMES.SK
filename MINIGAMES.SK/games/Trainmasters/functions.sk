@@ -35,6 +35,7 @@ function mgTrainmastersHandler(task:text):
   # > If the game should be stopped, use the MINIGAMES.SK function to
   # > clear out any temporary data and unload the game.
   if {_task} is "stop":
+    vehiclesKillAllVehicles()
     mgFinishGame()
 
 #

@@ -39,8 +39,25 @@ on PlayerInteractAtEntityEvent:
         mgTrainmastersHandleWaterClick({_player},{_entity})
       if 1st line of lore of {_entity}'s chestplate is "coal":
         mgTrainmastersHandleCoalClick({_player},{_entity})
+      if 1st line of lore of {_entity}'s chestplate is "producer":
+        mgTrainmastersHandleProducerClick({_player},{_entity})
   event.setCancelled(true)
+function mgTrainmastersHandleProducerClick(player:player,vehiclepart:entity):
+  set {_eventitem} to rail
+  set {_vehicleuuid} to metadata value "vehicles.sk|vehicleuuid" of {_vehiclepart}
+  set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+  loop ...{_alivevehicles}.get({_vehicleuuid}).get("parts"):
+    if loop-value.get("part")'s leggings is {_eventitem}:
+      set {_part} to loop-value.get("part")
+      set {_storageid} to 1st line of lore of {_part}'s leggings
+      set {_storageparts::%{_storageid}%} to loop-value.get("part")
 
+  loop {_storageparts::*}:
+    if loop-value's helmet is rail:
+      add 1 of rail to {_player}'s inventory
+      set loop-value's helmet to air
+
+		
 function mgTrainmastersHandleWaterClick(player:player,vehiclepart:entity):
   if {_player}'s tool is light blue concrete:
     set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
@@ -122,6 +139,7 @@ function mgTrainmastersHandleStorageClick(player:player,vehiclepart:entity):
         if {_player} has 1 of {_eventitem}:
           remove 1 of {_eventitem} from {_player}'s inventory
           set loop-value's helmet to {_eventitem}
+
 function mgTrainmastersCreateStatusBar(max:number,currently:number,filledcolor:text="&f",emptycolor:text="&7",statussymbol:text="|") :: text:
   set {_bar} to ""
   loop {_max} times:
@@ -130,6 +148,64 @@ function mgTrainmastersCreateStatusBar(max:number,currently:number,filledcolor:t
     else:
       set {_bar} to "%{_bar}%%{_emptycolor}%%{_statussymbol}%"
   return {_bar}
+
+every 1 second:
+  mgTrainmastersProduceRail()
+
+function mgTrainmastersProduceRail():
+  set {_eventitem} to rail
+  set {_vehiclepart} to metadata value "producerwagon" of getMetadataBlock()
+  if {_vehiclepart} is not set:
+    stop
+  set {_vehicleuuid} to metadata value "vehicles.sk|vehicleuuid" of {_vehiclepart}
+  set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+  loop ...{_alivevehicles}.get({_vehicleuuid}).get("parts"):
+    if loop-value.get("part")'s leggings is {_eventitem}:
+      set {_part} to loop-value.get("part")
+      set {_storageid} to 1st line of lore of {_part}'s leggings
+      set {_produceslots::%{_storageid}%} to loop-value.get("part")
+
+  loop {_produceslots::*}:
+    if loop-value's helmet is not rail:
+      set {_produceslot} to loop-value
+      stop loop
+  set {_vehiclepart} to metadata value "storagewagon" of getMetadataBlock()
+
+  set {_storagewagonuuid} to metadata value "vehicles.sk|vehicleuuid" of {_vehiclepart}
+
+  if {_produceslot} is set:
+    set {_eventitem} to oak log
+    loop ...{_alivevehicles}.get({_storagewagonuuid}).get("parts"):
+      if loop-value.get("part")'s leggings is oak log:
+        set {_part} to loop-value.get("part")
+        set {_storageid} to 1st line of lore of {_part}'s leggings
+        set {_storageparts::%{_storageid}%} to loop-value.get("part")
+    set {_i} to 0
+    set {_loopid} to size of {_storageparts::*}
+    loop {_storageparts::*}:
+      set {_nloop} to {_loopid} - {_i} 
+      if {_storageparts::%{_nloop}%}'s helmet is {_eventitem}:
+        set {_logslot} to {_storageparts::%{_nloop}%}
+      add 1 to {_i}
+
+  if {_logslot} is set:
+    set {_eventitem} to iron ore
+    loop ...{_alivevehicles}.get({_storagewagonuuid}).get("parts"):
+      if loop-value.get("part")'s leggings is iron ore:
+        set {_part} to loop-value.get("part")
+        set {_storageid} to 1st line of lore of {_part}'s leggings
+        set {_storageparts::%{_storageid}%} to loop-value.get("part")
+    set {_i} to 0
+    set {_loopid} to size of {_storageparts::*}
+    loop {_storageparts::*}:
+      set {_nloop} to {_loopid} - {_i} 
+      if {_storageparts::%{_nloop}%}'s helmet is {_eventitem}:
+        set {_ironslot} to {_storageparts::%{_nloop}%}
+      add 1 to {_i}
+  if {_logslot} is set:
+    set {_ironslot}'s helmet to air
+    set {_logslot}'s helmet to air
+    set {_produceslot}'s helmet to rail
 
 function mgTrainmastersSummonWagon(type:text,loc:location):
   if {_type} is "water":
@@ -240,22 +316,26 @@ function mgTrainmastersSummonWagon(type:text,loc:location):
 
     #
     # > Rail heads:
-    set {_storageitem} to crafting table
+    set {_storageitem} to rail
     set {_y} to -0.2
     loop 10 times:
-      set 1st line of lore of {_storageitem} to "%loop-number%" 
-      set {_part} to vehicesCreateVehiclePart(rail,{_item})
+      add 1 to {_producerheadid}
+      set 1st line of lore of {_storageitem} to "%{_producerheadid}%"
+      set {_part} to vehicesCreateVehiclePart(rail,air,{_item},{_storageitem})
       set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(1.57,1.57,0))
       set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},0.17,{_y},0)
+
       add 0.04 to {_y}
-      set {_part} to vehicesCreateVehiclePart(rail,{_item})
+      add 1 to {_producerheadid}
+      set 1st line of lore of {_storageitem} to "%{_producerheadid}%"
+      set {_part} to vehicesCreateVehiclePart(rail,air,{_item},{_storageitem})
       set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(1.57,0,0))
       set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.6,{_y},-0.755)
       add 0.04 to {_y}
     set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
     wait 2 ticks
     mgTrainmastersHandleTrain({_uuid})
-
+ 
   #
   # > Water wagon
   if {_type} is "coal":
@@ -527,6 +607,10 @@ on spawn of armor stand:
     set metadata value "waterwagon" of getMetadataBlock() to event-entity
   if event-entity's leggings is coal:
     set metadata value "coalwagon" of getMetadataBlock() to event-entity
+  if event-entity's leggings is rail:
+    set metadata value "producerwagon" of getMetadataBlock() to event-entity
+  if event-entity's leggings is oak log:
+    set metadata value "storagewagon" of getMetadataBlock() to event-entity
 
 
 function mgTrainmastersHandleSetBorderTrain(borderfollow:entity):

@@ -127,7 +127,43 @@ function mgTrainmastersCreateStatusBar(max:number,currently:number,filledcolor:t
     else:
       set {_bar} to "%{_bar}%%{_emptycolor}%%{_statussymbol}%"
   return {_bar}
+command /testcreate:
+  trigger:
+    mgTrainmastersCreateResources()
 
+function mgTrainmastersCreateResources():
+  set {_distance} to mgGetTemporaryGameData("traindistance")
+  set {_waituntildistancereached} to mgGetTemporaryGameData("distanceuntilresourcecreate")
+  if {_waituntildistancereached} is not set:
+    mgSetTemporaryGameData("distanceuntilresourcecreate",0)
+    set {_waituntildistancereached} to 0
+  #
+  # > If the distance is set, always generate 50 blocks to x-coordinate.
+  if {_distance} is set:
+    if {_distance} >= {_waituntildistancereached}:
+      add 50 to {_waituntildistancereached}
+      mgSetTemporaryGameData("distanceuntilresourcecreate",{_waituntildistancereached})
+      set {_startx} to {_waituntildistancereached}
+      set {_endx} to {_startx} + 50
+      set {_startz} to 14.5
+      set {_endz} to -14.5
+      set {_xdiff} to difference between {_startx} and {_endx}
+      set {_zdiff} to difference between {_startz} and {_endz}
+      loop {_xdiff} times:
+        loop {_zdiff} times:
+          delete {_success}
+          loop {MG::Trainmasters::chances::*}:
+            if {_success} is not set:
+              chance of loop-value-3%:
+                mgTrainmastersCreateResource({MG::Trainmasters::actions::%loop-index%},loop-number-1 + {_startx},{_endz} + loop-number-2)
+                set {_success} to true
+import:
+  org.bukkit.TreeType
+function mgTrainmastersCreateResource(action:text,x:number,z:number):
+  set {_world} to mgGetCurrentWorld()
+  if {_action} is "tree":
+    set {_loc} to location({_x},8,{_z},{_world})
+    {_world}.generateTree({_loc}, TreeType.TREE!)
 
 function mgTrainmastersProduceRail():
   set {_eventitem} to rail
@@ -568,15 +604,6 @@ function mgTrainmastersSummonTrain():
   remove 2 from x-coord of {_loc}
   wait 2 ticks
   mgTrainmastersHandleTrain({_uuid},"locomotive")
-  #loop 90 times:
-  #  add 0.1 to x-coord of {_loc}
-  #  vehiclesTeleportVehicle({_uuid},{_loc})
-  #  wait 1 tick
-  #loop 90 times:
-  #  vehiclesRotateVehicle({_uuid},1)
-  #  wait 1 tick
-  #  vehiclesTeleportVehicleRelative({_uuid},vector(0.1,0,0))
-  #  wait 1 tick
 
 
 function mgTrainmastersHandleSetBorderTrain(borderfollow:entity):

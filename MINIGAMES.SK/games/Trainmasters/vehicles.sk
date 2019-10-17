@@ -1,43 +1,4 @@
 
-command /testsummon:
-  trigger:
-    vehiclesKillAllVehicles()
-    make player execute "/kill @e[type=minecraft:armor_stand]"
-    set {_vehicle} to vehiclesCreateVehicle()
-    set {_i} to -5.5
-    loop 10 times:
-      add 1 to {_i}
-      set {_part} to vehicesCreateVehiclePart(black concrete)
-      set {_part} to vehiclesSetVehiclePartSetting({_part},"name","Test: %loop-number%")
-      set {_part} to vehiclesSetVehiclePartSetting({_part},"namevisible",true)
-
-      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_i},0,0)
-
-    set {_part} to vehicesCreateVehiclePart(black concrete)
-    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_i},0,0)
-
-    set {_loc} to location(x-coord of player's location,y-coord of player's location,z-coord of player's location,player's world)
-    set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
-    add 1 to {_i}
-    set {_part} to vehicesCreateVehiclePart(red concrete,air,air,air,air,air,"test")
-    set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
-    vehiclesAddVehiclePartToLivingVehicle({_uuid},{_part},{_i},0,0)
-    wait 1 second
-    vehiclesKillVehiclePartFromLivingVehicle({_uuid},"test")
-    loop 360 times:
-      if loop-number is between 1 and 90:
-        vehiclesTeleportVehicleRelative({_uuid},vector(0.1,0,0))
-      if loop-number is between 91 and 180:
-        vehiclesTeleportVehicleRelative({_uuid},vector(-0.1,0,0))
-      if loop-number is between 181 and 270:
-        vehiclesTeleportVehicleRelative({_uuid},vector(0.1,0,0))
-      if loop-number is between 271 and 360:
-        vehiclesTeleportVehicleRelative({_uuid},vector(-0.1,0,0))
-      wait 1 ticks
-      vehiclesRotateVehicle({_uuid},1)
-
-
-
 import:
   java.util.HashMap
   java.util.ArrayList

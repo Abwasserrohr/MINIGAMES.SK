@@ -10,16 +10,32 @@ function mgTrainmastersGiveTools(player:player):
   clear {_player}'s inventory
   set slot 0 of {_player}'s inventory to iron pickaxe
   set slot 1 of {_player}'s inventory to iron axe
-
+  message "%getChatPrefix()% ---------------------------------------" to {_player}
+  message "%getChatPrefix()% Drive the train as far as possible." to {_player}
+  message "%getChatPrefix()% Each block is one score point for everyone." to {_player}
+  message "%getChatPrefix()% Fill the train iron and logs to get rails." to {_player}
+  message "%getChatPrefix()% Use rightclick to load and unload the train." to {_player}
+  message "%getChatPrefix()% If the train derails or has no coal" to {_player}
+  message "%getChatPrefix()% or water, the game is over." to {_player}
+  message "%getChatPrefix()% (Water can be obtained by clicking on it)" to {_player}
+  message "%getChatPrefix()% ---------------------------------------" to {_player}
+  message "%getChatPrefix()% Bringe den Zug so weit wie möglich." to {_player}
+  message "%getChatPrefix()% Jeder Block vorwärts ist ein Punkt." to {_player}
+  message "%getChatPrefix()% Fülle den Zug mit Eisen & Stämmen für Gleise." to {_player}
+  message "%getChatPrefix()% Verwende rechtsklick zum be- & entladen." to {_player}
+  message "%getChatPrefix()% Wenn der Zug entgleist oder keine Kohle" to {_player}
+  message "%getChatPrefix()% oder Wasser mehr hat, ist das Spiel vorbei." to {_player}
+  message "%getChatPrefix()% (Wasser erhält man, indem man darauf klickt)" to {_player}
+  message "%getChatPrefix()% ---------------------------------------" to {_player}
 function mgTrainmastersUpdateSidebarStats():
-  set {_placeholder} to HashMap()
   set {_distance} to mgGetTemporaryGameData("traindistance")
   if {_distance} is not set:
     set {_distance} to 0
   if {_distance} is smaller than 0:
     set {_distance} to 0
+  set {_placeholder} to HashMap()
   {_placeholder}.put("<distance>",{_distance})
-  mgSetGlobalSidebarSlotContent(12,"Trainmasters","train_distance",{_placeholder})
+  mgSetGlobalSidebarSlotContent(5,"Trainmasters","train_distance",{_placeholder})
 
 function mgTrainmastersHandleProducerClick(player:player,vehiclepart:entity):
   set {_eventitem} to rail
@@ -80,24 +96,39 @@ function mgTrainmastersHandleCoalClick(player:player,vehiclepart:entity):
 function mgTrainmastersUseCoal():
   set {_coalwagon} to metadata value "coalwagon" of getMetadataBlock()
   set {_currentcoal} to 1st line of lore of {_coalwagon}'s leggings parsed as number
-  set {_maxwater} to 2nd line of lore of {_coalwagon}'s leggings parsed as number
-  remove 0.01 from {_currentcoal}
+  set {_maxcoal} to 2nd line of lore of {_coalwagon}'s leggings parsed as number
+  remove 0.05 from {_currentcoal}
   if {_currentcoal} is smaller than 0:
     set {_currentcoal} to 0
+    set {_locomotive} to mgGetTemporaryGameData("locomotive")
+    set block at {_locomotive} to air
+    broadcast "%getChatPrefix()% The locomotive ran out of coal."
   set 1st line of lore of {_coalwagon}'s leggings to "%{_currentcoal}%"
-  set {_bar} to mgTrainmastersCreateStatusBar({_maxwater},{_currentcoal},"&0&l","&7&l","|")
+  set {_bar} to mgTrainmastersCreateStatusBar({_maxcoal},{_currentcoal},"&0&l","&7&l","|")
   {_coalwagon}.setCustomName("&7[%{_bar}%&7]")
+  set {_placeholder} to HashMap()
+  {_placeholder}.put("<currentfuel>","%{_currentcoal}%")
+  {_placeholder}.put("<maxfuel>","%{_maxcoal}%")
+  mgSetGlobalSidebarSlotContent(6,"Trainmasters","train_coal",{_placeholder})
+
 
 function mgTrainmastersUseWater():
   set {_waterwagon} to metadata value "waterwagon" of getMetadataBlock()
   set {_currentwater} to 1st line of lore of {_waterwagon}'s leggings parsed as number
   set {_maxwater} to 2nd line of lore of {_waterwagon}'s leggings parsed as number
-  remove 0.01 from {_currentwater}
+  remove 0.05 from {_currentwater}
   if {_currentwater} is smaller than 0:
     set {_currentwater} to 0
+    set {_locomotive} to mgGetTemporaryGameData("locomotive")
+    set block at {_locomotive} to air
+    broadcast "%getChatPrefix()% The locomotive ran out of water."
   set 1st line of lore of {_waterwagon}'s leggings to "%{_currentwater}%"
   set {_bar} to mgTrainmastersCreateStatusBar({_maxwater},{_currentwater},"&b&l","&7&l","|")
   {_waterwagon}.setCustomName("&7[%{_bar}%&7]")
+  set {_placeholder} to HashMap()
+  {_placeholder}.put("<currentfuel>","%{_currentwater}%")
+  {_placeholder}.put("<maxfuel>","%{_maxwater}%")
+  mgSetGlobalSidebarSlotContent(7,"Trainmasters","train_water",{_placeholder})
 
 
 function mgTrainmastersHandleStorageClick(player:player,vehiclepart:entity):
@@ -680,6 +711,7 @@ function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other",speed:number
 
   while mgGetTemporaryGameData("status") is "ingame":
     if {_trainpart} is "locomotive":
+      mgSetTemporaryGameData("locomotive",{_wagonfront})
       mgTrainmastersUseCoal()
       set block 1 below {_wagonfront} to iron block
       mgTrainmastersUseWater()
@@ -719,9 +751,9 @@ function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other",speed:number
         mgTrainmastersHandler("stop")
         stop
       add 1 to {_i}
-      #send action bar "%{_railshape}% - %{_wagonfront}.getLocation().getYaw()% " to "Immanuel94" parsed as player
       set {_railshape} to "%{_block}.getBlockData().getShape()%"
-
+      if "%{_railshape}%" contains "ascending":
+        set block at {_wagonfront}.getLocation() to air
       if "%{_railshape}%" is "EAST_WEST":
 
         if {_wagonfront}.getLocation().getYaw() <= 0:

@@ -13,6 +13,8 @@ on load:
   mgSetTranslation("en",{_game},"bossbar_countdown","Prepare yourself...")
   mgSetTranslation("en",{_game},"toplist_scoreboard","&7&l<place> | &f<player> &7&l>> &e&l<points>")
   mgSetTranslation("en",{_game},"train_distance","&7&lDriven Blocks &7&l>> &e&l<distance>")
+  mgSetTranslation("en",{_game},"train_coal","&7&lCoal &7&l>> &e&l<currentfuel>/<maxfuel>")
+  mgSetTranslation("en",{_game},"train_water","&7&lWater &7&l>> &e&l<currentfuel>/<maxfuel>")
 
   delete {MG::%{_game}%::chances::*}
   delete {MG::%{_game}%::actions::*}
@@ -47,7 +49,7 @@ on load:
   add coal ore to {MG::%{_game}%::hillblocks::*}
   add 40 to {MG::%{_game}%::hillchances::*}
   add iron ore to {MG::%{_game}%::hillblocks::*}
-  add 0.01 to {MG::%{_game}%::hillchances::*}
+  add 0.05 to {MG::%{_game}%::hillchances::*}
   add diamond ore to {MG::%{_game}%::hillblocks::*}
 
   add 3 to {MG::%{_game}%::floorchances::*}

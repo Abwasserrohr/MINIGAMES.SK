@@ -1,0 +1,41 @@
+#
+# ==============
+# nbt.sk
+# ==============
+# nbt.sk is part of the MINIGAMES.SK library.
+# ==============
+
+import:
+  org.bukkit.Bukkit
+  org.bukkit.NamespacedKey
+  org.bukkit.persistence.PersistentDataType
+  org.bukkit.persistence.PersistentDataContainer
+
+#
+# > Function - getnbtvalue
+# > Parameters:
+# > <item> The item with the nbt value
+# > <text> The nbt tag data which is needed
+# > Actions:
+# > Loads nbt value for the parameter tag and return the value.
+function getnbtvalue(item:item,tag:text) :: object:
+  set {_namespacedKey} to new NamespacedKey(Bukkit.getServer().getPluginManager().getPlugin("Skript"), {_tag})
+  set {_meta} to {_item}.getItemMeta()
+  set {_container} to {_meta}.getPersistentDataContainer()
+  if {_container}.has({_namespacedKey} , PersistentDataType.STRING!):
+    return {_container}.get({_namespacedKey}, PersistentDataType.STRING!)
+
+#
+# > Function - setnbtvalue
+# > Parameters:
+# > <item> The item to set the nbt value on
+# > <text> The tag which should be set
+# > <text> The value which should be set
+# > Actions:
+# > Sets the tag to the value and return the item with the new nbt data.
+function setnbtvalue(item:item,tag:text,value:text) :: item:
+  set {_namespacedKey} to new NamespacedKey(Bukkit.getServer().getPluginManager().getPlugin("Skript"), {_tag})
+  set {_meta} to {_item}.getItemMeta()
+  {_meta}.getPersistentDataContainer().set({_namespacedKey}, PersistentDataType.STRING!, {_value})
+  {_item}.setItemMeta({_meta})
+  return {_item}

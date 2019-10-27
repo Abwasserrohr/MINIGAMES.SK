@@ -1,0 +1,14 @@
+#
+# ==============
+# config.sk
+# ==============
+# config.sk is part of the MINIGAMES.SK library.
+# ==============
+
+on load:
+  wait 1 tick
+  set {_game} to "GoldRush"
+  mgSetTranslation("en",{_game},"name","GoldRush")
+  mgSetTranslation("en",{_game},"desc","&7Connect rails from the\n&7mines to your base and vandalize\n&7your enemies to get the\n&7best gold digger.")
+  mgSetTranslation("en",{_game},"bossbar_countdown","Prepare yourself...")
+  mgSetTranslation("en",{_game},"toplist_scoreboard","&7&l<place> | &f<player> &7&l>> &e&l<points>")

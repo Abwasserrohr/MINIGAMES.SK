@@ -1,0 +1,121 @@
+#
+# ==============
+# functions.sk
+# ==============
+# functions.sk is part of the MINIGAMES.SK library.
+# ==============
+# > GAME: Trainmasters
+# ==============
+
+options:
+  gametime: 100000
+  backgrounditem: gray stained glass pane
+
+options:
+  gamerounds: 1
+
+#
+# > Function - mgTrainmastersHandler
+# > Starts or stops the game depending on the parameter.
+# > Parameters:
+# > <text>task, either "start" or "stop"
+function mgTrainmastersHandler(task:text):
+  if {_task} is "start":
+    mgSetTemporaryGameData("round",0)
+    mgSetTemporaryGameData("status","loading")
+
+
+    mgSetTemporaryGameData("playersingame",number of all players)
+    mgTrainmastersStartNewRound()
+
+  #
+  # > If the game should be stopped, use the MINIGAMES.SK function to
+  # > clear out any temporary data and unload the game.
+  if {_task} is "stop":
+    vehiclesKillAllVehicles()
+    mgFinishGame()
+
+#
+# > Function - mgTrainmastersStartNewRound
+# > Starts a new Trainmasters round.
+function mgTrainmastersStartNewRound():
+  set {_tplayers} to 0
+  set {_tplayers} to number of all players
+  if {_tplayers} is bigger than 0:
+
+    mgSetTemporaryGameData("playersingame",number of all players)
+    loop all players:
+      mgSetTemporaryGameData("playerstatus|%loop-player%",true)
+    mgSetTemporaryGameData("status","preparing")
+
+    set {_round} to mgGetTemporaryGameData("round")
+    add 1 to {_round}
+    mgSetTemporaryGameData("round",{_round})
+
+    if {_round} is bigger than {@gamerounds}:
+      mgSpleefHandler("stop")
+      stop
+
+    mgSetTemporaryGameData("respawnloc",location at -4, 8, -6 in mgGetCurrentWorld())
+
+
+    #
+    # > Create a countdown that lets the players wait for 5 seconds.
+    mgDisplayBossbarCountdown(10,"Trainmasters","bossbar_countdown",null)
+
+    apply resistance 12 without particles to all players for 1 seconds
+    apply invisibility 1 without particles to all players for 0.1 seconds
+    set gamemode of all players to survival
+
+    set {_loc} to mgGetTemporaryGameData("respawnloc")
+    teleport all players to {_loc}
+    loop all players:
+      mgTrainmastersGiveTools(loop-player)
+
+    set {_pitch} to 0.7
+    loop 10 times:
+      add 0.1 to {_pitch}
+      loop all players:
+        play sound "block.note_block.pling" with volume 0.5 with pitch {_pitch} at loop-player's location for loop-player
+      wait 1 second
+    loop all players:
+      play sound "block.note_block.pling" with volume 0.5 with pitch 2 at loop-player's location for loop-player
+
+    mgTrainmastersSummonTrain()
+
+    #
+    # > Give the items to the players.
+    mgSetTemporaryGameData("status","ingame")
+    set {_rending} to {@gametime}
+    while mgGetTemporaryGameData("status") is "ingame":
+      add 1 to {_roundtime}
+      remove 1 from {_rending}
+      mgSetTemporaryGameData("TimeLeft",{_rending})
+
+      if {_roundtime} is bigger than {@gametime}:
+        mgSetTemporaryGameData("status","exitround")
+		
+        mgTrainmastersStartNewRound()
+      wait 1 second
+
+  else:
+    broadcast "%getChatPrefix()% Not enough players."
+    mgSpleefHandler("stop")
+
+#
+# > Function - mgCheckTrainmastersRoundEnd
+# > Checks if the Trainmasters round should be stopped.
+function mgCheckTrainmastersRoundEnd():
+  if mgGetTemporaryGameData("status") is "ingame":
+    if mgGetTemporaryGameData("playersingame") is smaller than 1:
+      mgTrainmastersStartNewRound()
+
+#
+# > Function - mgTrainmastersHandleGameDeath
+# > If a player died in Trainmasters, do everything needed.
+# > Parameters:
+# > <player>the player who died
+function mgTrainmastersHandleGameDeath(player:player):
+  set {_loc} to mgGetTemporaryGameData("respawnloc")
+  mgTrainmastersGiveTools({_player})
+  teleport {_player} to {_loc}

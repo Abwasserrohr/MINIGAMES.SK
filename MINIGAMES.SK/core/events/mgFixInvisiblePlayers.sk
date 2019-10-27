@@ -5,8 +5,12 @@
 # mgFixInvisiblePlayers.sk is part of the MINIGAMES.SK library.
 # ==============
 
+import:
+  org.bukkit.Bukkit
+
 on join:
   wait 1 second
+  set {_plugin} to Bukkit.getServer().getPluginManager().getPlugin("Skript")
   loop all players:
-    loop-player.showPlayer(player)
-    player.showPlayer(loop-player)
+    loop-player.showPlayer({_plugin},player)
+    player.showPlayer({_plugin},loop-player)

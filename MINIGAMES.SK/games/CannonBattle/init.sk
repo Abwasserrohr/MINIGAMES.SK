@@ -1,0 +1,74 @@
+
+#
+# ==============
+# init.sk
+# ==============
+# init.sk is part of the MINIGAMES.SK library.
+# ==============
+# > GAME: CannonBattle
+# ==============
+
+on load:
+  wait 1 tick
+  mgCannonBattleHandler("start")
+
+every 1 second:
+  feed all players
+
+on quit:
+  if mgGetTemporaryGameData("playerstatus|%player%") is true:
+    set {_playersingame} to mgGetTemporaryGameData("playersingame")
+    remove 1 from {_playersingame}
+    mgSetTemporaryGameData("playersingame",{_playersingame})
+    mgSetTemporaryGameData("playerstatus|%player%",false)
+    mgCheckCannonBattleRoundEnd()
+
+on join:
+  clear inventory of player
+  set gamemode of player to spectator
+  set {_loc} to mgGetTemporaryGameData("respawnloc")
+  teleport player to {_loc}
+
+on damage:
+  if victim is a player:
+    broadcast "%event.getCause()%"
+    if "%event.getCause()%" is "unknown" or "fall":
+      cancel event
+      mgCannonBattleHandleGameDeath(victim)
+
+on death:
+  if victim is a player:
+    wait 1 tick
+    force victim to respawn
+    wait 1 tick
+    mgCannonBattleHandleGameDeath(player)
+	
+on explosion:
+  cancel event
+  event-world.createExplosion(x-coord of event-location, y-coord of event-location, z-coord of event-location, 2, false, false)
+  loop all blocks in radius 5 around event-location:
+    if loop-block is not grass block or dirt or obsidian:
+      set {_direction} to direction from event-location to location of loop-block
+      set {_e} to (event-locations's world).spawnFallingBlock(location of loop-block, loop-block.getBlockData())
+      push {_e} {_direction} at speed 1
+      set loop-block to air
+
+on respawn:
+  wait 1 tick
+  mgCannonBattleHandleGameDeath(player)
+
+
+on break:
+  clear drops
+  if mgGetTemporaryGameData("status") is not "ingame":
+    cancel event
+
+every 1 tick:
+  if mgGetTemporaryGameData("status") is "ingame":
+    loop all players:
+      set {_loc} to location of loop-player
+      remove 1 from y-coord of {_loc}
+      loop blocks in radius 1.2 around {_loc}:
+        if loop-block is lime concrete:
+          set {_bloc} to location of loop-block
+          mgCannonBattleFloor({_bloc})

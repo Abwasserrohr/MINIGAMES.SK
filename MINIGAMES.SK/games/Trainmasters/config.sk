@@ -1,0 +1,67 @@
+#
+# ==============
+# config.sk
+# ==============
+# config.sk is part of the MINIGAMES.SK library.
+# ==============
+
+on load:
+  wait 1 tick
+  set {_game} to "Trainmasters"
+  mgSetTranslation("en",{_game},"name","TrainMasters")
+  mgSetTranslation("en",{_game},"desc","&7Help the train move further\nhow far will you get?")
+  mgSetTranslation("en",{_game},"bossbar_countdown","Prepare yourself...")
+  mgSetTranslation("en",{_game},"toplist_scoreboard","&7&l<place> | &f<player> &7&l>> &e&l<points>")
+  mgSetTranslation("en",{_game},"train_distance","&7&lDriven Blocks &7&l>> &e&l<distance>")
+  mgSetTranslation("en",{_game},"train_coal","&7&lCoal &7&l>> &e&l<currentfuel>/<maxfuel>")
+  mgSetTranslation("en",{_game},"train_water","&7&lWater &7&l>> &e&l<currentfuel>/<maxfuel>")
+
+  delete {MG::%{_game}%::chances::*}
+  delete {MG::%{_game}%::actions::*}
+  delete {MG::%{_game}%::hillchances::*}
+  delete {MG::%{_game}%::hillblocks::*}
+  delete {MG::%{_game}%::floorchances::*}
+  delete {MG::%{_game}%::floorblocks::*}
+  
+
+  add 0.5 to {MG::%{_game}%::chances::*}
+  add "smallpond" to {MG::%{_game}%::actions::*}
+
+  add 1.5 to {MG::%{_game}%::chances::*}
+  add "tree" to {MG::%{_game}%::actions::*}
+  
+  add 0.5 to {MG::%{_game}%::chances::*}
+  add "bigtree" to {MG::%{_game}%::actions::*}
+
+  add 1.6 to {MG::%{_game}%::chances::*}
+  add "smallhill" to {MG::%{_game}%::actions::*}
+
+  add 0.05 to {MG::%{_game}%::chances::*}
+  add "mediumhill" to {MG::%{_game}%::actions::*}
+  
+  add 0.02 to {MG::%{_game}%::chances::*}
+  add "bighill" to {MG::%{_game}%::actions::*}
+
+  add 50 to {MG::%{_game}%::chances::*}
+  add "floor" to {MG::%{_game}%::actions::*}
+
+  add 20 to {MG::%{_game}%::hillchances::*}
+  add coal ore to {MG::%{_game}%::hillblocks::*}
+  add 60 to {MG::%{_game}%::hillchances::*}
+  add iron ore to {MG::%{_game}%::hillblocks::*}
+  add 1.5 to {MG::%{_game}%::hillchances::*}
+  add stone to {MG::%{_game}%::hillblocks::*}
+
+  add 2 to {MG::%{_game}%::hillchances::*}
+  add diamond ore to {MG::%{_game}%::hillblocks::*}
+
+  add 3 to {MG::%{_game}%::floorchances::*}
+  add dandelion to {MG::%{_game}%::floorblocks::*}
+  add 3 to {MG::%{_game}%::floorchances::*}
+  add poppy to {MG::%{_game}%::floorblocks::*}
+  add 3 to {MG::%{_game}%::floorchances::*}
+  add oxeye daisy to {MG::%{_game}%::floorblocks::*}
+  add 50 to {MG::%{_game}%::floorchances::*}
+  add short grass to {MG::%{_game}%::floorblocks::*}
+  add 10 to {MG::%{_game}%::floorchances::*}
+  add tall grass to {MG::%{_game}%::floorblocks::*}

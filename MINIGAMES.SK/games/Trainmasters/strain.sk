@@ -1,0 +1,887 @@
+
+options:
+  trainloc: location(0.0, 7.5, -0.5, mgGetCurrentWorld())
+
+import:
+  org.bukkit.event.player.PlayerArmorStandManipulateEvent
+  org.bukkit.WorldBorder
+  org.bukkit.Location
+
+
+function mgTrainmastersGiveTools(player:player):
+  clear {_player}'s inventory
+  set slot 0 of {_player}'s inventory to iron pickaxe
+  set slot 1 of {_player}'s inventory to iron axe
+  set slot 2 of {_player}'s inventory to 15 of oak sapling
+  set slot 3 of {_player}'s inventory to 64 of bonemeal
+  message "%getChatPrefix()% ---------------------------------------" to {_player}
+  message "%getChatPrefix()% Drive the train as far as possible." to {_player}
+  message "%getChatPrefix()% Each block is one score point for everyone." to {_player}
+  message "%getChatPrefix()% Fill the train iron and logs to get rails." to {_player}
+  message "%getChatPrefix()% Use rightclick to load and unload the train." to {_player}
+  message "%getChatPrefix()% If the train derails or has no coal" to {_player}
+  message "%getChatPrefix()% or water, the game is over." to {_player}
+  message "%getChatPrefix()% (Water can be obtained by clicking on it)" to {_player}
+  message "%getChatPrefix()% ---------------------------------------" to {_player}
+  message "%getChatPrefix()% Bringe den Zug so weit wie möglich." to {_player}
+  message "%getChatPrefix()% Jeder Block vorwärts ist ein Punkt." to {_player}
+  message "%getChatPrefix()% Fülle den Zug mit Eisen & Stämmen für Gleise." to {_player}
+  message "%getChatPrefix()% Verwende rechtsklick zum be- & entladen." to {_player}
+  message "%getChatPrefix()% Wenn der Zug entgleist oder keine Kohle" to {_player}
+  message "%getChatPrefix()% oder Wasser mehr hat, ist das Spiel vorbei." to {_player}
+  message "%getChatPrefix()% (Wasser erhält man, indem man darauf klickt)" to {_player}
+  message "%getChatPrefix()% ---------------------------------------" to {_player}
+function mgTrainmastersUpdateSidebarStats():
+  set {_distance} to mgGetTemporaryGameData("traindistance")
+  if {_distance} is not set:
+    set {_distance} to 0
+  if {_distance} is smaller than 0:
+    set {_distance} to 0
+  set {_placeholder} to HashMap()
+  {_placeholder}.put("<distance>",{_distance})
+  mgSetGlobalSidebarSlotContent(5,"Trainmasters","train_distance",{_placeholder})
+
+function mgTrainmastersHandleProducerClick(player:player,vehiclepart:entity):
+  set {_eventitem} to rail
+  set {_vehicleuuid} to metadata value "vehicles.sk|vehicleuuid" of {_vehiclepart}
+  set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+  loop ...{_alivevehicles}.get({_vehicleuuid}).get("parts"):
+    if loop-value.get("part")'s leggings is {_eventitem}:
+      set {_part} to loop-value.get("part")
+      set {_storageid} to 1st line of lore of {_part}'s leggings
+      set {_storageparts::%{_storageid}%} to loop-value.get("part")
+
+  loop {_storageparts::*}:
+    if loop-value's helmet is rail:
+      add 1 of rail to {_player}'s inventory
+      set loop-value's helmet to air
+
+		
+function mgTrainmastersHandleWaterClick(player:player,vehiclepart:entity):
+  if {_player}'s tool is light blue concrete:
+    set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+    set {_eventitem} to water bucket
+    set {_vehicleuuid} to metadata value "vehicles.sk|vehicleuuid" of {_vehiclepart}
+    loop ...{_alivevehicles}.get({_vehicleuuid}).get("parts"):
+      if loop-value.get("part")'s leggings is {_eventitem}:
+        set {_currentwater} to 1st line of lore of loop-value.get("part")'s leggings parsed as number
+        set {_maxwater} to 2nd line of lore of loop-value.get("part")'s leggings parsed as number
+        if {_currentwater} <= {_maxwater}:
+          if {_player} has 1 of light blue concrete:
+            add 1 to {_currentwater}
+            remove 1 light blue concrete from {_player}'s inventory
+            set {_puuid} to uuid of {_player}
+            add 1 to {cobble::%{_puuid}%}
+        set {_item} to loop-value.get("part")'s leggings
+        set 1st line of lore of {_item} to "%{_currentwater}%"
+        set loop-value.get("part")'s leggings to {_item}
+        set {_bar} to mgTrainmastersCreateStatusBar({_maxwater},{_currentwater},"&b&l","&7&l","|")
+        loop-value.get("part").setCustomName("&7[%{_bar}%&7]")
+        stop
+
+function mgTrainmastersHandleCoalClick(player:player,vehiclepart:entity):
+  if {_player}'s tool is coal:
+    set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+    set {_eventitem} to coal
+    set {_vehicleuuid} to metadata value "vehicles.sk|vehicleuuid" of {_vehiclepart}
+    loop ...{_alivevehicles}.get({_vehicleuuid}).get("parts"):
+      if loop-value.get("part")'s leggings is {_eventitem}:
+        set {_currentcoal} to 1st line of lore of loop-value.get("part")'s leggings parsed as number
+        set {_maxcoal} to 2nd line of lore of loop-value.get("part")'s leggings parsed as number
+        if {_currentcoal} <= {_maxcoal}:
+          if {_player} has 1 of coal:
+            add 1 to {_currentcoal}
+            remove 1 coal from {_player}'s inventory
+            set {_puuid} to uuid of {_player}
+            add 1 to {cobble::%{_puuid}%}
+        set {_item} to loop-value.get("part")'s leggings
+        set 1st line of lore of {_item} to "%{_currentcoal}%"
+        set loop-value.get("part")'s leggings to {_item}
+        set {_bar} to mgTrainmastersCreateStatusBar({_maxcoal},{_currentcoal},"&0&l","&7&l","|")
+        loop-value.get("part").setCustomName("&7[%{_bar}%&7]")
+        stop
+
+function mgTrainmastersUseCoal():
+  set {_coalwagon} to metadata value "coalwagon" of getMetadataBlock()
+  set {_currentcoal} to 1st line of lore of {_coalwagon}'s leggings parsed as number
+  set {_maxcoal} to 2nd line of lore of {_coalwagon}'s leggings parsed as number
+  remove 0.05 from {_currentcoal}
+  if {_currentcoal} is smaller than 0:
+    set {_currentcoal} to 0
+    set {_locomotive} to mgGetTemporaryGameData("locomotive")
+    set block at {_locomotive} to air
+    broadcast "%getChatPrefix()% The locomotive ran out of coal."
+  set 1st line of lore of {_coalwagon}'s leggings to "%{_currentcoal}%"
+  mgSetTemporaryGameData("currentcoal",{_currentcoal})
+  mgSetTemporaryGameData("maxcoal",{_maxcoal})
+  set {_bar} to mgTrainmastersCreateStatusBar({_maxcoal},{_currentcoal},"&0&l","&7&l","|")
+  {_coalwagon}.setCustomName("&7[%{_bar}%&7]")
+  set {_placeholder} to HashMap()
+  {_placeholder}.put("<currentfuel>","%{_currentcoal}%")
+  {_placeholder}.put("<maxfuel>","%{_maxcoal}%")
+  mgSetGlobalSidebarSlotContent(6,"Trainmasters","train_coal",{_placeholder})
+
+
+function mgTrainmastersUseWater():
+  set {_waterwagon} to metadata value "waterwagon" of getMetadataBlock()
+  set {_currentwater} to 1st line of lore of {_waterwagon}'s leggings parsed as number
+  set {_maxwater} to 2nd line of lore of {_waterwagon}'s leggings parsed as number
+  remove 0.05 from {_currentwater}
+  if {_currentwater} is smaller than 0:
+    set {_currentwater} to 0
+    set {_locomotive} to mgGetTemporaryGameData("locomotive")
+    set block at {_locomotive} to air
+    broadcast "%getChatPrefix()% The locomotive ran out of water."
+  set 1st line of lore of {_waterwagon}'s leggings to "%{_currentwater}%"
+  set {_bar} to mgTrainmastersCreateStatusBar({_maxwater},{_currentwater},"&b&l","&7&l","|")
+  {_waterwagon}.setCustomName("&7[%{_bar}%&7]")
+  set {_placeholder} to HashMap()
+  {_placeholder}.put("<currentfuel>","%{_currentwater}%")
+  {_placeholder}.put("<maxfuel>","%{_maxwater}%")
+  mgSetGlobalSidebarSlotContent(7,"Trainmasters","train_water",{_placeholder})
+
+
+function mgTrainmastersHandleStorageClick(player:player,vehiclepart:entity):
+  if {_player}'s tool is oak log or iron ore:
+    if {_player}'s tool is oak log:
+      set {_eventitem} to oak log
+    else if {_player}'s tool is iron ore:
+      set {_eventitem} to iron ore
+    set {_vehicleuuid} to metadata value "vehicles.sk|vehicleuuid" of {_vehiclepart}
+    set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+    loop ...{_alivevehicles}.get({_vehicleuuid}).get("parts"):
+      if loop-value.get("part")'s leggings is {_eventitem}:
+        set {_part} to loop-value.get("part")
+        set {_storageid} to 1st line of lore of {_part}'s leggings
+        set {_storageparts::%{_storageid}%} to loop-value.get("part")
+    loop {_storageparts::*}:
+      if loop-value's helmet is not {_eventitem}:
+        if {_player} has 1 of {_eventitem}:
+          remove 1 of {_eventitem} from {_player}'s inventory
+          set loop-value's helmet to {_eventitem}
+          set {_puuid} to uuid of {_player}
+          add 1 to {cobble::%{_puuid}%}
+
+function mgTrainmastersCreateStatusBar(max:number,currently:number,filledcolor:text="&f",emptycolor:text="&7",statussymbol:text="|") :: text:
+  set {_bar} to ""
+  loop {_max} times:
+    if loop-number <= {_currently}:
+      set {_bar} to "%{_bar}%%{_filledcolor}%%{_statussymbol}%"
+    else:
+      set {_bar} to "%{_bar}%%{_emptycolor}%%{_statussymbol}%"
+  return {_bar}
+
+function mgTrainmastersCreateResources():
+  set {_distance} to mgGetTemporaryGameData("traindistance")
+  set {_waituntildistancereached} to mgGetTemporaryGameData("distanceuntilresourcecreate")
+  if {_waituntildistancereached} is not set:
+    mgSetTemporaryGameData("distanceuntilresourcecreate",0)
+    set {_waituntildistancereached} to 0
+  #
+  # > If the distance is set, always generate 50 blocks to x-coordinate.
+  if {_distance} is set:
+    if {_distance} >= {_waituntildistancereached}:
+      add 50 to {_waituntildistancereached}
+      mgSetTemporaryGameData("distanceuntilresourcecreate",{_waituntildistancereached})
+      set {_startx} to {_waituntildistancereached}
+      set {_endx} to {_startx} + 50
+      set {_startz} to 14.5
+      set {_endz} to -14.5
+      set {_xdiff} to difference between {_startx} and {_endx}
+      set {_zdiff} to difference between {_startz} and {_endz}
+      loop {_xdiff} times:
+        loop {_zdiff} times:
+          delete {_success}
+          loop {MG::Trainmasters::chances::*}:
+            if {_success} is not set:
+              chance of loop-value-3%:
+                mgTrainmastersCreateResource({MG::Trainmasters::actions::%loop-index%},loop-number-1 + {_startx},{_endz} + loop-number-2)
+                set {_success} to true
+import:
+  org.bukkit.TreeType
+function mgTrainmastersCreateResource(action:text,x:number,z:number):
+  set {_world} to mgGetCurrentWorld()
+  set {_loc} to new Location({_world}, {_x}, 8.0, {_z})
+  if {_action} is "tree":
+    if block 1 below {_loc} is grass block or dirt:
+      loop all blocks in radius 2 around {_loc}:
+        if loop-block is oak log:
+          stop
+      if block at {_loc} is not oak log:
+        set block at {_loc} to air
+      {_world}.generateTree({_loc}, TreeType.TREE!)
+  if {_action} is "bigtree":
+    if block 1 below {_loc} is grass block or dirt:
+      loop all blocks in radius 2 around {_loc}:
+        if loop-block is oak log:
+          stop
+      if block at {_loc} is not oak log:
+        set block at {_loc} to air
+      {_world}.generateTree({_loc}, TreeType.BIG_TREE!)
+  if {_action} is "floor":
+    if block 1 below {_loc} is grass block or dirt:
+      if block at {_loc} is air:
+        loop {MG::Trainmasters::floorchances::*}:
+          if {_chance} is not set:
+            chance of loop-value%:
+              set {_chance} to true
+              set {_block} to {MG::Trainmasters::floorblocks::%loop-index%}
+              if {_block} is tall grass:
+                add 1.1 to y-coord of {_loc}
+              set block at {_loc} to {_block}
+
+  if {_action} is "smallhill" or "mediumhill" or "bighill":
+    if {_action} is "smallhill":
+      set {_radius} to 3
+    else if {_action} is "mediumhill":
+      set {_radius} to 6
+    else if {_action} is "bighill":
+      set {_radius} to 10
+    loop all blocks in radius {_radius} around {_loc}:
+      if block 1 below loop-block is not water or air or oak leaves or short grass or tall grass or dandelion or poppy or oxeye daisy:
+        if loop-block is not oak leaves or oak log or grass block or dirt or short grass or tall grass or dandelion or poppy or oxeye daisy:
+          delete {_chance}
+          loop {MG::Trainmasters::hillchances::*}:
+            if {_chance} is not set:
+              chance of loop-value-2%:
+                set {_chance} to true
+                set loop-block to {MG::Trainmasters::hillblocks::%loop-index%}
+
+  if {_action} is "smallpond":
+    loop all blocks in radius 3 around {_loc}:
+      if loop-block is not air or grass block or dirt or short grass or tall grass:
+        stop
+    loop all blocks in radius 3 around {_loc}:
+      if loop-block is grass block or dirt:
+        set loop-block to water
+      if loop-block is short grass or tall grass:
+        set loop-block to air
+        set block 1 above loop-block to air
+
+function mgTrainmastersProduceRail():
+  set {_eventitem} to rail
+  set {_vehiclepart} to metadata value "producerwagon" of getMetadataBlock()
+  if {_vehiclepart} is not set:
+    stop
+  set {_vehicleuuid} to metadata value "vehicles.sk|vehicleuuid" of {_vehiclepart}
+  set {_alivevehicles} to vehiclesGetTmpData("alivevehicles")
+  loop ...{_alivevehicles}.get({_vehicleuuid}).get("parts"):
+    if loop-value.get("part")'s leggings is {_eventitem}:
+      set {_part} to loop-value.get("part")
+      set {_storageid} to 1st line of lore of {_part}'s leggings
+      set {_produceslots::%{_storageid}%} to loop-value.get("part")
+
+  loop {_produceslots::*}:
+    if loop-value's helmet is not rail:
+      set {_produceslot} to loop-value
+      stop loop
+  set {_vehiclepart} to metadata value "storagewagon" of getMetadataBlock()
+
+  set {_storagewagonuuid} to metadata value "vehicles.sk|vehicleuuid" of {_vehiclepart}
+
+  if {_produceslot} is set:
+    set {_eventitem} to oak log
+    loop ...{_alivevehicles}.get({_storagewagonuuid}).get("parts"):
+      if loop-value.get("part")'s leggings is oak log:
+        set {_part} to loop-value.get("part")
+        set {_storageid} to 1st line of lore of {_part}'s leggings
+        set {_storageparts::%{_storageid}%} to loop-value.get("part")
+    set {_i} to 0
+    set {_loopid} to size of {_storageparts::*}
+    loop {_storageparts::*}:
+      set {_nloop} to {_loopid} - {_i} 
+      if {_storageparts::%{_nloop}%}'s helmet is {_eventitem}:
+        set {_logslot} to {_storageparts::%{_nloop}%}
+        stop loop
+      add 1 to {_i}
+
+  if {_logslot} is set:
+    set {_eventitem} to iron ore
+    loop ...{_alivevehicles}.get({_storagewagonuuid}).get("parts"):
+      if loop-value.get("part")'s leggings is iron ore:
+        set {_part} to loop-value.get("part")
+        set {_storageid} to 1st line of lore of {_part}'s leggings
+        set {_storageparts::%{_storageid}%} to loop-value.get("part")
+    set {_i} to 0
+    set {_loopid} to size of {_storageparts::*}
+    loop {_storageparts::*}:
+      set {_nloop} to {_loopid} - {_i} 
+      if {_storageparts::%{_nloop}%}'s helmet is {_eventitem}:
+        set {_ironslot} to {_storageparts::%{_nloop}%}
+        stop loop
+      add 1 to {_i}
+  if {_ironslot} is set:
+    set {_ironslot}'s helmet to air
+    set {_logslot}'s helmet to air
+    set {_produceslot}'s helmet to rail
+
+function mgTrainmastersSummonWagon(type:text,loc:location):
+  if {_type} is "water":
+    set {_item} to barrier named "clickevent"
+    set 1st line of lore of {_item} to "water"
+  else if {_type} is "producer":
+    set {_item} to barrier named "clickevent"
+    set 1st line of lore of {_item} to "producer"
+  else if {_type} is "coal":
+    set {_item} to barrier named "clickevent"
+    set 1st line of lore of {_item} to "coal"
+  else if {_type} is "storage":
+    set {_item} to barrier named "clickevent"
+    set 1st line of lore of {_item} to "storage"
+  else:
+    set {_item} to air
+
+  #
+  # > Basic train wagon setup.
+  set {_vehicle} to vehiclesCreateVehicle()
+  set {_x} to -0.8
+  set {_x1} to -1.5
+
+  #
+  # > Floor
+  loop 5 times:
+    add 0.31 to {_x1}
+    set {_part} to vehicesCreateVehiclePart(black concrete,air,{_item})
+    set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x1},0,-0.21)
+
+    set {_part} to vehicesCreateVehiclePart(black concrete,air,{_item})
+    set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x1},0,0.21)
+
+  #
+  # > Tires
+  set {_part} to vehicesCreateVehiclePart(stone button,air,{_item})
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.1,-1.05,-0.3)
+  set {_part} to vehicesCreateVehiclePart(stone button,air,{_item})
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-1,-1.05,-0.3)
+  set {_part} to vehicesCreateVehiclePart(stone button,air,{_item})
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.1,-1.05,0.3)
+  set {_part} to vehicesCreateVehiclePart(stone button,air,{_item})
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-1,-1.05,0.3)
+
+  set {_part} to vehicesCreateVehiclePart(air, barrier named "wagoncontrol",{_item})
+  set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.5,0.5,0)
+
+  #
+  # > Special train wagon setups:
+  #
+  # > Water wagon
+  if {_type} is "producer":
+    set {_x} to -0.8
+    set {_y} to -0.4
+    loop 3 times:
+      add 0.62 to {_x}
+
+      set {_part} to vehicesCreateVehiclePart(iron block,air,{_item})
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-1,{_y},-0.31)
+      set {_part} to vehicesCreateVehiclePart(iron block,air,{_item})
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-1,{_y},0.31)
+
+    set {_y} to 0.43
+    set {_x} to -1.52
+    loop 2 times:
+      set {_part} to vehicesCreateVehiclePart(heavy weighted pressure plate,air,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,-1.57))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},{_y},-0.35)
+
+      set {_part} to vehicesCreateVehiclePart(heavy weighted pressure plate,air,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,-1.57))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},{_y},0.35)
+      add 0.547 to {_y}
+
+    set {_y} to 0.43
+    set {_x} to 0.31
+    loop 2 times:
+      set {_part} to vehicesCreateVehiclePart(heavy weighted pressure plate,air,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,-1.57))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},{_y},-0.35)
+
+      set {_part} to vehicesCreateVehiclePart(heavy weighted pressure plate,air,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,-1.57))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},{_y},0.35)
+      add 0.547 to {_y}
+    set {_x} to -1.18
+    loop 3 times:
+      set {_part} to vehicesCreateVehiclePart(iron trapdoor,air,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},1.2,-0.31)
+
+      set {_part} to vehicesCreateVehiclePart(iron trapdoor,air,{_item})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},1.2,0.31)
+      add 0.62 to {_x}
+
+    set {_part} to vehicesCreateVehiclePart(daylight sensor,air,{_item})
+    set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,3.14))
+    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.56,1.15,0)
+    add 0.62 to {_x}
+
+    #
+    # > Rail heads:
+    set {_storageitem} to rail
+    set {_y} to -0.1
+    loop 10 times:
+      add 1 to {_producerheadid}
+      set 1st line of lore of {_storageitem} to "%{_producerheadid}%"
+      set {_part} to vehicesCreateVehiclePart(rail,air,{_item},{_storageitem})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(1.57,1.57,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},0.17,{_y},0)
+
+      add 0.04 to {_y}
+      add 1 to {_producerheadid}
+      set 1st line of lore of {_storageitem} to "%{_producerheadid}%"
+      set {_part} to vehicesCreateVehiclePart(rail,air,{_item},{_storageitem})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(1.57,0,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.6,{_y},-0.755)
+      add 0.04 to {_y}
+    set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
+    wait 2 ticks
+    mgTrainmastersHandleTrain({_uuid},"other",0.5)
+ 
+  #
+  # > Water wagon
+  if {_type} is "coal":
+    set {_x} to -0.8
+    set {_y} to -0.4
+    loop 3 times:
+      add 0.62 to {_x}
+
+      set {_part} to vehicesCreateVehiclePart(black concrete,air,{_item})
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-1,{_y},-0.31)
+      set {_part} to vehicesCreateVehiclePart(black concrete,air,{_item})
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-1,{_y},0.31)
+
+    set {_x} to -0.7
+    loop 3 times:
+      add 0.42 to {_x}
+
+      set {_part} to vehicesCreateVehiclePart(coal block,{_item})
+      set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-0.7,0.9,-0.21)
+      set {_part} to vehicesCreateVehiclePart(coal block,{_item})
+      set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-0.7,0.9,0.21)
+
+    #
+    # > Wagon information
+    set {_storageitem} to coal
+    #
+    # > Current coal
+    set 1st line of lore of {_storageitem} to "5"
+    #
+    # > Maximum coal
+    set 2nd line of lore of {_storageitem} to "10"
+    set {_part} to vehicesCreateVehiclePart(air,air,{_item},{_storageitem})
+    set {_bar} to mgTrainmastersCreateStatusBar(10,5,"&0&l","&7&l","|")
+    set {_part} to vehiclesSetVehiclePartSetting({_part},"name","&7[%{_bar}%&7]")
+    set {_part} to vehiclesSetVehiclePartSetting({_part},"namevisible",true)
+    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.5,0.2,0)
+    set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
+    wait 2 ticks
+    mgTrainmastersHandleTrain({_uuid},"other",0.5)
+  if {_type} is "water":
+    set {_x} to -0.8
+    #
+    # > Floor
+    loop 3 times:
+      add 0.62 to {_x}
+      set {_y} to -0.4
+      loop 2 times:
+        set {_part} to vehicesCreateVehiclePart(light blue concrete,air,{_item})
+        set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-1,{_y},-0.31)
+        set {_part} to vehicesCreateVehiclePart(light blue concrete,air,{_item})
+        set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-1,{_y},0.31)
+        add 0.62 to {_y}
+
+    #
+    # > Wagon information
+    set {_storageitem} to water bucket
+    #
+    # > Current water
+    set 1st line of lore of {_storageitem} to "5"
+    #
+    # > Maximum water
+    set 2nd line of lore of {_storageitem} to "10"
+    set {_part} to vehicesCreateVehiclePart(air,air,{_item},{_storageitem})
+    set {_bar} to mgTrainmastersCreateStatusBar(10,5,"&b&l","&7&l","|")
+    set {_part} to vehiclesSetVehiclePartSetting({_part},"name","&7[%{_bar}%&7]")
+    set {_part} to vehiclesSetVehiclePartSetting({_part},"namevisible",true)
+    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.5,0.2,0)
+
+    set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
+    wait 2 ticks
+    mgTrainmastersHandleTrain({_uuid},"other",0.5)
+  #
+  # > Storage wagon
+  if {_type} is "storage":
+  
+    set {_item} to barrier named "clickevent"
+    set 1st line of lore of {_item} to "storage"
+	
+  #
+  # > Floor
+    loop 3 times:
+      add 0.62 to {_x}
+
+      set {_part} to vehicesCreateVehiclePart(black carpet,air,{_item})
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-1,-0.4,-0.31)
+      set {_part} to vehicesCreateVehiclePart(black carpet,air,{_item})
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-1,-0.4,0.31)
+
+    #
+    # > Fences
+    set {_x} to -1.1
+    loop 3 times:
+      set {_part} to vehicesCreateVehiclePart(oak fence,air,{_item})
+      set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,1.58,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},0.3,0.55)
+	  
+      set {_part} to vehicesCreateVehiclePart(oak fence,air,{_item})
+      set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,1.58,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},0.3,-0.55)
+
+      add 0.545 to {_x}
+
+    set {_x} to -1.4
+    loop 2 times:
+      set {_part} to vehicesCreateVehiclePart(oak fence,air,{_item})
+      set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},0.3,-0.274)
+
+      set {_part} to vehicesCreateVehiclePart(oak fence,air,{_item})
+      set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x},0.3,0.274)
+      add 1.7 to {_x}
+
+    #
+    # > Storage slots
+	
+	#
+	# > Log storage
+    set {_y} to 0
+    set {_storageitem} to oak log
+    loop 5 times:
+      set 1st line of lore of {_storageitem} to "%loop-number%" 
+      set {_part} to vehicesCreateVehiclePart(oak log,barrier,{_item},{_storageitem})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(1.58,0,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.2,{_y},-0.25)
+      add 0.62 to {_y}
+
+    #
+    # > Iron ore storage
+    set {_y} to -0.25
+    set {_storageitem} to iron ore
+    loop 5 times:
+      set 1st line of lore of {_storageitem} to "%loop-number%" 
+      set {_part} to vehicesCreateVehiclePart(iron ore,barrier,{_item},{_storageitem})
+      set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+      set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.9,{_y},0)
+      add 0.62 to {_y}
+	  
+    set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
+    wait 2 ticks
+    mgTrainmastersHandleTrain({_uuid},"other",0.5)
+
+
+function mgTrainmastersSummonTrain():
+  vehiclesKillAllVehicles()
+  set {_loc} to {@trainloc}
+  remove 2 from x-coord of {_loc}
+  mgTrainmastersSummonWagon("coal",{_loc}.clone())
+  wait 1 tick
+  remove 2 from x-coord of {_loc}
+  mgTrainmastersSummonWagon("water",{_loc}.clone())
+  wait 1 tick
+  remove 2 from x-coord of {_loc}
+  mgTrainmastersSummonWagon("storage",{_loc}.clone())
+  wait 1 tick
+  remove 2 from x-coord of {_loc}
+  mgTrainmastersSummonWagon("producer",{_loc}.clone())
+  wait 1 tick
+  add 8 to x-coord of {_loc}
+  wait 1 tick
+  set {_vehicle} to vehiclesCreateVehicle()
+  loop 2 times:
+    add 0.62 to {_x}
+    #
+    # > Floor
+    set {_part} to vehicesCreateVehiclePart(black carpet)
+    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-1,-0.4,-0.31)
+    set {_part} to vehicesCreateVehiclePart(black carpet)
+    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x}-1,-0.4,0.31)
+    
+    #
+    # > Engine part
+    set {_part} to vehicesCreateVehiclePart(black concrete)
+    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x} - 1.3,-0.7,0)
+    set {_part} to vehicesCreateVehiclePart(black concrete)
+    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x} - 1.3,-0.2,0)
+
+  set {_y} to -0.6
+  loop 3 times:
+    set {_part} to vehicesCreateVehiclePart(black concrete)
+    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-1.001,{_y},-0.31)
+    set {_part} to vehicesCreateVehiclePart(black concrete)
+    set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-1.001,{_y},0.31)
+
+    add 0.5 to {_y}
+
+  #
+  # > Tires
+  set {_part} to vehicesCreateVehiclePart(stone button)
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.1,-1.05,-0.3)
+  set {_part} to vehicesCreateVehiclePart(stone button)
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-1,-1.05,-0.3)
+  set {_part} to vehicesCreateVehiclePart(stone button)
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.1,-1.05,0.3)
+  set {_part} to vehicesCreateVehiclePart(stone button)
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,0,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-1,-1.05,0.3)
+
+  #
+  # > Window front
+  set {_part} to vehicesCreateVehiclePart(glass pane)
+  set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,1.58,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.87,0.84,0.28)
+  set {_part} to vehicesCreateVehiclePart(glass pane)
+  set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,1.58,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.87,0.84,-0.28)
+  #
+  # > Window behind
+  set {_part} to vehicesCreateVehiclePart(glass pane)
+  set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,1.58,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-1.52,0.84,0.28)
+  set {_part} to vehicesCreateVehiclePart(glass pane)
+  set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(0,1.58,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-1.52,0.84,-0.28)
+
+  #
+  # > Chimney
+  set {_part} to vehicesCreateVehiclePart(black concrete)
+  set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},{_x} - 1.3,1,0)
+  
+  #
+  # > Iron backplate
+  set {_part} to vehicesCreateVehiclePart(heavy weighted pressure plate)
+  set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(1.58,1.58,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-1.35,0.4,-0.31)
+  set {_part} to vehicesCreateVehiclePart(heavy weighted pressure plate)
+  set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+  set {_part} to vehiclesSetVehiclePartPose({_part},"head",vector(1.58,1.58,0))
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-1.35,0.4,0.31)
+
+  set {_part} to vehicesCreateVehiclePart(air, barrier named "wagoncontrol")
+  set {_part} to vehiclesSetVehiclePartSetting({_part},"small",true)
+  set {_vehicle} to vehiclesAddVehiclePart({_vehicle},{_part},-0.5,0.5,0)
+
+  set {_uuid} to vehiclesSpawnVehicle({_vehicle},{_loc})
+  remove 2 from x-coord of {_loc}
+  wait 2 ticks
+  mgTrainmastersHandleTrain({_uuid},"locomotive",0.5)
+
+
+function mgTrainmastersHandleSetBorderTrain(borderfollow:entity):
+  set {_world} to {_borderfollow}'s world
+  set {_worldborder} to {_world}.getWorldBorder()
+  mgSetTemporaryGameData("worldborder",{_worldborder})
+  {_worldborder}.setSize(30.00)
+  {_worldborder}.setWarningDistance(0)
+  {_worldborder}.setWarningTime(1)
+  {_worldborder}.setDamageBuffer(0)
+  {_worldborder}.setCenter(x-coord of {_borderfollow}, 0)
+
+function mgTrainmastersGiveScores():
+  set {_score} to mgGetTemporaryGameData("traindistance")
+  set {_score} to round({_score})
+  loop all players:
+    mgAddPlayerToplistScore("Trainmasters",loop-player,{_score})
+    set {_uuid} to uuid of loop-player
+    add {_score} to {cobble::%{_uuid}%}
+
+function mgTrainmastersHandleTrain(uuid:text,trainpart:text="other",speed:number=1):
+
+  set {_wagonfront} to metadata value "lastwagonfront" of getMetadataBlock()
+
+  while mgGetTemporaryGameData("status") is "ingame":
+    set {_currentcoal} to mgGetTemporaryGameData("currentcoal")
+    set {_maxcoal} to mgGetTemporaryGameData("maxcoal")
+    set {_maxcoal} to {_maxcoal} - 1
+    if {_currentcoal} >= {_maxcoal}:
+      set {_multiplier} to 2
+    else:
+      set {_multiplier} to 1
+    set {_players} to number of all players
+    if {_players} is between 0 and 2:
+      set {_speed} to 0.5 * {_multiplier}
+    else if {_players} is between 3 and 5:
+      set {_speed} to 1 * {_multiplier}
+    else:
+      set {_speed} to 2 * {_multiplier}
+    if {_trainpart} is "locomotive":
+      mgTrainmastersHandleSetBorderTrain({_wagonfront})
+      mgSetTemporaryGameData("locomotive",{_wagonfront})
+      mgTrainmastersUseCoal()
+      set block 1 below {_wagonfront} to iron block
+      mgTrainmastersUseWater()
+      mgTrainmastersCreateResources()
+      mgSetTemporaryGameData("respawnloc",{_wagonfront}.getLocation().clone())
+
+      mgSetTemporaryGameData("traindistance",x-coord of {_wagonfront})
+    set {_center} to vehiclesGetTmpData("vehicles.sk|center|%{_uuid}%")
+    add 0.5 to y-coord of {_center}
+    set {_block} to block at {_wagonfront}.getLocation()
+    if {_block} is not rail:
+      vehiclesKillVehicle("%{_uuid}%")
+      play 20 explosion at {_wagonfront}.getLocation()
+      play sound "entity.generic.explode" with volume 0.5 with pitch 0.7 at {_wagonfront}.getLocation() for all players
+      set {_endit} to true
+      mgTrainmastersGiveScores()
+      mgTrainmastersHandler("stop")
+      stop
+
+    set {_railshape} to "%{_block}.getBlockData().getShape()%"
+    loop 20 times:
+	
+      #
+      # ADD Fix for locations on after an curve:
+      # rotate the cart to the nearest correct yaw location.
+	  # e.g. cart is at yaw 177, teleport it to
+	  # have a yaw of 180 for proper steering.
+	  # > add function called mgTrainmastersSteeringFix()
+	  # to do that job seperatly and instantly.
+      set {_block} to block at {_wagonfront}.getLocation()
+      if {_block} is not rail:
+        vehiclesKillVehicle("%{_uuid}%")
+        play 20 huge explosion at {_wagonfront}.getLocation()
+        play sound "entity.generic.explode" with volume 0.5 with pitch 0.7 at {_wagonfront}.getLocation() for all players
+        set {_endit} to true
+        mgTrainmastersGiveScores()
+        mgTrainmastersHandler("stop")
+        stop
+      add 1 to {_i}
+      set {_railshape} to "%{_block}.getBlockData().getShape()%"
+      if "%{_railshape}%" contains "ascending":
+        set block at {_wagonfront}.getLocation() to air
+      if "%{_railshape}%" is "EAST_WEST":
+
+        if {_wagonfront}.getLocation().getYaw() <= 0:
+          vehiclesTeleportVehicleRelative({_uuid},vector(0.02,0,0))
+        else:
+          vehiclesTeleportVehicleRelative({_uuid},vector(-0.02,0,0))
+
+      if "%{_railshape}%" is "SOUTH_WEST":
+        if {_swmode} is not set:
+          if {_wagonfront}.getLocation().getYaw() is between 265 and 275:
+            set {_swmode} to "backwards"
+          else:
+            set {_swmode} to "forwards"
+        if {_swmode} is "forwards":
+          if {_wagonfront}.getLocation().getYaw() is not 90:
+            vehiclesRotateVehicle({_uuid},1.5)
+          vehiclesTeleportVehicleRelative({_uuid},vector(0,0,0.0168))
+        else:
+          if {_wagonfront}.getLocation().getYaw() is not 180:
+            vehiclesRotateVehicle({_uuid},-1.5)
+          vehiclesTeleportVehicleRelative({_uuid},vector(-0.0168,0,0))
+      else:
+        if {_swmode} is set:
+          
+          add 1 to {_swcounter}
+          if {_swcounter} is 5:
+            delete {_swmode}
+            delete {_swcounter}
+
+      if "%{_railshape}%" is "NORTH_SOUTH":
+
+        if {_wagonfront}.getLocation().getYaw() is between 265 and 275:
+          vehiclesTeleportVehicleRelative({_uuid},vector(0,0,-0.02))
+        else:
+          vehiclesTeleportVehicleRelative({_uuid},vector(0,0,0.02))
+
+      if "%{_railshape}%" is "NORTH_EAST":
+        if {_nemode} is not set:
+          if {_wagonfront}.getLocation().getYaw() is between 175 and 185:
+            set {_nemode} to "backwards"
+          else:
+            set {_nemode} to "forwards"
+        if {_nemode} is "forwards":
+          if {_wagonfront}.getLocation().getYaw() is not 0:
+            vehiclesRotateVehicle({_uuid},-1.5)
+          vehiclesTeleportVehicleRelative({_uuid},vector(0.0168,0,0))
+        else:
+          if {_wagonfront}.getLocation().getYaw() is not 270:
+            vehiclesRotateVehicle({_uuid},1.5)
+          vehiclesTeleportVehicleRelative({_uuid},vector(0,0,-0.0168))
+      else:
+        if {_nemode} is set:
+          
+          delete {_nemode}
+
+
+      if "%{_railshape}%" is "NORTH_WEST":
+        if {_nwmode} is not set:
+          if {_wagonfront}.getLocation().getYaw() is between 85 and 95:
+            set {_nwmode} to "backwards"
+          else:
+            set {_nwmode} to "forwards"
+        if {_nwmode} is "forwards":
+          if {_wagonfront}.getLocation().getYaw() is not 270:
+            vehiclesRotateVehicle({_uuid},-1.5)
+          vehiclesTeleportVehicleRelative({_uuid},vector(0,0,-0.0168))
+        else:
+          if {_wagonfront}.getLocation().getYaw() is not 180:
+            vehiclesRotateVehicle({_uuid},1.5)
+          vehiclesTeleportVehicleRelative({_uuid},vector(-0.0168,0,0))
+      else:
+        if {_nwmode} is set:
+          
+          delete {_nwmode}
+
+
+      if "%{_railshape}%" is "SOUTH_EAST":
+        if {_semode} is not set:
+          if {_wagonfront}.getLocation().getYaw() is between 175 and 185:
+            set {_semode} to "backwards"
+          else:
+            set {_semode} to "forwards"
+        if {_semode} is "forwards":
+          if {_wagonfront}.getLocation().getYaw() is not 0:
+            vehiclesRotateVehicle({_uuid},1.5)
+          vehiclesTeleportVehicleRelative({_uuid},vector(0.0168,0,0))
+        else:
+          if {_wagonfront}.getLocation().getYaw() is not 90:
+            vehiclesRotateVehicle({_uuid},-1.5)
+          vehiclesTeleportVehicleRelative({_uuid},vector(0,0,0.0168))
+      else:
+        if {_semode} is set:
+          
+          delete {_semode}
+
+
+      add 1 to {_wait}
+      if {_wait} >= {_speed}:
+        delete {_wait}
+        if {_speed} is 0.5:
+          set {_timespan} to "2 ticks" parsed as timespan
+          wait {_timespan}
+        else:
+          wait 1 tick

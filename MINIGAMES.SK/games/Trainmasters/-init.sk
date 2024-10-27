@@ -1,0 +1,117 @@
+#
+# ==============
+# init.sk
+# ==============
+# init.sk is part of the MINIGAMES.SK library.
+# ==============
+# > GAME: Trainmasters
+# ==============
+
+on load:
+  wait 1 tick
+  mgTrainmastersHandler("start")
+
+every 1 second:
+  feed all players
+  mgTrainmastersProduceRail()
+  mgTrainmastersUpdateSidebarStats()
+
+import:
+  java.util.ArrayList
+  org.bukkit.event.player.PlayerInteractAtEntityEvent
+  org.bukkit.event.player.PlayerArmorStandManipulateEvent
+
+on quit:
+  if mgGetTemporaryGameData("playerstatus|%player%") is true:
+    set {_playersingame} to mgGetTemporaryGameData("playersingame")
+    remove 1 from {_playersingame}
+    mgSetTemporaryGameData("playersingame",{_playersingame})
+    mgSetTemporaryGameData("playerstatus|%player%",false)
+    mgCheckTrainmastersRoundEnd()
+
+
+on join:
+  clear inventory of player
+  set gamemode of player to survival
+  set {_loc} to mgGetTemporaryGameData("respawnloc")
+  wait 5 ticks
+  teleport player to {_loc}
+  mgTrainmastersGiveTools(player)
+
+on death:
+  if victim is a player:
+    wait 1 tick
+    force victim to respawn
+    wait 1 tick
+    mgTrainmastersHandleGameDeath(player)
+	
+on explosion:
+  loop all blocks in radius 5 around event-location:
+    if loop-block is iron ore or coal ore or oak log or oak leaves or stone:
+      loop-block.breakNaturally()
+
+on explosion:
+  cancel event
+
+on respawn:
+  wait 1 tick
+  mgTrainmastersHandleGameDeath(player)
+
+on spawn of armor stand:
+  wait 1 tick
+  if event-entity's boots is barrier named "wagoncontrol":
+    set metadata value "lastwagonfront" of getMetadataBlock() to event-entity
+  if event-entity's leggings is water bucket:
+    set metadata value "waterwagon" of getMetadataBlock() to event-entity
+  if event-entity's leggings is coal:
+    set metadata value "coalwagon" of getMetadataBlock() to event-entity
+  if event-entity's leggings is rail:
+    set metadata value "producerwagon" of getMetadataBlock() to event-entity
+  if event-entity's leggings is oak log:
+    set metadata value "storagewagon" of getMetadataBlock() to event-entity
+
+on click:
+  if target block is water:
+    if player's tool is air or light blue concrete:
+      cancel event
+      set target block to air
+      give 1 of light blue concrete named "&rWater" to player
+
+on PlayerArmorStandManipulateEvent:
+  event.setCancelled(true)
+
+on break:
+  repair player's tool
+  if event-block is grass or dirt or iron block:
+    cancel event
+  if event-block is rail:
+    if block 1 below event-block is not grass block or dirt:
+      cancel event
+
+on place of light blue concrete:
+  cancel event
+  
+
+#on PlayerInteractAtEntityEvent:
+on rightclick on armor stand:
+  set {_player} to event.getPlayer()
+  set {_entity} to event.getRightClicked()
+  if "%{_entity}%" is "armor stand":
+    set {_checkitem} to {_entity}'s chestplate
+    if display name of {_entity}'s chestplate is "clickevent":
+      if 1st line of lore of {_entity}'s chestplate is "storage":
+        mgTrainmastersHandleStorageClick({_player},{_entity})
+      if 1st line of lore of {_entity}'s chestplate is "water":
+        mgTrainmastersHandleWaterClick({_player},{_entity})
+      if 1st line of lore of {_entity}'s chestplate is "coal":
+        mgTrainmastersHandleCoalClick({_player},{_entity})
+      if 1st line of lore of {_entity}'s chestplate is "producer":
+        mgTrainmastersHandleProducerClick({_player},{_entity})
+  event.setCancelled(true)
+
+on damage:
+  if victim is a player:
+    set {_uuid} to uuid of victim
+    remove 1 from {cobble::%{_uuid}%}
+    if attacker is a player:
+      cancel event
